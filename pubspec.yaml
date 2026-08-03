@@ -1,0 +1,109 @@
+name: pathfinder
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  get: ^4.7.3
+  dropdown_search: ^7.0.0
+  flutter_reactive_ble: ^5.4.0
+  flutter_launcher_icons: ^0.14.4
+  cupertino_icons: ^1.0.1
+  animated_splash_screen: ^1.0.1+2
+  permission_handler: ^13.0.0
+  flutter_compass: ^0.8.1
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter_icons:
+  android: true
+  image_path: "assets/launcher/icon.png"
+  adaptive_icon_background: "assets/launcher/Background.png" # only available for Android 8.0 devices and above
+  adaptive_icon_foreground: "assets/launcher/Foreground.png" # only available for Android 8.0 devices and above
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter.
+flutter:
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/images/vectors/vector_shadow.png
+    - assets/images/vectors/vector_permission.gif
+    - assets/images/vectors/vector_loading.gif
+    - assets/images/splash/ic_splash.png
+    - assets/images/buttons/map_button.png
+    - assets/images/buttons/setting_button.png
+    - assets/images/arrow_animation.gif
+    - assets/images/location_pin.gif
+    - assets/images/calibrate.gif
+    - assets/images/elevator_up.gif
+    - assets/images/elevator_down.gif
+    - assets/images/onboarding/onboarding_1.png
+    - assets/images/onboarding/onboarding_2.png
+    - assets/images/onboarding/onboarding_3.png
+    - assets/images/tutorial/tutorial_1.png
+    - assets/images/tutorial/tutorial_2.png
+    - assets/images/tutorial/tutorial_3.png
+    - assets/images/map/map_all.gif
+    - assets/images/map/1.gif
+    - assets/images/map/2.gif
+    - assets/images/map/3.gif
+    - assets/images/map/4.gif
+    - assets/images/map/5.gif
+    - assets/images/map/6.gif
+    - assets/images/map/7.gif
+    - assets/images/map/8.gif
+    - assets/images/map/9.gif
+    - assets/images/map/10.gif
+    - assets/images/map/11.gif
+    - assets/images/map/12.gif
+    - assets/images/map/13.gif
+    - assets/images/map/14.gif
+    - assets/images/map/pinch.gif
+  #   - images/a_dot_ham.jpeg
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/assets-and-images/#resolution-aware.
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/assets-and-images/#from-packages
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  fonts:
+    - family: Mulish
+      fonts:
+        - asset: assets/fonts/mulish/Mulish-Regular.ttf
+        - asset: assets/fonts/mulish/Mulish-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/mulish/Mulish-Light.ttf
+          weight: 300
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/#from-packages
