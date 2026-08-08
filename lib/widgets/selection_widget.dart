@@ -1,5 +1,4 @@
 import 'package:pathfinder/controllers/beacon_controller.dart';
-import 'package:pathfinder/controllers/map_controller.dart';
 import 'package:pathfinder/controllers/navigation_controller.dart';
 import 'package:pathfinder/models/location.dart';
 import 'package:pathfinder/utils/constants.dart';
@@ -16,7 +15,6 @@ import 'package:dropdown_search/dropdown_search.dart';
 class SelectionWidget extends StatelessWidget {
   final beaconController = Get.find<BeaconController>();
   final navigationController = Get.find<NavigationController>();
-  final mapController = Get.find<MapController>();
   final _ddKey = GlobalKey<DropdownSearchState<LocationInfo>>();
 
   @override
@@ -54,21 +52,7 @@ class SelectionWidget extends StatelessWidget {
                             // );
                           },
                         ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.map_outlined,
-                            color: kSecondaryColor,
-                            size: displayWidth(context) * 0.08,
-                          ),
-                          onPressed: () {
-                            mapController.getAllPOIDialog(
-                              'Current Location',
-                              context,
-                              MapType.view_map,
-                            );
-                          },
-                        ),
-                      ],
+                                              ],
                     ),
                     SizedBox(
                       height: displayHeight(context) * 0.03,
@@ -197,7 +181,8 @@ class SelectionWidget extends StatelessWidget {
                       ),
                       items: (String filter, dynamic infiniteScrollProps) =>
                           beaconController.onSearch(filter),
-                      onSaved: (value) {
+
+                      onSelected: (value) {
                         if (value != null) {
                           beaconController.setDestination(value.nodeID);
                           print(beaconController.destinationLocation?.name);

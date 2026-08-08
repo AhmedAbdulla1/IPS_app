@@ -1,4 +1,3 @@
-import 'package:pathfinder/controllers/map_controller.dart';
 import 'package:pathfinder/utils/constants.dart';
 import 'package:pathfinder/utils/size_config.dart';
 import 'package:pathfinder/utils/size_helpers.dart';
@@ -8,10 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
 
   @override
   Widget build(BuildContext context) {
-    final mapController = Get.find<MapController>();
 
     return Scaffold(
       body: SafeArea(
@@ -67,39 +67,6 @@ class SettingsPage extends StatelessWidget {
                                 Get.to(CalibrationPage(
                                   caliType: CaliType.setting,
                                 ));
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      Divider(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'View POIs',
-                            style: TextStyle(
-                              fontSize: getDefaultProportionateScreenWidth(),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Container(
-                            width: displayWidth(context) * 0.4,
-                            child: OutlinedButton(
-                              child: Text(
-                                'View',
-                                style: TextStyle(
-                                  fontSize:
-                                      getDefaultProportionateScreenWidth(),
-                                  color: kTextColor,
-                                ),
-                              ),
-                              onPressed: () {
-                                mapController.getAllPOIDialog(
-                                  'All Points of Interests',
-                                  context,
-                                  MapType.onboard,
-                                );
                               },
                             ),
                           ),

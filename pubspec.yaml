@@ -18,20 +18,37 @@ dependencies:
   flutter_reactive_ble: ^5.4.0
   flutter_launcher_icons: ^0.14.4
   cupertino_icons: ^1.0.1
-  animated_splash_screen: ^1.0.1+2
   permission_handler: ^13.0.0
   flutter_compass: ^0.8.1
   shared_preferences: ^2.5.5
+  flutter_native_splash: ^2.4.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^5.0.0
 
 flutter_icons:
   android: true
   image_path: "assets/launcher/icon.png"
   adaptive_icon_background: "assets/launcher/Background.png" # only available for Android 8.0 devices and above
   adaptive_icon_foreground: "assets/launcher/Foreground.png" # only available for Android 8.0 devices and above
+
+# flutter_native_splash config. After changing anything here, regenerate
+# the native splash resources with:
+#   dart run flutter_native_splash:create
+# This must be re-run any time this section or the referenced image
+# changes -- editing this file alone does not touch the generated
+# Android/iOS native assets.
+flutter_native_splash:
+  color: "#0a1628"
+  image: assets/images/splash/ic_splash.png
+  fullscreen: true
+  android_gravity: fill
+  android_12:
+    color: "#0a1628"
+    image: assets/images/splash/ic_splash.png
+    icon_background_color: "#0a1628"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

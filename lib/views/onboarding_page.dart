@@ -1,5 +1,4 @@
 import 'package:pathfinder/controllers/beacon_controller.dart';
-import 'package:pathfinder/controllers/map_controller.dart';
 import 'package:pathfinder/utils/constants.dart';
 import 'package:pathfinder/utils/size_config.dart';
 import 'package:pathfinder/utils/size_helpers.dart';
@@ -18,7 +17,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
   int currentPage = 0;
   bool lastPage = false;
   final beaconController = Get.find<BeaconController>();
-  final mapController = Get.find<MapController>();
   final PageController pageController = PageController();
 
   List<Map<String, String>> onboardingData = [
@@ -81,19 +79,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Spacer(),
-                  if (lastPage)
-                    RoundedButton(
-                      btnColor: Color(0xFFBD8570),
-                      btnText: 'VIEW POINT OF INTERESTS',
-                      btnFunction: () {
-                        mapController.getAllPOIDialog(
-                          'All Point Of Interests',
-                          context,
-                          MapType.onboard,
-                        );
-                      },
-                    ),
                   SizedBox(
                     height: displayHeight(context) * 0.02,
                   ),

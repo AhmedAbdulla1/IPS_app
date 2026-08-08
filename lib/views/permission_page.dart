@@ -1,10 +1,10 @@
 import 'package:pathfinder/controllers/permission_controller.dart';
+import 'package:pathfinder/features/navigation/views/main_navigation_screen.dart';
 import 'package:pathfinder/utils/constants.dart';
 import 'package:pathfinder/utils/image_constants.dart';
 import 'package:pathfinder/utils/size_config.dart';
 import 'package:pathfinder/utils/size_helpers.dart';
 import 'package:pathfinder/views/onboarding_page.dart';
-import 'package:pathfinder/views/selection_page.dart';
 import 'package:pathfinder/widgets/rounded_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -111,7 +111,8 @@ class PermissionPage extends StatelessWidget {
                       SharedPreferences prefs =
                           await SharedPreferences.getInstance();
                       if (prefs.getBool('initial') == true) {
-                        Get.offAll(SelectionPage());
+                        // الصفحة الرئيسية الجديدة (features/navigation) — بديل SelectionPage القديمة
+                        Get.offAll(const MainNavigationScreen());
                       } else {
                         Get.offAll(OnboardingPage());
                       }

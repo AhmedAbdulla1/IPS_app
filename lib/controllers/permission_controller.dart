@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:get/state_manager.dart';
 import 'package:get/get.dart';
 
 import 'package:permission_handler/permission_handler.dart';
@@ -17,7 +16,11 @@ class PermissionController extends GetxController {
   /// react differently (request permission vs. offer to turn Bluetooth on).
   var bleStatusRaw = BleStatus.unknown.obs;
 
-  final FlutterReactiveBle _ble = FlutterReactiveBle();
+  // Shared instance registered once in main.dart's InitializeService --
+  // do NOT construct a new FlutterReactiveBle() here. See main.dart's
+  // InitializeService.init() doc comment for why a second instance broke
+  // BeaconController's status reads.
+  final FlutterReactiveBle _ble = Get.find<FlutterReactiveBle>();
   StreamSubscription<BleStatus>? _bleStatusSubscription;
 
   // Guards against firing a second Permission.request() while one is
@@ -37,7 +40,10 @@ class PermissionController extends GetxController {
     _bleStatusSubscription = _ble.statusStream.listen((status) {
       bluetoothStatus.value = status == BleStatus.ready;
       bleStatusRaw.value = status;
-      print("Bluetooth Status (stream): $status");
+      print("[PERMISSION] Bluetooth Status (stream): $status");
+      if (status == BleStatus.ready) {
+        print("[PERMISSION] ✓ Bluetooth ready");
+      }
     });
 
     // NOTE: checkPermissionStatus() is intentionally NOT called here.
@@ -98,8 +104,11 @@ class PermissionController extends GetxController {
       }
 
       print(
-          "Permission Status: " + locationPermissionGranted.value.toString());
-      print("Bluetooth Status: " + bluetoothStatus.value.toString());
+          "[PERMISSION] Location Permission: ${locationPermissionGranted.value}");
+      print("[PERMISSION] Bluetooth Status: ${bluetoothStatus.value}");
+      if (bluetoothPermissionsGranted && bluetoothStatus.value) {
+        print("[PERMISSION] ✓ All permissions and Bluetooth ready");
+      }
     } finally {
       _permissionRequestInFlight = false;
     }
@@ -108,7 +117,24 @@ class PermissionController extends GetxController {
   /// Shows Android's native "turn on Bluetooth?" dialog. Only makes sense
   /// to call when [bleStatusRaw] is [BleStatus.poweredOff] -- i.e. the
   /// permissions are fine but the adapter itself is switched off.
-  Future<void> requestEnableBluetooth() async {
-    await BluetoothNative.requestEnableBluetooth();
+  ///
+  /// Waits for the user's answer and, if they allowed it, waits for
+  /// flutter_reactive_ble's status stream to reflect the adapter actually
+  /// coming back on before updating [bluetoothStatus]/[bleStatusRaw] --
+  /// the OS dialog resolving doesn't mean the radio has finished powering
+  /// up yet.
+  Future<bool> requestEnableBluetooth() async {
+    final userAllowed = await BluetoothNative.requestEnableBluetooth();
+    if (userAllowed != true) return false;
+
+    final status = await _ble.statusStream
+        .firstWhere((s) => s != BleStatus.poweredOff && s != BleStatus.unknown)
+        .timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => _ble.status,
+        );
+    bleStatusRaw.value = status;
+    bluetoothStatus.value = status == BleStatus.ready;
+    return bluetoothStatus.value;
   }
 }

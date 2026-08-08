@@ -21,6 +21,15 @@ class NavigationController extends GetxController {
   // final beaconController = Get.find<BeaconController>();
   // final beaconList = <BeaconData>[].obs;
   bool isNavigating = false;
+  // Reactive mirror of [isNavigating]. `isNavigating` predates this
+  // controller's GetX adoption and several older widgets (NavigationPage,
+  // SelectionWidget) already read/write it directly as a plain bool, so it
+  // is kept as-is to avoid touching that code. HomePage needs to *react*
+  // to navigation starting/stopping (to switch between the "pick a
+  // destination" and "follow the arrow" sections), which a plain bool
+  // can't do inside an Obx -- hence this Rx counterpart, kept in sync
+  // wherever isNavigating changes.
+  final isNavigatingRx = false.obs;
   var tempDistanceTo = 0.0;
   final levelNavigation = LevelNavigation.empty.obs;
   final currentNode = POINode(
@@ -48,6 +57,32 @@ class NavigationController extends GetxController {
     poiPriorityQueue = [...priorityQueue];
     startingNodeId = currentId;
     destinationNodeId = destinationId;
+  }
+
+  /// Starts a navigation session: stores the requested destination and
+  /// flips both the plain-bool and reactive "is navigating" flags together
+  /// so nothing can read one without the other.
+  void startNavigation(
+    Map<int, POINode> hashMap,
+    List<POINode> priorityQueue,
+    int currentId,
+    int destinationId,
+  ) {
+    setNavigationSettings(hashMap, priorityQueue, currentId, destinationId);
+    findPathToDestination();
+    isNavigating = true;
+    isNavigatingRx.value = true;
+  }
+
+  /// Cancels the current navigation session and resets everything back to
+  /// the idle state HomePage's "pick a destination" section expects.
+  void cancelNavigation() {
+    isNavigating = false;
+    isNavigatingRx.value = false;
+    reachedDestination.value = false;
+    levelNavigation.value = LevelNavigation.empty;
+    pathArray.clear();
+    pathArrayLength.value = 'Loading...';
   }
 
   void printList() {
@@ -90,6 +125,7 @@ class NavigationController extends GetxController {
           } else {
             pathArray.removeAt(0);
             isNavigating = false;
+            isNavigatingRx.value = false;
             print("Reached Destination");
             reachedDestination.value = true;
             levelNavigation.value = LevelNavigation.reach_destination;

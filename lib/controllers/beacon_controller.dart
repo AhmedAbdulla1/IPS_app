@@ -1,19 +1,18 @@
 import 'dart:async';
-import 'dart:typed_data';
+import 'dart:math' as math;
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:get/get.dart';
 import 'package:pathfinder/models/beacon_data.dart';
 import 'package:pathfinder/models/location.dart';
 import 'package:pathfinder/models/neighbour_node.dart';
 import 'package:pathfinder/models/poinode.dart';
 import 'package:pathfinder/utils/constants.dart';
-import 'package:get/get.dart';
-
-//BLE Library Imports
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'navigation_controller.dart';
 
 class BeaconController extends GetxController {
-  var poiNodes = Map<int, POINode>();
+  var poiNodes = <int, POINode>{};
   var poiList = List<POINode>.empty();
   var locationList = List<LocationInfo>.empty();
   final currentLocation = POINode(
@@ -32,21 +31,20 @@ class BeaconController extends GetxController {
   var fetchingBeacons = true.obs;
   var haveCurrentLocation = false.obs;
   var beaconResult = ''.obs;
-  int beaconRssiCutoff = 80;
+  int beaconRssiCutoff = -80;
   Timer? _timer;
   int _timerTime = 0;
 
   POINode? destinationLocation;
 
-  final FlutterReactiveBle _ble = FlutterReactiveBle();
+  // Shared instance registered once in main.dart
+  final FlutterReactiveBle _ble = Get.find<FlutterReactiveBle>();
 
-  // Guards against starting a second scan subscription if
-  // beaconInitPlatformState() is called again (SelectionPage calls it from
-  // build(), which can run more than once).
+  // Stream subscription for BLE device scanning
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   bool _isRanging = false;
 
-  Comparator<BeaconData> rssiComparator = (a, b) => a.rssi.compareTo(b.rssi);
+  Comparator<BeaconData> rssiComparator = (a, b) => int.parse(b.rssi).compareTo(int.parse(a.rssi));
   final beaconDataPriorityQueue = List<BeaconData>.empty().obs;
 
   @override
@@ -64,14 +62,6 @@ class BeaconController extends GetxController {
     _scanSubscription?.cancel();
   }
 
-  // List<POINode> getSelectionList(String currLocation) {
-  //   return poiList
-  //       .where((element) =>
-  //           element.poiType != POIType.intersection &&
-  //           element.name != currLocation)
-  //       .toList();
-  // }
-
   void setDestination(int nodeID) {
     destinationLocation =
         poiList.firstWhere((element) => element.nodeID == nodeID);
@@ -86,9 +76,10 @@ class BeaconController extends GetxController {
   }
 
   void startTimer(int timeSet) {
-    const oneSec = const Duration(seconds: 1);
+    const oneSec = Duration(seconds: 1);
     _timerTime = timeSet;
-    _timer = new Timer.periodic(oneSec, (Timer timer) {
+    _timer = Timer.periodic(oneSec, (Timer timer) {
+      print('object');
       if (_timerTime < 1) {
         timer.cancel();
         _timer = null;
@@ -111,91 +102,164 @@ class BeaconController extends GetxController {
   Future<void> beaconInitPlatformState() async {
     if (_isRanging) return;
 
-    if (_ble.status != BleStatus.ready) {
-      print('flutter_reactive_ble not ready yet (status: ${_ble.status}); '
-          'this usually means Bluetooth/Location permission or the '
-          'adapter itself is off.');
-      return;
-    }
-
-    print('Starting BLE scan for ESP32 iBeacon nodes');
+    print('[BEACON] Starting BLE scan for ESP32 iBeacon nodes via flutter_reactive_ble');
 
     startTimer(5);
-
     _isRanging = true;
-    _scanSubscription = _ble.scanForDevices(withServices: []).listen(
+
+    _scanSubscription = _ble.scanForDevices(
+      withServices: [],
+      scanMode: ScanMode.lowLatency,
+    ).listen(
       (DiscoveredDevice device) {
-        final uuid = _extractIBeaconUuid(device.manufacturerData);
-        if (uuid == null) return;
+        if (device.manufacturerData.isNotEmpty) {
+           print('[DEBUG] Found Device ID: ${device.id}. Name: "${device.name}". Bytes length: ${device.manufacturerData.length}. Data: ${device.manufacturerData}');
+        }
+        
+        final beaconData = _parseIBeacon(device);
+        if (beaconData != null) {
+          print(
+              '[BEACON] 📍 Beacon detected: UUID=${beaconData.uuid}, Major=${beaconData.major}, Minor=${beaconData.minor}, RSSI=${beaconData.rssi}');
 
-        final beaconData = BeaconData(
-          name: uuid,
-          uuid: uuid,
-          macAddress: device.id,
-          major: '',
-          minor: '',
-          distance: '',
-          proximity: '',
-          scanTime: DateTime.now().millisecondsSinceEpoch.toString(),
-          rssi: device.rssi.toString(),
-          txPower: '',
-          dateTime: DateTime.now(),
-        );
-
-        fetchingBeacons.value = false;
-        cancelTimer();
-        addToListAndSort(beaconData);
+          fetchingBeacons.value = false;
+          cancelTimer();
+          addToListAndSort(beaconData);
+        }
       },
       onDone: () {
-        print("beacon scan stream: onDone");
+        print("[BEACON] Scan stream: onDone");
         _isRanging = false;
       },
       onError: (error) {
-        print("beacon scan stream Error: $error");
+        print("[BEACON] Scan stream Error: $error");
         _isRanging = false;
       },
     );
   }
 
-  /// Parses the iBeacon-format proximity UUID out of a BLE advertisement's
-  /// manufacturer-specific data (Apple company ID 0x004C, beacon type 0x02).
-  ///
-  /// This replaces the automatic iBeacon parsing that `dchs_flutter_beacon`
-  /// used to do internally via `Region`/`RangingResult`. The returned UUID
-  /// is matched against `POINode.nodeESP32ID`, preserving the same matching
-  /// logic used throughout the rest of the app.
-  String? _extractIBeaconUuid(Uint8List manufacturerData) {
-    // 2-byte company ID + 0x02 0x15 (iBeacon type/length) + 16-byte UUID
-    // + 2-byte major + 2-byte minor + 1-byte tx power = 25 bytes minimum.
-    if (manufacturerData.length < 25) return null;
+  BeaconData? _parseIBeacon(DiscoveredDevice device) {
+    final bytes = device.manufacturerData;
+    
+    // 1. Check for the NEW IPS Custom Protocol (0xFFFF Company ID)
+    if (bytes.length >= 26 && bytes[0] == 0xFF && bytes[1] == 0xFF) {
+      final uuidBytes = bytes.sublist(2, 18);
+      final rawHex = uuidBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+      final formattedUuid = '${rawHex.substring(0, 8)}-${rawHex.substring(8, 12)}-${rawHex.substring(12, 16)}-${rawHex.substring(16, 20)}-${rawHex.substring(20, 32)}'.toLowerCase();
+      
+      final major = (bytes[19] << 8) | bytes[18]; // X coord
+      final minor = (bytes[21] << 8) | bytes[20]; // Y coord
+      final txPower = -59; // Hardcoded default for distance calc
 
-    final companyId = manufacturerData[0] | (manufacturerData[1] << 8);
-    if (companyId != 0x004C) return null;
-    if (manufacturerData[2] != 0x02 || manufacturerData[3] != 0x15) {
+      final double distance = _calculateDistance(txPower, device.rssi);
+      final String proximityStr = _getProximity(distance);
+
+      return BeaconData(
+        name: device.name.isNotEmpty ? device.name : formattedUuid,
+        uuid: formattedUuid, // This will be 00000000-0000-0000-0000-000000000001
+        macAddress: device.id,
+        major: major.toString(),
+        minor: minor.toString(),
+        distance: distance.toStringAsFixed(2),
+        proximity: proximityStr,
+        scanTime: DateTime.now().millisecondsSinceEpoch.toString(),
+        rssi: device.rssi.toString(),
+        txPower: txPower.toString(),
+        dateTime: DateTime.now(),
+      );
+    }
+
+    // 2. Existing Apple iBeacon fallback parsing...
+    if (bytes.length < 23) return null;
+
+    int offset = -1;
+
+    // Search for Apple iBeacon header (0x004C company ID, 0x02 subtype, 0x15 length)
+    for (int i = 0; i <= bytes.length - 23; i++) {
+      if (i + 24 <= bytes.length &&
+          bytes[i] == 0x4C &&
+          bytes[i + 1] == 0x00 &&
+          bytes[i + 2] == 0x02 &&
+          bytes[i + 3] == 0x15) {
+        offset = i + 4;
+        break;
+      } else if (bytes[i] == 0x02 && bytes[i + 1] == 0x15) {
+        offset = i + 2;
+        break;
+      }
+    }
+
+    if (offset == -1 || bytes.length < offset + 21) {
       return null;
     }
 
-    final uuidBytes = manufacturerData.sublist(4, 20);
-    final hex =
+    final uuidBytes = bytes.sublist(offset, offset + 16);
+    final rawHex =
         uuidBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-'
-        '${hex.substring(12, 16)}-${hex.substring(16, 20)}-'
-        '${hex.substring(20, 32)}';
+    final formattedUuid =
+        '${rawHex.substring(0, 8)}-${rawHex.substring(8, 12)}-${rawHex.substring(12, 16)}-${rawHex.substring(16, 20)}-${rawHex.substring(20, 32)}'
+            .toLowerCase();
+
+    final major = (bytes[offset + 16] << 8) | bytes[offset + 17];
+    final minor = (bytes[offset + 18] << 8) | bytes[offset + 19];
+    final txPower = bytes[offset + 20].toSigned(8);
+
+    final double distance = _calculateDistance(txPower, device.rssi);
+    final String proximityStr = _getProximity(distance);
+
+    return BeaconData(
+      name: device.name.isNotEmpty ? device.name : formattedUuid,
+      uuid: formattedUuid,
+      macAddress: device.id,
+      major: major.toString(),
+      minor: minor.toString(),
+      distance: distance.toStringAsFixed(2),
+      proximity: proximityStr,
+      scanTime: DateTime.now().millisecondsSinceEpoch.toString(),
+      rssi: device.rssi.toString(),
+      txPower: txPower.toString(),
+      dateTime: DateTime.now(),
+    );
+  }
+
+  double _calculateDistance(int txPower, int rssi) {
+    if (rssi == 0) return -1.0;
+    double ratio = rssi * 1.0 / txPower;
+    if (ratio < 1.0) {
+      return math.pow(ratio, 10).toDouble();
+    } else {
+      return (0.89976) * math.pow(ratio, 7.7095) + 0.111;
+    }
+  }
+
+  String _getProximity(double distance) {
+    if (distance < 0) return 'unknown';
+    if (distance < 0.5) return 'immediate';
+    if (distance < 3.0) return 'near';
+    return 'far';
   }
 
   Future<void> startMonitoring() async {
-    // Kept for backward compatibility with any external call sites.
-    await beaconInitPlatformState();
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.location,
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+    ].request();
+
+    if (statuses[Permission.location]!.isGranted || statuses[Permission.bluetoothScan]!.isGranted) {
+      await beaconInitPlatformState();
+    } else {
+      print("[BEACON] Permissions not granted!");
+    }
   }
 
   void addToListAndSort(BeaconData beaconData) {
-    var beaconIndexInList =
-        poiList.indexWhere((beacon) => beacon.nodeESP32ID == beaconData.uuid);
+    var beaconIndexInList = poiList.indexWhere(
+        (beacon) => beacon.nodeESP32ID.toLowerCase() == beaconData.uuid.toLowerCase());
 
     if (beaconIndexInList != -1) {
       print("Index: $beaconIndexInList");
-      var beaconIndexInQueue = beaconDataPriorityQueue
-          .indexWhere((beacon) => beacon.uuid == beaconData.uuid);
+      var beaconIndexInQueue = beaconDataPriorityQueue.indexWhere(
+          (beacon) => beacon.uuid.toLowerCase() == beaconData.uuid.toLowerCase());
 
       if (beaconIndexInQueue == -1)
         beaconDataPriorityQueue.add(beaconData);
@@ -215,24 +279,33 @@ class BeaconController extends GetxController {
         tempString += item.name + " : " + item.rssi + '\n';
       }
       beaconResult.value = tempString;
+      print('[BEACON] Visible beacons (${beaconDataPriorityQueue.length}): strongest=${beaconDataPriorityQueue.first.name} (RSSI=${beaconDataPriorityQueue.first.rssi})');
       print(tempString);
-      if (int.parse(beaconDataPriorityQueue.first.rssi) < beaconRssiCutoff)
-        setCurrentLocation(beaconDataPriorityQueue.first.uuid);
+
+      // Pick the beacon with the strongest RSSI (closest) if it's above the cutoff
+      final nearestBeacon = beaconDataPriorityQueue.first;
+      final nearestRssi = int.parse(nearestBeacon.rssi);
+      if (nearestRssi > beaconRssiCutoff) {
+        print('[BEACON] ✓ Nearest beacon "${nearestBeacon.name}" RSSI=$nearestRssi is above cutoff=$beaconRssiCutoff → setting as current location');
+        setCurrentLocation(nearestBeacon.uuid);
+      } else {
+        print('[BEACON] ✗ Nearest beacon "${nearestBeacon.name}" RSSI=$nearestRssi is below cutoff=$beaconRssiCutoff → too far, ignoring');
+      }
     }
   }
 
   void setCurrentLocation(String uuid) {
     final navController = Get.find<NavigationController>();
-    currentLocation.value =
-        poiList.firstWhere((element) => element.nodeESP32ID == uuid);
+    currentLocation.value = poiList.firstWhere(
+        (element) => element.nodeESP32ID.toLowerCase() == uuid.toLowerCase());
     navController.setCurrentLocation(currentLocation.value);
-    // navController.beaconList.assignAll(beaconDataPriorityQueue);
     haveCurrentLocation.value = true;
     if (_timer == null) {
       startTimer(5);
     }
 
-    print("Set Current location: " + currentLocation.value.nodeID.toString());
+    print(
+        "[BEACON] ✓ Set Current location: ${currentLocation.value.name} (NodeID: ${currentLocation.value.nodeID})");
   }
 
   String get printList {
@@ -300,7 +373,7 @@ class BeaconController extends GetxController {
       level: 1,
       nearestLift: 3,
       nodeName: 'POI Node 1',
-      nodeESP32ID: '1510eae0-be73-451f-8faf-6b622f92ac5f',
+      nodeESP32ID: '00000000-0000-0000-0000-000000000001',
       neighbourArray: [
         NeighbourNode(
           nodeID: 2,
@@ -320,7 +393,7 @@ class BeaconController extends GetxController {
       level: 1,
       nearestLift: 3,
       nodeName: 'POI Node 2',
-      nodeESP32ID: '5f0868e1-a25a-4213-8d81-66d2517fa79e',
+      nodeESP32ID: '00000000-0000-0000-0000-000000000002',
       neighbourArray: [
         NeighbourNode(
           nodeID: 1,
@@ -351,7 +424,7 @@ class BeaconController extends GetxController {
       nearestLift: 3,
       nextLevelLift: 10,
       nodeName: 'POI Node 3',
-      nodeESP32ID: '91551886-569b-4993-aa64-1ae9739a46b4',
+      nodeESP32ID: '00000000-0000-0000-0000-000000000003',
       neighbourArray: [
         NeighbourNode(
           nodeID: 2,
@@ -375,7 +448,7 @@ class BeaconController extends GetxController {
       level: 1,
       nearestLift: 3,
       nodeName: 'POI Node 4',
-      nodeESP32ID: '89206b21-ec85-4487-a051-c20819b40833',
+      nodeESP32ID: '00000000-0000-0000-0000-000000000004',
       neighbourArray: [
         NeighbourNode(
           nodeID: 2,
@@ -400,7 +473,7 @@ class BeaconController extends GetxController {
       level: 1,
       nearestLift: 6,
       nodeName: 'POI Node 5',
-      nodeESP32ID: '9f3442b9-5672-4501-9459-c74d7ce4e5dd',
+      nodeESP32ID: '00000000-0000-0000-0000-000000000005',
       neighbourArray: [
         NeighbourNode(
           nodeID: 4,
@@ -431,7 +504,7 @@ class BeaconController extends GetxController {
       nearestLift: 6,
       nextLevelLift: 14,
       nodeName: 'POI Node 6',
-      nodeESP32ID: '1ba53596-0322-4cac-a3a1-af2135008c2e',
+      nodeESP32ID: '00000000-0000-0000-0000-000000000006',
       neighbourArray: [
         NeighbourNode(
           nodeID: 5,
@@ -455,7 +528,7 @@ class BeaconController extends GetxController {
       level: 1,
       nearestLift: 6,
       nodeName: 'POI Node 7',
-      nodeESP32ID: 'cbe5998b-842e-4b48-b3a2-dbd6f1f2c015',
+      nodeESP32ID: '00000000-0000-0000-0000-000000000007',
       neighbourArray: [
         NeighbourNode(
           nodeID: 5,
@@ -475,7 +548,7 @@ class BeaconController extends GetxController {
       level: 0,
       nearestLift: 10,
       nodeName: 'POI Node 8',
-      nodeESP32ID: 'ae558d63-13f3-4efb-a78a-c8f279d11f9c',
+      nodeESP32ID: '00000000-0000-0000-0000-000000000008',
       neighbourArray: [
         NeighbourNode(
           nodeID: 9,
@@ -495,7 +568,7 @@ class BeaconController extends GetxController {
       level: 0,
       nearestLift: 10,
       nodeName: 'POI Node 9',
-      nodeESP32ID: 'e7b4f5ea-2b25-4ba8-9a6f-ed0786436c80',
+      nodeESP32ID: '00000000-0000-0000-0000-000000000009',
       neighbourArray: [
         NeighbourNode(
           nodeID: 8,
@@ -521,7 +594,7 @@ class BeaconController extends GetxController {
       nearestLift: 10,
       nextLevelLift: 3,
       nodeName: 'POI Node 10',
-      nodeESP32ID: 'f92fb96a-19c0-4a91-9d63-1d77520d63bd',
+      nodeESP32ID: '00000000-0000-0000-0000-00000000000a',
       neighbourArray: [
         NeighbourNode(
           nodeID: 9,
@@ -550,7 +623,7 @@ class BeaconController extends GetxController {
       level: 0,
       nearestLift: 10,
       nodeName: 'POI Node 11',
-      nodeESP32ID: 'b40b5dbb-4a36-4226-b80f-bcd4139c77e3',
+      nodeESP32ID: '00000000-0000-0000-0000-00000000000b',
       neighbourArray: [
         NeighbourNode(
           nodeID: 10,
@@ -575,7 +648,7 @@ class BeaconController extends GetxController {
       level: 0,
       nearestLift: 14,
       nodeName: 'POI Node 12',
-      nodeESP32ID: '38471efb-f2a4-427b-92db-aa6e5401df0e',
+      nodeESP32ID: '00000000-0000-0000-0000-00000000000c',
       neighbourArray: [
         NeighbourNode(
           nodeID: 11,
@@ -601,7 +674,7 @@ class BeaconController extends GetxController {
       nearestLift: 14,
       nextLevelLift: 6,
       nodeName: 'POI Node 13',
-      nodeESP32ID: 'a1005b84-1da4-4e12-8663-7bc3194787b4',
+      nodeESP32ID: '00000000-0000-0000-0000-00000000000d',
       neighbourArray: [
         NeighbourNode(
           nodeID: 12,
@@ -627,7 +700,7 @@ class BeaconController extends GetxController {
       nearestLift: 14,
       nextLevelLift: 6,
       nodeName: 'POI Node 14',
-      nodeESP32ID: 'ac39d55e-8d33-49be-9da1-5a960cf66ba9',
+      nodeESP32ID: '00000000-0000-0000-0000-00000000000e',
       neighbourArray: [
         NeighbourNode(
           nodeID: 13,
