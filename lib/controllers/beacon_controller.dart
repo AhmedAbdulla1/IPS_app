@@ -34,6 +34,7 @@ class BeaconController extends GetxController {
   int beaconRssiCutoff = -80;
   Timer? _timer;
   int _timerTime = 0;
+  Timer? _scanRestartTimer; // تايمر لإعادة تشغيل السكان تلقائيًا لو انتهى
 
   POINode? destinationLocation;
 
@@ -57,9 +58,10 @@ class BeaconController extends GetxController {
   @override
   void dispose() {
     print('Disposing Controller');
-    super.dispose();
     _timer?.cancel();
+    _scanRestartTimer?.cancel();
     _scanSubscription?.cancel();
+    super.dispose();
   }
 
   void setDestination(int nodeID) {
@@ -127,14 +129,30 @@ class BeaconController extends GetxController {
         }
       },
       onDone: () {
-        print("[BEACON] Scan stream: onDone");
+        // الـ stream انتهت (بعض الأجهزة/الأنظمة بتوقف السكان تلقائيًا)
+        // → نعيد تشغيله بعد ثانية واحدة قصيرة
+        print('[BEACON] Scan stream ended (onDone) — scheduling restart in 1s');
         _isRanging = false;
+        _scheduleRestart();
       },
       onError: (error) {
-        print("[BEACON] Scan stream Error: $error");
+        // خطأ في الـ stream → نعيد المحاولة بعد 3 ثواني لتفادي loop سريعة
+        print('[BEACON] Scan stream error: $error — scheduling restart in 3s');
         _isRanging = false;
+        _scheduleRestart(delaySeconds: 3);
       },
     );
+  }
+
+  /// يُجدوِل إعادة تشغيل السكان بعد تأخير معيّن.
+  /// يُلغي أي جدولة سابقة قبل إنشاء جديدة.
+  void _scheduleRestart({int delaySeconds = 1}) {
+    _scanRestartTimer?.cancel();
+    _scanRestartTimer = Timer(Duration(seconds: delaySeconds), () {
+      _scanRestartTimer = null;
+      print('[BEACON] Auto-restarting BLE scan...');
+      beaconInitPlatformState();
+    });
   }
 
   BeaconData? _parseIBeacon(DiscoveredDevice device) {
@@ -269,7 +287,8 @@ class BeaconController extends GetxController {
 
       beaconDataPriorityQueue.removeWhere((item) {
         var diff = DateTime.now().difference(item.dateTime);
-        if (diff.inSeconds >= 3) return true;
+        // نمنح الـ beacon 8 ثواني قبل إزالته — يكفي فترات الـ scan الطبيعية
+        if (diff.inSeconds >= 8) return true;
         return false;
       });
 
@@ -300,9 +319,11 @@ class BeaconController extends GetxController {
         (element) => element.nodeESP32ID.toLowerCase() == uuid.toLowerCase());
     navController.setCurrentLocation(currentLocation.value);
     haveCurrentLocation.value = true;
-    if (_timer == null) {
-      startTimer(5);
-    }
+
+    // نُعيد ضبط الـ timer دائمًا عند كل beacon يصل —
+    // سواء كان الـ timer شغّالًا أو لا، نريد دائمًا 5 ثواني كاملة من آخر إشارة.
+    cancelTimer();
+    startTimer(5);
 
     print(
         "[BEACON] ✓ Set Current location: ${currentLocation.value.name} (NodeID: ${currentLocation.value.nodeID})");
@@ -318,15 +339,15 @@ class BeaconController extends GetxController {
 
   void fetchLocationInfo() {
     var loc1 = LocationInfo(
-      name: 'Hardware Project Lab',
+      name: 'مدخل النواب',
       nodeID: 1,
     );
     var loc2 = LocationInfo(
-      name: 'Software Lab 2',
+      name: 'طرقة',
       nodeID: 3,
     );
     var loc3 = LocationInfo(
-      name: 'Hardware Lab 2',
+      name: 'تقاطع',
       nodeID: 4,
     );
     var loc4 = LocationInfo(

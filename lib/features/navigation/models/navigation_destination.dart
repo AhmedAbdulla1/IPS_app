@@ -95,4 +95,22 @@ class NavigationDestinationsData {
       isQuickShortcut: true,
     ),
   ];
+
+  /// فروع دورات المياه حسب النوع — مبتظهرشي في صف الاختصارات السريعة مباشرة
+  /// (isQuickShortcut: false لءنهم)، بيتعرضوا بس من خلال بوب اختيار
+  /// بعد ما المستخدم يدوس على زرار "دورات مياه". لسه برض nodeID لحد
+  /// ما تتضاف نقاط حقيقية لدورات المياه في خريطة المبنى.
+  static const BuildingDestination restroomsMale = BuildingDestination(
+    id: 'restrooms_male',
+    name: 'دورات مياه (رجالي)',
+    category: DestinationCategory.facility,
+    icon: Icons.wc_rounded,
+  );
+
+  static const BuildingDestination restroomsFemale = BuildingDestination(
+    id: 'restrooms_female',
+    name: 'دورات مياه (حريمي)',
+    category: DestinationCategory.facility,
+    icon: Icons.wc_rounded,
+  );
 }

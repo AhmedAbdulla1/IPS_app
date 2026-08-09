@@ -1,10 +1,15 @@
 import 'package:pathfinder/utils/constants.dart';
-import 'package:pathfinder/views/splash_screen_page.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart'; // Kept for PermissionController (can be removed in Phase 2)
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+// أضف هذه الـ imports الجديدة
+import 'features/navigation/data/datasources/supabase_navigation_datasource.dart';
+import 'features/navigation/data/repositories/navigation_repository_impl.dart';
+import 'features/navigation/domain/repositories/navigation_repository.dart';
+import 'features/navigation/domain/usecases/find_path_usecase.dart';
 
 import 'controllers/beacon_controller.dart';
 import 'controllers/compass_controller.dart';
@@ -12,19 +17,24 @@ import 'controllers/navigation_controller.dart';
 import 'controllers/permission_controller.dart';
 import 'core/localization/app_translations.dart';
 import 'core/localization/locale_controller.dart';
+import 'core/routing/app_router.dart';
 import 'core/theme/theme_controller.dart';
 
 Future<void> main() async {
-  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-
-  // Keeps the native splash screen (see the flutter_native_splash section
-  // in pubspec.yaml) visible past Flutter's first frame. SplashScreenPage
-  // calls FlutterNativeSplash.remove() itself once permission/Bluetooth
-  // checks and the initial-run check finish and the app has navigated to
-  // the first real page.
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  WidgetsFlutterBinding.ensureInitialized();
 
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  print('[INIT] Loading .env...');
+  await dotenv.load(fileName: '.env');
+
+  print('[INIT] Initializing Supabase...');
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  );
+  print('[INIT] ✓ Supabase initialized');
+
   print('[INIT] Initializing services...');
   await Get.putAsync(() => InitializeService().init());
   print('[INIT] ✓ Services initialized');
@@ -49,6 +59,9 @@ class InitializeService extends GetxService {
     // one `BleStatus` state machine for the whole app, and the one
     // subscription in PermissionController.onInit() is enough to keep it
     // live for every controller that reads it.
+    print('[INIT] Registering SupabaseClient...');
+    Get.put(Supabase.instance.client);
+
     print('[INIT] Registering FlutterReactiveBle...');
     Get.put(FlutterReactiveBle());
 
@@ -66,6 +79,21 @@ class InitializeService extends GetxService {
     print('[INIT] Registering LocaleController...');
     final localeController = Get.put(LocaleController());
     await localeController.ensureLoaded();
+    print('[INIT] Registering Supabase...');
+    Get.put(Supabase.instance.client);
+    print('[INIT] ✓ Supabase registered');
+
+// ← أضف هذا الجزء الجديد:
+    print('[INIT] Registering Navigation Services...');
+    Get.put(SupabaseNavigationDataSource(Get.find<SupabaseClient>()));
+    Get.put<NavigationRepository>(
+      NavigationRepositoryImpl(Get.find<SupabaseNavigationDataSource>()),
+    );
+    Get.put(FindPathUseCase());
+    print('[INIT] ✓ Navigation Services registered');
+
+// والباقي زي ما هو...
+    print('[INIT] Registering FlutterReactiveBle...');
     return this;
   }
 }
@@ -117,7 +145,7 @@ class _MyAppState extends State<MyApp> {
         ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: SplashScreenPage(),
+      home: const AppRouter(),
     );
   }
 }

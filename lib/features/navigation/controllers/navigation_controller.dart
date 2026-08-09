@@ -147,8 +147,8 @@ class NavigationScreenController extends GetxController {
     final loc = beaconController.currentLocation.value;
     currentLocationLabel.value =
         beaconController.haveCurrentLocation.value && loc.name.isNotEmpty
-            ? loc.name
-            : 'جارِ تحديد موقعك...';
+            ? loc.name.tr
+            : 'جارِ تحديد موقعك...'.tr;
     currentFloor.value = loc.level;
   }
 
@@ -250,7 +250,10 @@ class NavigationScreenController extends GetxController {
   void selectDestination(BuildingDestination destination,
       {bool immediate = false}) {
     selectedDestination.value = destination;
-    searchTextController.text = destination.name;
+    // ملاحظة: كانت هنا `destination.name` من غير `.tr`، فحتى لو الترجمة
+    // موجودة في AppTranslations، ماكانتش بتتطبق على شريط البحث بعد
+    // الاختيار (بعكس عرض القائمة نفسها اللي كان بيستخدم `item.name.tr` صح).
+    searchTextController.text = destination.name.tr;
     closeDropdown();
 
     if (immediate) {
@@ -260,6 +263,14 @@ class NavigationScreenController extends GetxController {
 
   void onShortcutTap(BuildingDestination facility) {
     selectDestination(facility, immediate: true);
+  }
+
+  /// اختيار نوع دورات المياه بعد بوب "رجالي/حريمي" (شايفه فيو في IdleHomeScreen).
+  void selectRestroomVariant({required bool isMale}) {
+    final variant = isMale
+        ? NavigationDestinationsData.restroomsMale
+        : NavigationDestinationsData.restroomsFemale;
+    selectDestination(variant, immediate: true);
   }
 
   void clearSelection() {
@@ -283,16 +294,17 @@ class NavigationScreenController extends GetxController {
   void _tryStartNavigation(BuildingDestination destination) {
     if (destination.nodeID == null) {
       Get.snackbar(
-        'غير متاح حاليًا',
-        'وجهة "${destination.name}" لسه مفيش لها نقطة في خريطة المبنى.',
+        'غير متاح حاليًا'.tr,
+        'وجهة "@name" لسه مفيش لها نقطة في خريطة المبنى.'
+            .trParams({'name': destination.name.tr}),
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
     }
     if (!beaconController.haveCurrentLocation.value) {
       Get.snackbar(
-        'لسه بنحدد موقعك',
-        'استنى لحظة لحد ما نلاقي أقرب نقطة ليك وحاول تاني.',
+        'لسه بنحدد موقعك'.tr,
+        'استنى لحظة لحد ما نلاقي أقرب نقطة ليك وحاول تاني.'.tr,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;

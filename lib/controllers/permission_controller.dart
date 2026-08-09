@@ -26,8 +26,8 @@ class PermissionController extends GetxController {
   // Guards against firing a second Permission.request() while one is
   // already in flight. Android throws "A request for permissions is
   // already running" if two overlap, which previously crashed
-  // SplashScreenPage's screenFunction and left the app stuck on the
-  // splash screen forever.
+  // AppRouter's _resolveStartScreen and left the app stuck on the
+  // loading state forever.
   bool _permissionRequestInFlight = false;
 
   @override
@@ -47,9 +47,9 @@ class PermissionController extends GetxController {
     });
 
     // NOTE: checkPermissionStatus() is intentionally NOT called here.
-    // SplashScreenPage already calls it once, right when the widget tree
-    // is ready. Calling it a second time here (this early, before any
-    // Activity/widget is attached) raced against that call and caused
+    // AppRouter._resolveStartScreen() calls it once, right when the widget
+    // tree is ready. Calling it a second time here (this early, before any
+    // Activity/widget is attached) races against that call and can cause
     // Android to reject the second concurrent permission request.
   }
 

@@ -108,12 +108,13 @@ class PermissionPage extends StatelessWidget {
                     if (permissionController.locationPermissionGranted.value ==
                             true &&
                         permissionController.bluetoothStatus.value == true) {
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      if (prefs.getBool('initial') == true) {
-                        // الصفحة الرئيسية الجديدة (features/navigation) — بديل SelectionPage القديمة
+                      final prefs = await SharedPreferences.getInstance();
+                      final onboardingDone = prefs.getBool('initial') == true;
+                      if (onboardingDone) {
+                        // الـ onboarding مكتمل → روح مباشرة للشاشة الرئيسية
                         Get.offAll(const MainNavigationScreen());
                       } else {
+                        // أول مرة → اعرض الـ onboarding
                         Get.offAll(OnboardingPage());
                       }
                     } else {

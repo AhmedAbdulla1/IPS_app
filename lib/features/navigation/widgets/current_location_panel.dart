@@ -22,7 +22,7 @@ class CurrentLocationPanel extends StatelessWidget {
           shaderCallback: (bounds) => LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [palette.goldLight, palette.goldDark],
+            colors: [palette.brownDark, palette.goldDark],
           ).createShader(bounds),
           child: Icon(
             Icons.person_pin_circle_rounded,

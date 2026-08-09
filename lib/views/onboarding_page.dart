@@ -1,14 +1,16 @@
 import 'package:pathfinder/controllers/beacon_controller.dart';
+import 'package:pathfinder/features/navigation/views/main_navigation_screen.dart';
 import 'package:pathfinder/utils/constants.dart';
 import 'package:pathfinder/utils/size_config.dart';
 import 'package:pathfinder/utils/size_helpers.dart';
-import 'package:pathfinder/views/tutorial_page.dart';
 import 'package:pathfinder/widgets/onboarding_widget.dart';
 import 'package:pathfinder/widgets/rounded_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class OnboardingPage extends StatefulWidget {
+  const OnboardingPage({super.key});
+
   @override
   _OnboardingPageState createState() => _OnboardingPageState();
 }
@@ -60,10 +62,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   onPageChanged: (value) {
                     setState(() {
                       currentPage = value;
-                      if (value == onboardingData.length - 1)
+                      if (value == onboardingData.length - 1) {
                         lastPage = true;
-                      else
+                      } else {
                         lastPage = false;
+                      }
                     });
                   },
                 ),
@@ -87,7 +90,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     btnText: 'CONTINUE',
                     btnFunction: () {
                       if (lastPage) {
-                        Get.to(TutorialPage());
+                        Get.to(MainNavigationScreen());
                       } else {
                         pageController.nextPage(
                           duration: Duration(

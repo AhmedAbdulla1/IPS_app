@@ -1,0 +1,50 @@
+erDiagram
+    LEVELS {
+        string levelId PK
+        string levelName
+        int levelOrder
+    }
+
+    NODES {
+        int nodeId PK
+        string levelId FK
+        string primaryName
+        string type "poi | intersection"
+        string esp32Id "UUID البيكون - nullable"
+        float x
+        float y
+    }
+
+    NODE_ALIASES {
+        int aliasId PK
+        int nodeId FK
+        string aliasName "اسم بديل يظهر في البحث"
+    }
+
+    EDGES {
+        int edgeId PK
+        int nodeIdA FK
+        int nodeIdB FK
+        float distanceMeters "nullable لحد القياس الحقيقي"
+    }
+
+    VERTICAL_CONNECTORS {
+        int connectorId PK
+        string name "مثلاً: أسانسير أ"
+        string connectorType "elevator | stairs"
+    }
+
+    CONNECTOR_STOPS {
+        int connectorId FK
+        string levelId FK
+        int nodeId FK
+        "لا يوجد صف = الأسانسير لا يصل لهذا الدور"
+    }
+
+    LEVELS ||--o{ NODES : "يحتوي"
+    NODES ||--o{ NODE_ALIASES : "له أسماء بديلة"
+    NODES ||--o{ EDGES : "طرف أول"
+    NODES ||--o{ EDGES : "طرف تاني"
+    VERTICAL_CONNECTORS ||--o{ CONNECTOR_STOPS : "يوقف عند"
+    NODES ||--o{ CONNECTOR_STOPS : "نقطة الوقوف"
+    LEVELS ||--o{ CONNECTOR_STOPS : "في هذا الدور"

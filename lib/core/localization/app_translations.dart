@@ -83,7 +83,17 @@ class AppTranslations extends Translations {
           '@n خطوة متبقية': '@n steps remaining',
           'غير متاح حاليًا': 'Not available yet',
           'لسه بنحدد موقعك': 'Still locating you',
-          'استنى لحظة لحد ما نلاقي أقرب نقطة ليك وحاول تاني': 'Please wait a moment while we find the nearest point to you, then try again.',
+          'وجهة "@name" لسه مفيش لها نقطة في خريطة المبنى.':
+              'The destination "@name" doesn\'t have a mapped point in the building yet.',
+          'استنى لحظة لحد ما نلاقي أقرب نقطة ليك وحاول تاني.':
+              'Please wait a moment while we find the nearest point to you, then try again.',
+
+          // ---- بوب دورات المياه ----
+          'اختر النوع': 'Choose type',
+          'رجالي': "Men's",
+          'حريمي': "Women's",
+          'دورات مياه (رجالي)': "Men's Restroom",
+          'دورات مياه (حريمي)': "Women's Restroom",
 
           // ---- الإعدادات ----
           'الإعدادات': 'Settings',

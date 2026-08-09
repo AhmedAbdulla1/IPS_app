@@ -2,12 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/localization/locale_controller.dart';
 import '../controllers/navigation_controller.dart';
 import '../models/navigation_destination.dart';
 
 /// شريط بحث/منيو (Combobox): كتابة = بحث ذكي، والضغط على الحقل من غير كتابة = تصفح القائمة كاملة.
-/// النتائج بتظهر Inline تحت الحقل مباشرة عشان تفضل واضحة للمستخدم.
-class SearchDropdownField extends StatelessWidget {
+///
+/// ملاحظة تصميم: النتائج بتتعرض عن طريق [OverlayEntry] طايف فوق باقي محتوى
+/// الشاشة (مش Inline جوه الـ Column) — عشان لو القائمة طويلة (لحد 300px)
+/// ميعملش overflow في الـ Column بتاع IdleHomeScreen. الـ Column الأصلي
+/// عنده عناصر بأحجام ثابتة + Spacer، والـ Spacer بيقلل لحد صفر بس مش بيروح
+/// بالسالب، فأي زيادة حقيقية في الارتفاع (زي فتح القائمة) هتعمل overflow
+/// مهما كان الـ Spacer موجود — الحل الصحيح إن القائمة متتحطش في التخطيط
+/// (layout) الأساسي أصلاً.
+class SearchDropdownField extends StatefulWidget {
   final NavigationScreenController controller;
   final AppPalette palette;
 
@@ -18,13 +26,77 @@ class SearchDropdownField extends StatelessWidget {
   });
 
   @override
+  State<SearchDropdownField> createState() => _SearchDropdownFieldState();
+}
+
+class _SearchDropdownFieldState extends State<SearchDropdownField> {
+  final LayerLink _layerLink = LayerLink();
+  final GlobalKey _fieldKey = GlobalKey();
+  OverlayEntry? _overlayEntry;
+  Worker? _worker;
+
+  NavigationScreenController get controller => widget.controller;
+  AppPalette get palette => widget.palette;
+
+  @override
+  void initState() {
+    super.initState();
+    _worker = ever(controller.isDropdownOpen, (isOpen) {
+      if (isOpen) {
+        _showOverlay();
+      } else {
+        _removeOverlay();
+      }
+    });
+    if (controller.isDropdownOpen.value) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _showOverlay());
+    }
+  }
+
+  @override
+  void dispose() {
+    _worker?.dispose();
+    _removeOverlay();
+    super.dispose();
+  }
+
+  double get _fieldWidth {
+    final box = _fieldKey.currentContext?.findRenderObject() as RenderBox?;
+    return box != null && box.hasSize
+        ? box.size.width
+        : MediaQuery.of(context).size.width - 40;
+  }
+
+  void _showOverlay() {
+    _removeOverlay();
+    final overlay = Overlay.of(context, rootOverlay: true);
+    _overlayEntry = OverlayEntry(
+      builder: (overlayContext) => Positioned(
+        width: _fieldWidth,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: const Offset(0, 56), // ارتفاع الحقل (48) + المسافة (8)
+          child: Material(
+            color: Colors.transparent,
+            child: Obx(() => _buildResultsPanel()),
+          ),
+        ),
+      ),
+    );
+    overlay.insert(_overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildField(),
-        Obx(() => _buildResultsPanel()),
-      ],
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: SizedBox(key: _fieldKey, child: _buildField()),
     );
   }
 
@@ -42,20 +114,26 @@ class SearchDropdownField extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: controller.searchTextController,
-              focusNode: controller.searchFocusNode,
-              textAlign: TextAlign.right,
-              textDirection: TextDirection.rtl,
-              onChanged: controller.onSearchChanged,
-              style: AppTextStyles.searchHint.copyWith(color: palette.textPrimary),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                isCollapsed: true,
-                hintText: 'ابحث عن مكتب أو قاعة...'.tr,
-                hintStyle: AppTextStyles.searchHint.copyWith(color: palette.textSecondary),
-              ),
-            ),
+            child: Obx(() {
+              // اتجاه ومحاذاة الكتابة بيتبعوا لغة التطبيق الفعلية بدل ما يبقوا
+              // مثبتين على RTL دايمًا — كانت دي سبب عدم تغيّر الاتجاه مع
+              // الإنجليزي.
+              final isArabic = Get.find<LocaleController>().isArabic;
+              return TextField(
+                controller: controller.searchTextController,
+                focusNode: controller.searchFocusNode,
+                textAlign: isArabic ? TextAlign.right : TextAlign.left,
+                textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+                onChanged: controller.onSearchChanged,
+                style: AppTextStyles.searchHint.copyWith(color: palette.textPrimary),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  isCollapsed: true,
+                  hintText: 'ابحث عن مكتب أو قاعة...'.tr,
+                  hintStyle: AppTextStyles.searchHint.copyWith(color: palette.textSecondary),
+                ),
+              );
+            }),
           ),
           const SizedBox(width: 8),
           ValueListenableBuilder<TextEditingValue>(

@@ -1,0 +1,205 @@
+{
+  "_readme": {
+    "purpose": "قالب إدخال بيانات الخريطة (عقد + بيكونات) لمشروع Pathfinder - قابل للتوسع لعدة أدوار",
+    "howToUse": [
+      "1. كرر عنصر 'levels' لكل دور (بدروم / جراج / أرضي / علوي...).",
+      "2. كل نقطة دايرة في الكروكي = عنصر واحد في 'nodes'، سواء POI أو intersection.",
+      "3. x و y هي إحداثيات حقيقية بالمتر (أو أي وحدة ثابتة) داخل نفس الدور - مش بكسل من الرسمة. نقطة الأصل (0,0) اختارها في أي ركن ثابت من الدور وابدأ منها.",
+      "4. الـ heading (اتجاه المشي) هيتحسب تلقائيًا من x,y وقت التنقل - متدخلوش يدوي.",
+      "5. aliases: لو النقطة نفسها بتشير لمكانين (يمين/شمال أو ممر+سلم)، اكتب كل الأسماء هنا وهتظهر كلها في البحث كوجهات منفصلة لنفس النقطة.",
+      "6. neighbourIds: اكتب nodeId بتاع كل نقطة متصلة مباشرة (خط في الرسمة) بنفس الدور بس.",
+      "7. distanceMeters: سيبها null دلوقتي لحد ما تاخد قياسات حقيقية - الكود هيقدر يستخدم قيمة تقريبية مؤقتة بدالها.",
+      "8. levelLink: استخدمها بس للنقط اللي عندها سلم/أسانسير يوصل لدور تاني (زي nextLevelLift في الكود الأصلي).",
+      "9. nodeId لازم يكون فريد على مستوى المشروع كله (مش بس داخل الدور)، عشان كده مقترح تبدأ كل دور برينج أرقام مختلف (مثلاً GF: 100-199, F1: 200-299)."
+    ],
+    "nodeIdRangingConvention": {
+      "B (بدروم)": "1-99",
+      "G1 (جراج دور 1)": "100-199",
+      "G2 (جراج دور 2)": "200-299",
+      "GF (الدور الأرضي)": "300-399",
+      "F1..F7 (الأدوار العلوية)": "400-1099 (100 رقم لكل دور)"
+    }
+  },
+
+  "levels": [
+    {
+      "levelId": "GF",
+      "levelName": "الدور الأرضي",
+      "levelOrder": 0,
+      "nodes": [
+        {
+          "nodeId": 301,
+          "primaryName": "مدخل النواب",
+          "aliases": ["مدخل النواب"],
+          "type": "poi",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [302],
+          "distancesMeters": { "302": null },
+          "levelLink": null
+        },
+        {
+          "nodeId": 302,
+          "primaryName": "طرقه",
+          "aliases": ["طرقه"],
+          "type": "poi",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [301, 303],
+          "distancesMeters": { "301": null, "303": null },
+          "levelLink": null
+        },
+        {
+          "nodeId": 303,
+          "primaryName": "تقاطع",
+          "aliases": [],
+          "type": "intersection",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [302, 304, 305],
+          "distancesMeters": { "302": null, "304": null, "305": null },
+          "levelLink": null
+        },
+        {
+          "nodeId": 304,
+          "primaryName": "مكتب الأمين العام",
+          "aliases": ["مكتب الأمين العام"],
+          "type": "poi",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [303],
+          "distancesMeters": { "303": null },
+          "levelLink": null
+        },
+        {
+          "nodeId": 305,
+          "primaryName": "حمام رجالي",
+          "aliases": ["حمام رجالي"],
+          "type": "poi",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [303],
+          "distancesMeters": { "303": null },
+          "levelLink": null
+        },
+        {
+          "nodeId": 306,
+          "primaryName": "ممر",
+          "aliases": ["ممر", "سلم"],
+          "type": "poi",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [303, 307],
+          "distancesMeters": { "303": null, "307": null },
+          "levelLink": {
+            "connectsToLevelId": "F1",
+            "connectsToNodeId": null,
+            "via": "stairs",
+            "direction": "up"
+          }
+        },
+        {
+          "nodeId": 307,
+          "primaryName": "اسانسير",
+          "aliases": ["اسانسير"],
+          "type": "poi",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [306],
+          "distancesMeters": { "306": null },
+          "levelLink": {
+            "connectsToLevelId": "F1",
+            "connectsToNodeId": null,
+            "via": "elevator",
+            "direction": "up"
+          }
+        },
+        {
+          "nodeId": 308,
+          "primaryName": "تقاطع",
+          "aliases": [],
+          "type": "intersection",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [303, 309],
+          "distancesMeters": { "303": null, "309": null },
+          "levelLink": null
+        },
+        {
+          "nodeId": 309,
+          "primaryName": "حمام نسائي",
+          "aliases": ["حمام نسائي", "قاعه استماع ٤"],
+          "type": "poi",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [308, 310],
+          "distancesMeters": { "308": null, "310": null },
+          "levelLink": null
+        },
+        {
+          "nodeId": 310,
+          "primaryName": "طرقة",
+          "aliases": ["طرقة"],
+          "type": "poi",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [309, 311],
+          "distancesMeters": { "309": null, "311": null },
+          "levelLink": null
+        },
+        {
+          "nodeId": 311,
+          "primaryName": "طرقه",
+          "aliases": ["طرقه"],
+          "type": "poi",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [310, 312],
+          "distancesMeters": { "310": null, "312": null },
+          "levelLink": null
+        },
+        {
+          "nodeId": 312,
+          "primaryName": "تقاطع",
+          "aliases": [],
+          "type": "intersection",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [311, 313],
+          "distancesMeters": { "311": null, "313": null },
+          "levelLink": null
+        },
+        {
+          "nodeId": 313,
+          "primaryName": "اللجنه العامه",
+          "aliases": ["اللجنه العامه"],
+          "type": "poi",
+          "esp32Id": null,
+          "x": null,
+          "y": null,
+          "neighbourIds": [312],
+          "distancesMeters": { "312": null },
+          "levelLink": null
+        }
+      ]
+    },
+    {
+      "levelId": "F1",
+      "levelName": "الدور الأول العلوي",
+      "levelOrder": 1,
+      "nodes": []
+    }
+  ]
+}

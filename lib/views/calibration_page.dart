@@ -10,7 +10,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CalibrationPage extends StatelessWidget {
-  CalibrationPage({ required this.caliType});
+  CalibrationPage({super.key,  required this.caliType});
 
   final compassController = Get.find<CompassController>();
   final CaliType caliType;
