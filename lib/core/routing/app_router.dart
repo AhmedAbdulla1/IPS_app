@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pathfinder/features/onboarding/first_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controllers/permission_controller.dart';
 import '../../features/navigation/views/main_navigation_screen.dart';
-import '../../views/onboarding_page.dart';
-import '../../views/permission_page.dart';
+import '../../features/onboarding/onboarding_page.dart';
+import '../../features/permission/permission_page.dart';
 
 /// مسؤول عن تحديد أول شاشة يراها المستخدم عند فتح التطبيق.
 ///
@@ -51,8 +52,10 @@ class _AppRouterState extends State<AppRouter> {
     }
 
     // الصلاحيات موجودة:
+
+   // todo : change
     if (!onboardingDone) {
-      return OnboardingPage();
+      return FirstPage();
     }
 
     return const MainNavigationScreen();

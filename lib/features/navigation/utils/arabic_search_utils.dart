@@ -1,13 +1,15 @@
 import '../models/navigation_destination.dart';
 
-/// أدوات بحث ذكي على بيانات ستاتيك بالعربي:
-/// - تطبيع الحروف (أ/إ/آ -> ا, ة -> ه, ى -> ي...) عشان الكتابة المختلفة تلاقي نفس النتيجة
-/// - بحث في الاسم الأساسي + المرادفات (aliases)
+/// أدوات بحث ذكي على وجهات ثنائية اللغة (عربي/إنجليزي):
+/// - تطبيع الحروف العربية (أ/إ/آ -> ا, ة -> ه, ى -> ي...) عشان الكتابة المختلفة تلاقي نفس النتيجة
+/// - بحث في الاسم العربي + الاسم الإنجليزي + المرادفات (aliases) مع بعض،
+///   بغض النظر عن اللغة الحالية للواجهة — عشان مستخدم عربي يقدر يكتب اسم
+///   إنجليزي (أو العكس) ولسه يلاقي النتيجة.
 /// - ترتيب النتائج حسب الأولوية (تطابق كامل > يبدأ بيه > يحتويه > تشابه تقريبي)
 class ArabicSearchUtils {
   ArabicSearchUtils._();
 
-  /// تطبيع نص عربي لتسهيل المطابقة
+  /// تطبيع نص لتسهيل المطابقة (بيشتغل مع العربي والإنجليزي مع بعض).
   static String normalize(String input) {
     var s = input.trim().toLowerCase();
     // إزالة التشكيل والتطويل
@@ -73,6 +75,8 @@ class ArabicSearchUtils {
   }
 
   /// بحث ذكي في قائمة الوجهات، بيرجع النتائج مرتبة حسب الأقوى تطابقًا.
+  /// بيدور في [BuildingDestination.nameAr] و[BuildingDestination.nameEn]
+  /// و[BuildingDestination.aliases] مع بعض — مش بس اللغة الحالية للواجهة.
   static List<BuildingDestination> search(
     List<BuildingDestination> source,
     String query,
@@ -82,7 +86,12 @@ class ArabicSearchUtils {
     final scored = <MapEntry<BuildingDestination, int>>[];
 
     for (final destination in source) {
-      var bestScore = _scoreField(destination.name, query);
+      var bestScore = _scoreField(destination.nameAr, query);
+
+      if (destination.nameEn != null && destination.nameEn!.isNotEmpty) {
+        final enScore = _scoreField(destination.nameEn!, query);
+        if (enScore > bestScore) bestScore = enScore;
+      }
 
       for (final alias in destination.aliases) {
         final aliasScore = _scoreField(alias, query);

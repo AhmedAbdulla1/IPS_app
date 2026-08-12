@@ -10,11 +10,15 @@ import 'package:pathfinder/utils/constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'navigation_controller.dart';
+import 'package:pathfinder/features/navigation/domain/repositories/navigation_repository.dart';
+import 'package:pathfinder/features/navigation/domain/entities/building_graph.dart';
+import 'package:pathfinder/features/navigation/domain/entities/nav_node.dart';
+import 'package:pathfinder/features/navigation/domain/entities/nav_edge.dart';
 
 class BeaconController extends GetxController {
   var poiNodes = <int, POINode>{};
-  var poiList = List<POINode>.empty();
-  var locationList = List<LocationInfo>.empty();
+  var poiList = <POINode>[];
+  var locationList = <LocationInfo>[];
   final currentLocation = POINode(
     level: 0,
     name: '',
@@ -34,7 +38,7 @@ class BeaconController extends GetxController {
   int beaconRssiCutoff = -80;
   Timer? _timer;
   int _timerTime = 0;
-  Timer? _scanRestartTimer; // تايمر لإعادة تشغيل السكان تلقائيًا لو انتهى
+  Timer? _scanRestartTimer;
 
   POINode? destinationLocation;
 
@@ -45,23 +49,213 @@ class BeaconController extends GetxController {
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   bool _isRanging = false;
 
+  // ── Watchdog ضد موت السكان بصمت ──────────────────────────────────────
+  // أندرويد أحيانًا بيوقف تسليم نتائج الـ BLE scan من غير ما يبعت onDone
+  // أو onError (خصوصًا بعد سكان مستمر لفترة، أو قفل الشاشة/توفير الطاقة).
+  // في الحالة دي _isRanging بتفضل true للأبد و beaconInitPlatformState()
+  // بيرفض يعيد المحاولة (بسبب الـ guard بتاعه) رغم إن مفيش سكان فعلي شغال
+  // — وده بالظبط سبب "التطبيق بيفقد تحديد الموقع بعد مدة حتى لو في بيكون
+  // قريب". الحل: تايمر دوري بيتابع "آخر نشاط سكان حقيقي" (أي جهاز BLE
+  // اتلقط، مش بس بيكون متطابق)، ولو عدّى وقت طويل من غير نشاط، يجبر إعادة
+  // تشغيل السكان بالكامل بغض النظر عن قيمة _isRanging.
+  DateTime _lastScanActivity = DateTime.now();
+  Timer? _watchdogTimer;
+  static const _watchdogInterval = Duration(seconds: 10);
+  static const _staleThreshold = Duration(seconds: 20);
+
   Comparator<BeaconData> rssiComparator = (a, b) => int.parse(b.rssi).compareTo(int.parse(a.rssi));
   final beaconDataPriorityQueue = List<BeaconData>.empty().obs;
+
+  // المتغيرات الجديدة لتتبع حالة التحميل من Repository
+  late NavigationRepository _navigationRepository;
+  BuildingGraph? _currentGraph;
+  bool _graphLoaded = false;
+  // الـ Future بتاع تحميل بيانات الخريطة — beaconInitPlatformState() بينتظرها
+  // قبل ما يبدأ فعليًا، عشان مايبدأش يقارن بيكونات متلقطة مع poiList لسه
+  // فاضية (سباق/race condition كان بيسبب "Timer expired" غلط حتى مع وجود
+  // بيكون فعلي، لأن التايمر كان بيبدأ العد قبل ما البيانات توصل من Supabase).
+  late Future<void> _dataLoadFuture;
 
   @override
   void onInit() {
     super.onInit();
-    fetchLocationInfo();
-    fetchPoiNodes();
+    // الآن نستخدم async loading من Repository
+    _dataLoadFuture = _loadNavigationData();
+
+    _watchdogTimer = Timer.periodic(_watchdogInterval, (_) => _checkScanHealth());
   }
 
+  /// يفحص هل السكان لسه فعليًا شغال (مش بس _isRanging == true نظريًا).
+  /// لو مفيش أي نشاط سكان حقيقي (حتى لو من أجهزة BLE مش متطابقة) من
+  /// وقت أطول من _staleThreshold، يبقى السكان مات بصمت — نجبر إعادة تشغيله.
+  void _checkScanHealth() {
+    if (!_isRanging) return; // مفيش سكان مفروض يكون شغال أصلاً دلوقتي
+    final idleFor = DateTime.now().difference(_lastScanActivity);
+    if (idleFor >= _staleThreshold) {
+      print(
+          '[BEACON] ⚠️ Watchdog: no scan activity for ${idleFor.inSeconds}s رغم إن _isRanging=true — السكان مات بصمت، جاري إعادة التشغيل بالقوة');
+      _forceRestartScan();
+    }
+  }
+
+  void _forceRestartScan() {
+    _scanSubscription?.cancel();
+    _scanSubscription = null;
+    _isRanging = false;
+    _lastScanActivity = DateTime.now();
+    beaconInitPlatformState();
+  }
+
+  /// يحمّل البيانات من NavigationRepository (async)
+  Future<void> _loadNavigationData() async {
+    try {
+      print('[BEACON] Loading navigation data from repository...');
+      _navigationRepository = Get.find<NavigationRepository>();
+      
+      // تحميل الـ graph من Repository
+      _currentGraph = await _navigationRepository.loadGraph();
+      
+      if (_currentGraph == null) {
+        print('[BEACON] ❌ Graph is null — Supabase returned empty data');
+        print('[BEACON] Make sure tables are populated in Supabase');
+        return;
+      }
+
+      // تحويل البيانات الحقيقية
+      _convertGraphToPoiNodes(_currentGraph!);
+      _convertGraphToLocationList(_currentGraph!);
+      
+      _graphLoaded = true;
+      print('[BEACON] ✓ Navigation data loaded successfully. Nodes: ${poiList.length}, Locations: ${locationList.length}');
+    } catch (e) {
+      print('[BEACON] ❌ Error loading data from Supabase: $e');
+    }
+  }
+
+  /// تحويل BuildingGraph → poiList + poiNodes
+  void _convertGraphToPoiNodes(BuildingGraph graph) {
+    poiList.clear();
+    poiNodes.clear();
+
+    for (final navNode in graph.nodesById.values) {
+      // الحصول على رقم الدور من NavLevel
+      final level = graph.levelsById[navNode.levelId];
+      final levelOrder = level?.order ?? 0;
+
+      // بناء neighbourArray من الـ adjacency
+      final neighbours = _buildNeighbours(graph, navNode.id);
+
+      // تحويل NavNode → POINode (للتوافق مع الكود القديم)
+      final poiNode = POINode(
+        nodeID: navNode.id,
+        level: levelOrder, // استخدام order بدل levelId string
+        nearestLift: 0, // الحقول القديمة ما في بديل مباشر لها، نحط 0
+        nodeName: navNode.nameAr,
+        nodeESP32ID: navNode.esp32Uuid ?? 'unknown-${navNode.id}', // استخدام esp32Uuid أو توليد معرّف بديل
+        neighbourArray: neighbours,
+        name: navNode.nameAr,
+        // الاسم الإنجليزي — بيوصل هنا دلوقتي بدل ما يترمى زي الأول، ده
+        // اللي بيستخدمه NavigationScreenController._syncIdleState() لعرض
+        // "أنت الآن في" بالإنجليزي لو التطبيق شغال بالإنجليزي.
+        nameEn: navNode.nameEn,
+        section: navNode.type == NavNodeType.poi ? 'POI' : 'INT',
+        x: (navNode.x ?? 0).toDouble(),
+        y: (navNode.y ?? 0).toDouble(),
+        poiType: navNode.type == NavNodeType.poi ? POIType.poi : POIType.intersection,
+      );
+
+      poiList.add(poiNode);
+      poiNodes[navNode.id] = poiNode;
+    }
+
+    print('[BEACON] Converted ${poiList.length} nodes from graph');
+    print('[BEACON] DEBUG: All loaded node UUIDs:');
+    for (var node in poiList) {
+      print('  - Node ${node.nodeID}: ${node.nodeESP32ID}');
+    }
+  }
+
+  /// بناء neighbourArray من الـ adjacency في الـ graph
+  List<NeighbourNode> _buildNeighbours(BuildingGraph graph, int nodeId) {
+    final neighbours = <NeighbourNode>[];
+    final edges = graph.adjacency[nodeId] ?? [];
+
+    for (final edge in edges) {
+      // حساب heading من الإحداثيات
+      final fromNode = graph.nodesById[edge.fromNodeId];
+      final toNode = graph.nodesById[edge.toNodeId];
+
+      if (fromNode == null || toNode == null) continue;
+
+      final double heading = _calculateHeading(
+        fromNode.x ?? 0,
+        fromNode.y ?? 0,
+        toNode.x ?? 0,
+        toNode.y ?? 0,
+      );
+
+      // تحديد levelNavigation إذا كانت حافة رأسية
+      LevelNavigation levelNav = LevelNavigation.empty;
+      if (edge.kind == NavEdgeKind.stairs || edge.kind == NavEdgeKind.elevator) {
+        if (edge.verticalDirection == VerticalDirection.up) {
+          levelNav = LevelNavigation.go_up;
+        } else if (edge.verticalDirection == VerticalDirection.down) {
+          levelNav = LevelNavigation.go_down;
+        }
+      }
+
+      neighbours.add(NeighbourNode(
+        nodeID: edge.toNodeId,
+        heading: heading,
+        distanceTo: edge.distanceMeters,
+        levelNavigation: levelNav,
+      ));
+    }
+
+    return neighbours;
+  }
+
+  /// حساب heading (اتجاه) من إحداثيتين
+  double _calculateHeading(double x1, double y1, double x2, double y2) {
+    final dx = x2 - x1;
+    final dy = y2 - y1;
+    final radians = math.atan2(dy, -dx); // السالب يعكس المحور
+    final degrees = (radians * 180 / math.pi + 360) % 360;
+    return degrees;
+  }
+
+  /// تحويل BuildingGraph → locationList (LocationInfo)، مباشرة من
+  /// [BuildingGraph.destinations] مش من العقد مباشرة — نفس السبب اللي
+  /// NavigationScreenController._buildDestinationList() بيستخدمه: الوجهة
+  /// الواحدة ممكن تربط بأكتر من عقدة (زي مدخل كبير)، والعكس:
+  /// عقدة واحدة ممكن تمثّل أكتر من وجهة.
+  void _convertGraphToLocationList(BuildingGraph graph) {
+    locationList.clear();
+
+    for (final destination in graph.destinations) {
+      locationList.add(LocationInfo(
+        name: destination.nameAr,
+        nodeID: destination.primaryNodeId,
+      ));
+    }
+
+    print('[BEACON] Converted ${locationList.length} locations from graph');
+  }
+
+
+
   @override
-  void dispose() {
-    print('Disposing Controller');
+  void onClose() {
+    // ملحوظة: الكلاس ده GetxController مش StatefulWidget، فـ GetX بينادي
+    // onClose() تلقائيًا (مش dispose()) لما الـ controller يتشال. كان فيه
+    // دالة dispose() هنا قبل كده بس مبتتنفذش أبدًا فعليًا لإن مفيش حد
+    // بينادي عليها — التنضيف الحقيقي لازم يكون هنا.
+    print('[BEACON] Disposing BeaconController');
     _timer?.cancel();
     _scanRestartTimer?.cancel();
+    _watchdogTimer?.cancel();
     _scanSubscription?.cancel();
-    super.dispose();
+    super.onClose();
   }
 
   void setDestination(int nodeID) {
@@ -81,13 +275,12 @@ class BeaconController extends GetxController {
     const oneSec = Duration(seconds: 1);
     _timerTime = timeSet;
     _timer = Timer.periodic(oneSec, (Timer timer) {
-      print('object');
       if (_timerTime < 1) {
         timer.cancel();
         _timer = null;
         fetchingBeacons.value = false;
         haveCurrentLocation.value = false;
-        print("Not nearby beacon");
+        print("[BEACON] Timer expired — no beacon found");
       } else {
         _timerTime = _timerTime - 1;
       }
@@ -103,25 +296,44 @@ class BeaconController extends GetxController {
 
   Future<void> beaconInitPlatformState() async {
     if (_isRanging) return;
+    // نمنع أي نداء تاني يدخل هنا وهو لسه مستني تحميل البيانات (زي ما بيحصل
+    // من MainNavigationScreen.build() اللي بينادي الدالة دي كل ما الشاشة
+    // تتبني — عادي جدًا يحصل أكتر من مرة قبل ما التحميل يخلص).
+    _isRanging = true;
+
+    // مهم: نستنى تحميل خريطة المبنى من Supabase قبل ما نبدأ فعليًا. من
+    // غير كده، لو بيكون اتلقط قبل ما poiList توصل، هيفشل في المطابقة —
+    // مش لعيب في البيكون، لكن لأن مفيش داتا نقارن بيها أصلاً، والتايمر
+    // كان بيعدي "ملقيناش بيكون" غلط بعد 5 ثواني حتى لو انت واقف جنب واحد
+    // حقيقي شغال.
+    await _dataLoadFuture;
+
+    if (poiList.isEmpty) {
+      print('[BEACON] ⚠️ خريطة المبنى لسه فاضية بعد التحميل (فشل أو Supabase رجّع صفوف فاضية) — هعيد محاولة التحميل والسكان بعد 3 ثواني');
+      _isRanging = false;
+      _dataLoadFuture = _loadNavigationData();
+      _scheduleRestart(delaySeconds: 3);
+      return;
+    }
 
     print('[BEACON] Starting BLE scan for ESP32 iBeacon nodes via flutter_reactive_ble');
 
     startTimer(5);
-    _isRanging = true;
+    _lastScanActivity = DateTime.now();
 
     _scanSubscription = _ble.scanForDevices(
       withServices: [],
       scanMode: ScanMode.lowLatency,
     ).listen(
       (DiscoveredDevice device) {
-        if (device.manufacturerData.isNotEmpty) {
-           print('[DEBUG] Found Device ID: ${device.id}. Name: "${device.name}". Bytes length: ${device.manufacturerData.length}. Data: ${device.manufacturerData}');
-        }
-        
+        // أي جهاز BLE بيتلقط (حتى لو مش متطابق مع نودة عندنا) بيثبت إن
+        // السكان لسه شغال فعليًا — ده اللي الـ watchdog بيتابعه.
+        _lastScanActivity = DateTime.now();
+
         final beaconData = _parseIBeacon(device);
         if (beaconData != null) {
-          print(
-              '[BEACON] 📍 Beacon detected: UUID=${beaconData.uuid}, Major=${beaconData.major}, Minor=${beaconData.minor}, RSSI=${beaconData.rssi}');
+          // print(
+          //     '[BEACON] 📍 Beacon detected: UUID=${beaconData.uuid}, Major=${beaconData.major}, Minor=${beaconData.minor}, RSSI=${beaconData.rssi}');
 
           fetchingBeacons.value = false;
           cancelTimer();
@@ -129,14 +341,11 @@ class BeaconController extends GetxController {
         }
       },
       onDone: () {
-        // الـ stream انتهت (بعض الأجهزة/الأنظمة بتوقف السكان تلقائيًا)
-        // → نعيد تشغيله بعد ثانية واحدة قصيرة
         print('[BEACON] Scan stream ended (onDone) — scheduling restart in 1s');
         _isRanging = false;
         _scheduleRestart();
       },
       onError: (error) {
-        // خطأ في الـ stream → نعيد المحاولة بعد 3 ثواني لتفادي loop سريعة
         print('[BEACON] Scan stream error: $error — scheduling restart in 3s');
         _isRanging = false;
         _scheduleRestart(delaySeconds: 3);
@@ -144,8 +353,6 @@ class BeaconController extends GetxController {
     );
   }
 
-  /// يُجدوِل إعادة تشغيل السكان بعد تأخير معيّن.
-  /// يُلغي أي جدولة سابقة قبل إنشاء جديدة.
   void _scheduleRestart({int delaySeconds = 1}) {
     _scanRestartTimer?.cancel();
     _scanRestartTimer = Timer(Duration(seconds: delaySeconds), () {
@@ -157,23 +364,23 @@ class BeaconController extends GetxController {
 
   BeaconData? _parseIBeacon(DiscoveredDevice device) {
     final bytes = device.manufacturerData;
-    
+
     // 1. Check for the NEW IPS Custom Protocol (0xFFFF Company ID)
     if (bytes.length >= 26 && bytes[0] == 0xFF && bytes[1] == 0xFF) {
       final uuidBytes = bytes.sublist(2, 18);
       final rawHex = uuidBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
       final formattedUuid = '${rawHex.substring(0, 8)}-${rawHex.substring(8, 12)}-${rawHex.substring(12, 16)}-${rawHex.substring(16, 20)}-${rawHex.substring(20, 32)}'.toLowerCase();
-      
-      final major = (bytes[19] << 8) | bytes[18]; // X coord
-      final minor = (bytes[21] << 8) | bytes[20]; // Y coord
-      final txPower = -59; // Hardcoded default for distance calc
+
+      final major = (bytes[19] << 8) | bytes[18];
+      final minor = (bytes[21] << 8) | bytes[20];
+      final txPower = -59;
 
       final double distance = _calculateDistance(txPower, device.rssi);
       final String proximityStr = _getProximity(distance);
 
       return BeaconData(
         name: device.name.isNotEmpty ? device.name : formattedUuid,
-        uuid: formattedUuid, // This will be 00000000-0000-0000-0000-000000000001
+        uuid: formattedUuid,
         macAddress: device.id,
         major: major.toString(),
         minor: minor.toString(),
@@ -191,7 +398,6 @@ class BeaconController extends GetxController {
 
     int offset = -1;
 
-    // Search for Apple iBeacon header (0x004C company ID, 0x02 subtype, 0x15 length)
     for (int i = 0; i <= bytes.length - 23; i++) {
       if (i + 24 <= bytes.length &&
           bytes[i] == 0x4C &&
@@ -211,8 +417,7 @@ class BeaconController extends GetxController {
     }
 
     final uuidBytes = bytes.sublist(offset, offset + 16);
-    final rawHex =
-        uuidBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+    final rawHex = uuidBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
     final formattedUuid =
         '${rawHex.substring(0, 8)}-${rawHex.substring(8, 12)}-${rawHex.substring(12, 16)}-${rawHex.substring(16, 20)}-${rawHex.substring(20, 32)}'
             .toLowerCase();
@@ -271,45 +476,49 @@ class BeaconController extends GetxController {
   }
 
   void addToListAndSort(BeaconData beaconData) {
+    // print('[BEACON] 🔍 Received beacon UUID: ${beaconData.uuid}');
+    // print('[BEACON] 📋 Searching in ${poiList.length} loaded nodes...');
+    //
     var beaconIndexInList = poiList.indexWhere(
         (beacon) => beacon.nodeESP32ID.toLowerCase() == beaconData.uuid.toLowerCase());
 
-    if (beaconIndexInList != -1) {
-      print("Index: $beaconIndexInList");
-      var beaconIndexInQueue = beaconDataPriorityQueue.indexWhere(
-          (beacon) => beacon.uuid.toLowerCase() == beaconData.uuid.toLowerCase());
+    if (beaconIndexInList == -1) {
+      print('[BEACON] ❌ NO MATCH FOUND!');
+      print('[BEACON] UUID "${beaconData.uuid}" not in any loaded node');
+      print('[BEACON] ⚠️ Make sure this UUID exists in Supabase nodes table with column esp32_uuid');
+      print('[BEACON] Expected format: 00000000-0000-0000-0000-000000000005');
+      return;
+    }
+    
+    // print('[BEACON] ✅ MATCH FOUND at index $beaconIndexInList!');
+    
+    var beaconIndexInQueue = beaconDataPriorityQueue.indexWhere(
+        (beacon) => beacon.uuid.toLowerCase() == beaconData.uuid.toLowerCase());
 
-      if (beaconIndexInQueue == -1)
-        beaconDataPriorityQueue.add(beaconData);
-      else {
-        beaconDataPriorityQueue[beaconIndexInQueue] = beaconData;
-      }
+    if (beaconIndexInQueue == -1)
+      beaconDataPriorityQueue.add(beaconData);
+    else {
+      beaconDataPriorityQueue[beaconIndexInQueue] = beaconData;
+    }
 
-      beaconDataPriorityQueue.removeWhere((item) {
-        var diff = DateTime.now().difference(item.dateTime);
-        // نمنح الـ beacon 8 ثواني قبل إزالته — يكفي فترات الـ scan الطبيعية
-        if (diff.inSeconds >= 8) return true;
-        return false;
-      });
+    beaconDataPriorityQueue.removeWhere((item) {
+      var diff = DateTime.now().difference(item.dateTime);
+      if (diff.inSeconds >= 8) return true;
+      return false;
+    });
 
-      beaconDataPriorityQueue.sort(rssiComparator);
-      var tempString = '';
-      for (var item in beaconDataPriorityQueue) {
-        tempString += item.name + " : " + item.rssi + '\n';
-      }
-      beaconResult.value = tempString;
-      print('[BEACON] Visible beacons (${beaconDataPriorityQueue.length}): strongest=${beaconDataPriorityQueue.first.name} (RSSI=${beaconDataPriorityQueue.first.rssi})');
-      print(tempString);
+    beaconDataPriorityQueue.sort(rssiComparator);
+    var tempString = '';
+    for (var item in beaconDataPriorityQueue) {
+      tempString += item.name + " : " + item.rssi + '\n';
+    }
+    beaconResult.value = tempString;
+    // print('[BEACON] Visible beacons (${beaconDataPriorityQueue.length}): strongest=${beaconDataPriorityQueue.first.name} (RSSI=${beaconDataPriorityQueue.first.rssi})');
 
-      // Pick the beacon with the strongest RSSI (closest) if it's above the cutoff
-      final nearestBeacon = beaconDataPriorityQueue.first;
-      final nearestRssi = int.parse(nearestBeacon.rssi);
-      if (nearestRssi > beaconRssiCutoff) {
-        print('[BEACON] ✓ Nearest beacon "${nearestBeacon.name}" RSSI=$nearestRssi is above cutoff=$beaconRssiCutoff → setting as current location');
-        setCurrentLocation(nearestBeacon.uuid);
-      } else {
-        print('[BEACON] ✗ Nearest beacon "${nearestBeacon.name}" RSSI=$nearestRssi is below cutoff=$beaconRssiCutoff → too far, ignoring');
-      }
+    final nearestBeacon = beaconDataPriorityQueue.first;
+    final nearestRssi = int.parse(nearestBeacon.rssi);
+    if (nearestRssi > beaconRssiCutoff) {
+      setCurrentLocation(nearestBeacon.uuid);
     }
   }
 
@@ -320,13 +529,11 @@ class BeaconController extends GetxController {
     navController.setCurrentLocation(currentLocation.value);
     haveCurrentLocation.value = true;
 
-    // نُعيد ضبط الـ timer دائمًا عند كل beacon يصل —
-    // سواء كان الـ timer شغّالًا أو لا، نريد دائمًا 5 ثواني كاملة من آخر إشارة.
     cancelTimer();
     startTimer(5);
 
-    print(
-        "[BEACON] ✓ Set Current location: ${currentLocation.value.name} (NodeID: ${currentLocation.value.nodeID})");
+    // print(
+    //     "[BEACON] ✓ Set Current location: ${currentLocation.value.name} (NodeID: ${currentLocation.value.nodeID})");
   }
 
   String get printList {
@@ -337,427 +544,5 @@ class BeaconController extends GetxController {
     return tempString;
   }
 
-  void fetchLocationInfo() {
-    var loc1 = LocationInfo(
-      name: 'مدخل النواب',
-      nodeID: 1,
-    );
-    var loc2 = LocationInfo(
-      name: 'طرقة',
-      nodeID: 3,
-    );
-    var loc3 = LocationInfo(
-      name: 'تقاطع',
-      nodeID: 4,
-    );
-    var loc4 = LocationInfo(
-      name: 'Hardware Lab 1',
-      nodeID: 6,
-    );
-    var loc5 = LocationInfo(
-      name: 'SCSE Lounge',
-      nodeID: 7,
-    );
-    var loc6 = LocationInfo(
-      name: 'Software Lab 1',
-      nodeID: 7,
-    );
-    var loc7 = LocationInfo(
-      name: 'Software Lab 3',
-      nodeID: 8,
-    );
-    var loc8 = LocationInfo(
-      name: 'Software Project Lab',
-      nodeID: 12,
-    );
-    var loc9 = LocationInfo(
-      name: 'Hardware Lab 3',
-      nodeID: 14,
-    );
 
-    locationList = [
-      loc1,
-      loc2,
-      loc3,
-      loc4,
-      loc5,
-      loc6,
-      loc7,
-      loc8,
-      loc9,
-    ];
-  }
-
-  void fetchPoiNodes() {
-    var node1 = POINode(
-      nodeID: 1,
-      level: 1,
-      nearestLift: 3,
-      nodeName: 'POI Node 1',
-      nodeESP32ID: '00000000-0000-0000-0000-000000000001',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 2,
-          heading: 270,
-          distanceTo: 5,
-        ),
-      ],
-      section: 'C',
-      x: 11,
-      y: 21,
-      name: 'Hardware Project Lab',
-      poiType: POIType.poi,
-    );
-
-    var node2 = POINode(
-      nodeID: 2,
-      level: 1,
-      nearestLift: 3,
-      nodeName: 'POI Node 2',
-      nodeESP32ID: '00000000-0000-0000-0000-000000000002',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 1,
-          heading: 90,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 3,
-          heading: 0,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 4,
-          heading: 270,
-          distanceTo: 5,
-        ),
-      ],
-      name: 'Intersection',
-      section: 'B-C',
-      x: 11,
-      y: 16,
-      poiType: POIType.intersection,
-    );
-
-    var node3 = POINode(
-      nodeID: 3,
-      level: 1,
-      nearestLift: 3,
-      nextLevelLift: 10,
-      nodeName: 'POI Node 3',
-      nodeESP32ID: '00000000-0000-0000-0000-000000000003',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 2,
-          heading: 180,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 10,
-          levelNavigation: LevelNavigation.go_down,
-        ),
-      ],
-      name: 'Software Lab 2',
-      section: 'B-C',
-      x: 6,
-      y: 16,
-      poiType: POIType.poi,
-    );
-
-    var node4 = POINode(
-      nodeID: 4,
-      level: 1,
-      nearestLift: 3,
-      nodeName: 'POI Node 4',
-      nodeESP32ID: '00000000-0000-0000-0000-000000000004',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 2,
-          heading: 90,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 5,
-          heading: 270,
-          distanceTo: 5,
-        ),
-      ],
-      name: 'Hardware Lab 2',
-      section: 'B',
-      x: 11,
-      y: 11,
-      poiType: POIType.poi,
-    );
-
-    var node5 = POINode(
-      nodeID: 5,
-      level: 1,
-      nearestLift: 6,
-      nodeName: 'POI Node 5',
-      nodeESP32ID: '00000000-0000-0000-0000-000000000005',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 4,
-          heading: 90,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 6,
-          heading: 0,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 7,
-          heading: 270,
-          distanceTo: 5,
-        ),
-      ],
-      name: 'Intersection',
-      section: 'A-B',
-      x: 11,
-      y: 6,
-      poiType: POIType.intersection,
-    );
-
-    var node6 = POINode(
-      nodeID: 6,
-      level: 1,
-      nearestLift: 6,
-      nextLevelLift: 14,
-      nodeName: 'POI Node 6',
-      nodeESP32ID: '00000000-0000-0000-0000-000000000006',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 5,
-          heading: 180,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 14,
-          levelNavigation: LevelNavigation.go_down,
-        ),
-      ],
-      name: 'Hardware Lab 1',
-      section: 'A-B',
-      x: 6,
-      y: 6,
-      poiType: POIType.poi,
-    );
-
-    var node7 = POINode(
-      nodeID: 7,
-      level: 1,
-      nearestLift: 6,
-      nodeName: 'POI Node 7',
-      nodeESP32ID: '00000000-0000-0000-0000-000000000007',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 5,
-          heading: 90,
-          distanceTo: 5,
-        ),
-      ],
-      name: 'SCSE Lounge / Software Lab 1',
-      section: 'A',
-      x: 11,
-      y: 1,
-      poiType: POIType.poi,
-    );
-
-    var node8 = POINode(
-      nodeID: 8,
-      level: 0,
-      nearestLift: 10,
-      nodeName: 'POI Node 8',
-      nodeESP32ID: '00000000-0000-0000-0000-000000000008',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 9,
-          heading: 270,
-          distanceTo: 5,
-        ),
-      ],
-      name: 'Software Lab 3',
-      section: 'C',
-      x: 1,
-      y: 21,
-      poiType: POIType.poi,
-    );
-
-    var node9 = POINode(
-      nodeID: 9,
-      level: 0,
-      nearestLift: 10,
-      nodeName: 'POI Node 9',
-      nodeESP32ID: '00000000-0000-0000-0000-000000000009',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 8,
-          heading: 90,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 10,
-          heading: 180,
-          distanceTo: 5,
-        ),
-      ],
-      name: 'Intersection',
-      section: 'B-C',
-      x: 1,
-      y: 16,
-      poiType: POIType.intersection,
-    );
-
-    var node10 = POINode(
-      nodeID: 10,
-      level: 0,
-      nearestLift: 10,
-      nextLevelLift: 3,
-      nodeName: 'POI Node 10',
-      nodeESP32ID: '00000000-0000-0000-0000-00000000000a',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 9,
-          heading: 0,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 11,
-          heading: 180,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 3,
-          levelNavigation: LevelNavigation.go_up,
-        ),
-      ],
-      name: 'Intersection',
-      section: 'B-C',
-      x: 6,
-      y: 16,
-      poiType: POIType.intersection,
-    );
-
-    var node11 = POINode(
-      nodeID: 11,
-      level: 0,
-      nearestLift: 10,
-      nodeName: 'POI Node 11',
-      nodeESP32ID: '00000000-0000-0000-0000-00000000000b',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 10,
-          heading: 0,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 12,
-          heading: 270,
-          distanceTo: 5,
-        ),
-      ],
-      name: 'Intersection',
-      section: 'B-C',
-      x: 11,
-      y: 16,
-      poiType: POIType.intersection,
-    );
-
-    var node12 = POINode(
-      nodeID: 12,
-      level: 0,
-      nearestLift: 14,
-      nodeName: 'POI Node 12',
-      nodeESP32ID: '00000000-0000-0000-0000-00000000000c',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 11,
-          heading: 90,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 13,
-          heading: 270,
-          distanceTo: 5,
-        ),
-      ],
-      name: 'Software Project Lab',
-      section: 'B',
-      x: 11,
-      y: 11,
-      poiType: POIType.poi,
-    );
-
-    var node13 = POINode(
-      nodeID: 13,
-      level: 0,
-      nearestLift: 14,
-      nextLevelLift: 6,
-      nodeName: 'POI Node 13',
-      nodeESP32ID: '00000000-0000-0000-0000-00000000000d',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 12,
-          heading: 90,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 14,
-          heading: 0,
-          distanceTo: 5,
-        ),
-      ],
-      name: 'Intersection',
-      section: 'A-B',
-      x: 11,
-      y: 6,
-      poiType: POIType.intersection,
-    );
-
-    var node14 = POINode(
-      nodeID: 14,
-      level: 0,
-      nearestLift: 14,
-      nextLevelLift: 6,
-      nodeName: 'POI Node 14',
-      nodeESP32ID: '00000000-0000-0000-0000-00000000000e',
-      neighbourArray: [
-        NeighbourNode(
-          nodeID: 13,
-          heading: 180,
-          distanceTo: 5,
-        ),
-        NeighbourNode(
-          nodeID: 6,
-          levelNavigation: LevelNavigation.go_up,
-        ),
-      ],
-      name: 'Hardware Lab 3',
-      section: 'A-B',
-      x: 6,
-      y: 6,
-      poiType: POIType.poi,
-    );
-
-    poiList = [
-      node1,
-      node2,
-      node3,
-      node4,
-      node5,
-      node6,
-      node7,
-      node8,
-      node9,
-      node10,
-      node11,
-      node12,
-      node13,
-      node14
-    ];
-    for (var i = 1; i <= 14; i++) {
-      poiNodes[i] = poiList[i - 1];
-    }
-  }
 }

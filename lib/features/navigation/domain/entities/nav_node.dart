@@ -9,6 +9,16 @@ class NavNode {
   final String? nameEn;
   final NavNodeType type;
 
+  /// نوع المرفق الثابت لو العقدة دي نقطة مرفق (زي 'elevator'، 'exit'،
+  /// 'cafeteria'، 'restroom_male'، 'restroom_female') — null لو عقدة عادية.
+  ///
+  /// ده نظام منفصل تمامًا عن [Destination] القابل للبحث: المرافق دي
+  /// أماكن معروفة وثابتة في أي مبنى (مفيش داعي تتسجل كـ "وجهة" يدور
+  /// عليها المستخدم بالاسم)، فبتتحدد مباشرة على العقدة نفسها بدل ما
+  /// تحتاج صف في جدول destinations. راجع
+  /// NavigationScreenController._resolveNearestReachableDestination.
+  final String? facilityType;
+
   /// UUID البيكون المربوط بالنقطة دي — nullable لو لسه مفيش بيكون فعلي.
   final String? esp32Uuid;
 
@@ -21,6 +31,7 @@ class NavNode {
     required this.nameAr,
     this.nameEn,
     required this.type,
+    this.facilityType,
     this.esp32Uuid,
     this.x,
     this.y,

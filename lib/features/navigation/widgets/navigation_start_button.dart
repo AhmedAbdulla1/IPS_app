@@ -37,7 +37,7 @@ class NavigationStartButton extends StatelessWidget {
           child: Text(
             label.tr,
             style: AppTextStyles.directionInstruction.copyWith(
-              fontSize: 15,
+              fontSize: 20,
               color: enabled ? palette.textOnDark : palette.textSecondary,
             ),
           ),

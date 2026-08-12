@@ -2,7 +2,7 @@ import '../../domain/entities/building_graph.dart';
 import '../../domain/entities/nav_edge.dart';
 import '../../domain/entities/nav_node.dart';
 import '../../domain/entities/nav_level.dart';
-import '../../domain/entities/node_alias.dart';
+import '../../domain/entities/destination.dart';
 import '../../domain/repositories/navigation_repository.dart';
 import '../datasources/supabase_navigation_datasource.dart';
 import '../models/vertical_connector_model.dart'
@@ -12,6 +12,13 @@ import '../models/vertical_connector_model.dart'
 /// سوبابيز عن طريق [SupabaseNavigationDataSource] وبيبني منها [BuildingGraph]
 /// واحد موحّد، فيه حواف الاتصال الرأسي (أسانسير/سلم) كحواف عادية بين
 /// الأدوار المختلفة (مش حالة خاصة زي الخوارزمية القديمة).
+///
+/// كاش دائم: [SupabaseNavigationDataSource] بيتكفّل بتخزين كل جدول محليًا
+/// ويرجع له تلقائيًا لو الشبكة فشلت، فالميثود دي مش محتاجة تعرف تفاصيل
+/// الكاش — بس بتصفّر فلاج [SupabaseNavigationDataSource.usedCacheInLastFetch]
+/// قبل ما تبدأ، وبتنقله لـ [BuildingGraph.isFromCache] بعد ما تخلص، عشان
+/// الطبقات الأعلى (Controller/UI) تعرف تنبّه المستخدم إنه شايف بيانات
+/// مخزّنة بدل الأحدث.
 class NavigationRepositoryImpl implements NavigationRepository {
   final SupabaseNavigationDataSource _dataSource;
 
@@ -28,26 +35,35 @@ class NavigationRepositoryImpl implements NavigationRepository {
   BuildingGraph? get cachedGraph => _cachedGraph;
 
   @override
+  Future<DateTime?> getLastSyncedAt() => _dataSource.getLastSyncedAt();
+
+  @override
   Future<BuildingGraph> loadGraph({bool forceRefresh = false}) async {
     if (!forceRefresh && _cachedGraph != null) {
       return _cachedGraph!;
     }
 
+    _dataSource.resetCacheFlag();
+
     // بنبدأ كل الطلبات مع بعض (من غير await فوري) عشان تتنفذ بالتوازي،
     // وبعدين نستنى كل واحدة على حدة فنحتفظ بالنوع (type) بتاعها.
     final levelsFuture = _dataSource.fetchLevels();
     final nodesFuture = _dataSource.fetchNodes();
-    final aliasesFuture = _dataSource.fetchNodeAliases();
     final edgesFuture = _dataSource.fetchEdges();
     final connectorsFuture = _dataSource.fetchVerticalConnectors();
     final connectorStopsFuture = _dataSource.fetchConnectorStops();
+    final destinationsFuture = _dataSource.fetchDestinations();
+    final destinationNodesFuture = _dataSource.fetchDestinationNodes();
+    final destinationAliasesFuture = _dataSource.fetchDestinationAliases();
 
     final levelModels = await levelsFuture;
     final nodeModels = await nodesFuture;
-    final aliasModels = await aliasesFuture;
     final edgeModels = await edgesFuture;
     final connectorModels = await connectorsFuture;
     final connectorStopModels = await connectorStopsFuture;
+    final destinationModels = await destinationsFuture;
+    final destinationNodeModels = await destinationNodesFuture;
+    final destinationAliasModels = await destinationAliasesFuture;
 
     // --- الأدوار والنقاط ---
     final levelsById = <String, NavLevel>{
@@ -57,12 +73,7 @@ class NavigationRepositoryImpl implements NavigationRepository {
       for (final m in nodeModels) m.nodeId: m.toEntity(),
     };
 
-    // --- الأسماء البديلة، مجمّعة حسب النود ---
-    final aliasesByNode = <int, List<NodeAlias>>{};
-    for (final m in aliasModels) {
-      final alias = m.toEntity();
-      aliasesByNode.putIfAbsent(alias.nodeId, () => []).add(alias);
-    }
+    // --- الأسماء البديلة اتشالت (node_aliases اتستبدل بـ destinations) ---
 
     // --- الحواف: كل حافة عادية بتتحط في الاتجاهين ---
     final adjacency = <int, List<NavEdge>>{};
@@ -125,11 +136,37 @@ class NavigationRepositoryImpl implements NavigationRepository {
       }
     }
 
+    // --- الوجهات (destinations): تجميع كل وجهة مع عقدها وaliases بتاعتها ---
+    final nodeIdsByDestination = <int, List<int>>{};
+    for (final dn in destinationNodeModels) {
+      nodeIdsByDestination.putIfAbsent(dn.destinationId, () => []).add(dn.nodeId);
+    }
+    final aliasesArByDestination = <int, List<String>>{};
+    final aliasesEnByDestination = <int, List<String>>{};
+    for (final a in destinationAliasModels) {
+      final target =
+          a.lang == 'ar' ? aliasesArByDestination : aliasesEnByDestination;
+      target.putIfAbsent(a.destinationId, () => []).add(a.aliasText);
+    }
+    final destinations = destinationModels
+        .where((d) => (nodeIdsByDestination[d.destinationId] ?? []).isNotEmpty)
+        .map((d) => Destination(
+              id: d.destinationId,
+              nameAr: d.nameAr,
+              nameEn: d.nameEn,
+              nodeIds: nodeIdsByDestination[d.destinationId]!,
+              aliasesAr: aliasesArByDestination[d.destinationId] ?? const [],
+              aliasesEn: aliasesEnByDestination[d.destinationId] ?? const [],
+              shortcutType: d.shortcutType,
+            ))
+        .toList();
+
     final graph = BuildingGraph(
       nodesById: nodesById,
       levelsById: levelsById,
       adjacency: adjacency,
-      aliasesByNode: aliasesByNode,
+      destinations: destinations,
+      isFromCache: _dataSource.usedCacheInLastFetch,
     );
 
     _cachedGraph = graph;

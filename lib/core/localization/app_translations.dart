@@ -45,7 +45,7 @@ class AppTranslations extends Translations {
           'مكتب الاستعلامات': 'Information Desk',
 
           // ---- حالة الموقع الحالي ----
-          'أنت الآن في': 'You are currently at',
+          'أنت الآن بالقرب من': 'You are currently at',
           'تم تحديد الموقع': 'Location determined',
           'جارِ تحديد الموقع...': 'Determining location...',
           'البهو الرئيسي': 'Main Lobby',
@@ -69,7 +69,7 @@ class AppTranslations extends Translations {
           'حاول ترجع للمسار': 'Try to get back on route',
           'المسافة المتبقية': 'Remaining distance',
           'الدور القادم': 'Next floor',
-          'إلغاء الملاحة': 'Cancel navigation',
+          'إلغاء': 'Cancel navigation',
           'اصعد للدور التالي': 'Go up to the next floor',
           'خُد المصعد أو السلم لأعلى': 'Take the elevator or stairs up',
           'انزل للدور التالي': 'Go down to the next floor',
@@ -104,6 +104,35 @@ class AppTranslations extends Translations {
           'تفعيل المظهر الداكن': 'Enable dark appearance',
           'إعداد البوصلة': 'Compass Calibration',
           'معايرة اتجاه البوصلة': 'Calibrate compass direction',
+
+          // ---- صفحة الأذونات ----
+          'السماح مطلوب': 'Permission Required',
+          'يبدو أنك لم تسمح للتطبيق بالوصول المطلوب. لتتمكن من استخدام التوجيه داخل المبنى، يرجى تفعيل الصلاحية من إعدادات التطبيق.':
+              "It looks like you didn't allow the required permission. Please enable it from the app settings to continue.",
+          'فتح الإعدادات': 'Open Settings',
+          'حاول مرة أخرى': 'Try Again',
+
+          'البلوتوث متوقف': 'Bluetooth is Off',
+          'قم بتشغيل البلوتوث للبحث عن إشارات التوجيه داخل المبنى.':
+              'Turn on Bluetooth to search for indoor guidance signals.',
+          'تشغيل البلوتوث': 'Turn On Bluetooth',
+
+          'هناك أذونات مطلوبة': 'Permissions Required',
+          'للاستمرار في استخدام التوجيه داخل المبني، يرجى تفعيل الأذونات التالية.':
+              'To continue using indoor guidance, please enable the following permissions.',
+          'البلوتوث': 'Bluetooth',
+          'مفعّل': 'On',
+          'متوقف': 'Off',
+          'تشغيل': 'Turn On',
+          'الموقع': 'Location',
+          'غير مفعّلة': 'Not Enabled',
+
+          'كل شيء جاهز': 'All Set',
+          'تم تفعيل جميع الأذونات المطلوبة. يمكنك الآن استخدام التوجيه داخل المبنى.':
+              'All required permissions are enabled. You can now use indoor guidance.',
+          'ابدأ التوجيه': 'Start Navigation',
+
+          'يرجى تفعيل الأذونات أعلاه.': 'Please allow the permissions above.',
         },
       };
 }

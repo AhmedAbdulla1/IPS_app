@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/localization/locale_controller.dart';
 import '../models/navigation_destination.dart';
 
 /// زرار دائري لاختصار سريع (دورات مياه / مصاعد / مخارج / كافيتيريا).
@@ -39,9 +40,11 @@ class FacilityIconButton extends StatelessWidget {
             child: Icon(facility.icon, color: palette.goldDark, size: 26),
           ),
           const SizedBox(height: 6),
-          Text(
-            facility.name.tr,
-            style: AppTextStyles.facilityLabel.copyWith(color: palette.textPrimary),
+          Obx(
+            () => Text(
+              facility.localizedName(Get.find<LocaleController>().isArabic),
+              style: AppTextStyles.facilityLabel.copyWith(color: palette.textPrimary),
+            ),
           ),
         ],
       ),

@@ -24,57 +24,55 @@ class ActiveNavigationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
 
-            // 1) عنوان الوجهة
-            Obx(
-              () => DestinationHeader(
-                destinationName: controller.selectedDestination.value?.name ?? '',
-                floorLabel: 'الدور @n'.trParams({'n': '${controller.currentFloor.value}'}),
-                palette: palette,
-              ),
+          // 1) عنوان الوجهة
+          Obx(
+            () => DestinationHeader(
+              destination: controller.selectedDestination.value,
+            // todo : change this to floor destination
+              floorLabel: 'الدور @n'.trParams({'n': '${controller.targetFloor.value}'}),
+              palette: palette,
             ),
+          ),
 
-            const Spacer(),
+          const Spacer(),
 
-            // 2) السهم + التعليمات
-            Obx(
-              () => DirectionHero(
-                direction: _mapDirection(controller.currentDirection.value),
-                instruction: controller.directionInstruction.value,
-                subInstruction: controller.directionSubInstruction.value,
-                palette: palette,
-              ),
+          // 2) السهم + التعليمات
+          Obx(
+            () => DirectionHero(
+              direction: _mapDirection(controller.currentDirection.value),
+              instruction: controller.directionInstruction.value,
+              subInstruction: controller.directionSubInstruction.value,
+              palette: palette,
             ),
+          ),
 
-            const Spacer(),
+          const Spacer(),
 
-            // 3) بانل تقدّم المسار
-            Obx(
-              () => RouteProgressPanel(
-                isOnCorrectPath: controller.isOnCorrectPath.value,
-                totalSteps: controller.totalRouteSteps.value,
-                currentStep: controller.currentRouteStep.value,
-                remainingDistanceLabel: controller.remainingDistanceLabel.value,
-                targetFloor: controller.targetFloor.value,
-                palette: palette,
-              ),
+          // 3) بانل تقدّم المسار
+          Obx(
+            () => RouteProgressPanel(
+              isOnCorrectPath: controller.isOnCorrectPath.value,
+              totalSteps: controller.totalRouteSteps.value,
+              currentStep: controller.currentRouteStep.value,
+              remainingDistanceLabel: controller.remainingDistanceLabel.value,
+              targetFloor: controller.targetFloor.value,
+              palette: palette,
             ),
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            // 4) زرار إلغاء الملاحة
-            CancelNavigationButton(onPressed: controller.endNavigation, palette: palette),
+          // 4) زرار إلغاء الملاحة
+          CancelNavigationButton(onPressed: controller.endNavigation, palette: palette),
 
-            const SizedBox(height: 16),
-          ],
-        ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }

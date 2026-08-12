@@ -22,7 +22,11 @@ class IdleHomeScreen extends StatelessWidget {
   final NavigationScreenController controller;
   final AppPalette palette;
 
-  const IdleHomeScreen({super.key, required this.controller, required this.palette});
+  const IdleHomeScreen({
+    super.key,
+    required this.controller,
+    required this.palette,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,15 +49,20 @@ class IdleHomeScreen extends StatelessWidget {
 
               // 2) صف أيقونات الاختصارات السريعة
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: controller.quickShortcuts
                     .map(
-                      (facility) => FacilityIconButton(
-                        facility: facility,
-                        palette: palette,
-                        onTap: () => facility.id == 'restrooms'
-                            ? _showRestroomGenderPopup(context)
-                            : controller.onShortcutTap(facility),
+                      (facility) => Padding(
+                        padding: const EdgeInsetsGeometry.directional(
+                          end: 12.0,
+                        ),
+                        child: FacilityIconButton(
+                          facility: facility,
+                          palette: palette,
+                          onTap: () => facility.id == 'restrooms'
+                              ? _showRestroomGenderPopup(context)
+                              : controller.onShortcutTap(facility),
+                        ),
                       ),
                     )
                     .toList(),
@@ -80,7 +89,10 @@ class IdleHomeScreen extends StatelessWidget {
                       isDetermined: controller.isLocationDetermined.value,
                       palette: palette,
                     ),
-                    FloorBadge(floor: controller.currentFloor.value, palette: palette),
+                    FloorBadge(
+                      floor: controller.currentFloor.value,
+                      palette: palette,
+                    ),
                   ],
                 ),
               ),
@@ -119,7 +131,11 @@ class IdleHomeScreen extends StatelessWidget {
               color: palette.surface,
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
-                BoxShadow(color: palette.shadow, blurRadius: 12, offset: const Offset(0, 4)),
+                BoxShadow(
+                  color: palette.shadow,
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
               ],
             ),
             child: Column(

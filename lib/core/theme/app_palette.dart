@@ -25,6 +25,7 @@ class AppColorsDark {
   static const Color textOnDark = Color(0xFF141414);
 
   static const Color statusGreen = Color(0xFF3DDC84);
+  static const Color statusError = Color(0xFFC97B6E);
   static const Color chipBackground = Color(0xFF1E1E1E);
 
   static const Color dotInactive = Color(0xFF4A4A4A);
@@ -47,6 +48,7 @@ class AppPalette {
   final Color textSecondary;
   final Color textOnDark;
   final Color statusGreen;
+  final Color statusError;
   final Color chipBackground;
   final Color dotInactive;
   final Color shadow;
@@ -63,6 +65,7 @@ class AppPalette {
     required this.textSecondary,
     required this.textOnDark,
     required this.statusGreen,
+    required this.statusError,
     required this.chipBackground,
     required this.dotInactive,
     required this.shadow,
@@ -80,6 +83,7 @@ class AppPalette {
     textSecondary: AppColors.textSecondary,
     textOnDark: AppColors.textOnDark,
     statusGreen: AppColors.statusGreen,
+    statusError: AppColors.statusError,
     chipBackground: AppColors.chipBackground,
     dotInactive: AppColors.goldLight,
     shadow: AppColors.shadow,
@@ -97,6 +101,7 @@ class AppPalette {
     textSecondary: AppColorsDark.textSecondary,
     textOnDark: AppColorsDark.textOnDark,
     statusGreen: AppColorsDark.statusGreen,
+    statusError: AppColorsDark.statusError,
     chipBackground: AppColorsDark.chipBackground,
     dotInactive: AppColorsDark.dotInactive,
     shadow: AppColorsDark.shadow,

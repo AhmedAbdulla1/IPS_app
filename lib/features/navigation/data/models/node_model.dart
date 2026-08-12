@@ -8,6 +8,11 @@ class NodeModel {
   final String nameAr;
   final String? nameEn;
   final String type; // 'poi' | 'intersection'
+
+  /// نوع المرفق الثابت (facility_type) لو العقدة دي حمام/أسانسير/مخرج/
+  /// كافيتيريا... إلخ — null لو عقدة عادية. راجع توثيق [NavNode.facilityType].
+  final String? facilityType;
+
   final String? esp32Uuid;
   final double? x;
   final double? y;
@@ -18,6 +23,7 @@ class NodeModel {
     required this.nameAr,
     this.nameEn,
     required this.type,
+    this.facilityType,
     this.esp32Uuid,
     this.x,
     this.y,
@@ -30,6 +36,7 @@ class NodeModel {
       nameAr: map['name_ar'] as String,
       nameEn: map['name_en'] as String?,
       type: map['type'] as String,
+      facilityType: map['facility_type'] as String?,
       esp32Uuid: map['esp32_uuid'] as String?,
       x: (map['x'] as num?)?.toDouble(),
       y: (map['y'] as num?)?.toDouble(),
@@ -43,6 +50,7 @@ class NodeModel {
       nameAr: nameAr,
       nameEn: nameEn,
       type: type == 'intersection' ? NavNodeType.intersection : NavNodeType.poi,
+      facilityType: facilityType,
       esp32Uuid: esp32Uuid,
       x: x,
       y: y,

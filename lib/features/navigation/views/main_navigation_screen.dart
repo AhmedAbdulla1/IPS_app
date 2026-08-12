@@ -35,39 +35,41 @@ class MainNavigationScreen extends StatelessWidget {
       final isDark = themeController.isDarkMode.value;
       final palette = AppPalette.of(isDark);
 
-      return Directionality(
-        textDirection: localeController.isArabic ? TextDirection.rtl : TextDirection.ltr,
-        child: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(isDark ? AppAssets.backgroundDark : AppAssets.backgroundLight),
-              fit: BoxFit.fill,
+      return SafeArea(
+        child: Directionality(
+          textDirection: localeController.isArabic ? TextDirection.rtl : TextDirection.ltr,
+          child: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(isDark ? AppAssets.backgroundDark : AppAssets.backgroundLight),
+                fit: BoxFit.fill,
+              ),
             ),
-          ),
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            // مهم: من غير كده، فتح الكيبورد وقت الكتابة في شريط البحث بيخلي
-            // فليتر يقلل ارتفاع الـ body، وعناصر IdleHomeScreen الثابتة
-            // (حقل البحث + الاختصارات + بانل الموقع + صف الحالة + زرار
-            // البدء) بتتخطى المساحة المتبقية → RenderFlex overflow، حتى لو
-            // الدروب داون قافل أصلاً. القائمة نفسها بتتعرض عن طريق Overlay
-            // طايف مربوط بموضع الحقل مباشرة (مش بموضع الـ body)، فمش
-            // محتاجة الـ Scaffold يعمل resize أصلاً عشانها.
-            resizeToAvoidBottomInset: false,
-            appBar:
-                 ParliamentAppBar(
-                    palette: palette,
-                    isArabic: localeController.isArabic,
-                    onMenuTap: () => Get.to(() => const SettingsScreen()),
-                    onLanguageToggle: localeController.toggleLocale,
-                  ),
-            body: controller.isNavigating.value
-                ? ActiveNavigationScreen(controller: controller, palette: palette)
-                : IdleHomeScreen(
-                    controller: controller,
-                    palette: palette,
-                    // isArabic: localeController.isArabic,
-                  ),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              // مهم: من غير كده، فتح الكيبورد وقت الكتابة في شريط البحث بيخلي
+              // فليتر يقلل ارتفاع الـ body، وعناصر IdleHomeScreen الثابتة
+              // (حقل البحث + الاختصارات + بانل الموقع + صف الحالة + زرار
+              // البدء) بتتخطى المساحة المتبقية → RenderFlex overflow، حتى لو
+              // الدروب داون قافل أصلاً. القائمة نفسها بتتعرض عن طريق Overlay
+              // طايف مربوط بموضع الحقل مباشرة (مش بموضع الـ body)، فمش
+              // محتاجة الـ Scaffold يعمل resize أصلاً عشانها.
+              resizeToAvoidBottomInset: false,
+              appBar:
+                   ParliamentAppBar(
+                      palette: palette,
+                      isArabic: localeController.isArabic,
+                      onMenuTap: () => Get.to(() => const SettingsScreen()),
+                      onLanguageToggle: localeController.toggleLocale,
+                    ),
+              body: controller.isNavigating.value
+                  ? ActiveNavigationScreen(controller: controller, palette: palette)
+                  : IdleHomeScreen(
+                      controller: controller,
+                      palette: palette,
+                      // isArabic: localeController.isArabic,
+                    ),
+            ),
           ),
         ),
       );

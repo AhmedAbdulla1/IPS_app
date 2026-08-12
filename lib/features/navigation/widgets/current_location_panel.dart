@@ -45,10 +45,10 @@ class CurrentLocationPanel extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'أنت الآن في'.tr,
+                'أنت الآن بالقرب من'.tr,
                 style: TextStyle(
                   fontSize: 12,
-                  color: palette.goldLight,
+                  color: palette.textOnDark,
                   fontWeight: FontWeight.w500,
                 ),
               ),

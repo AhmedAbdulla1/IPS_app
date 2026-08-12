@@ -195,6 +195,7 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
     for (final item in results) {
       grouped.putIfAbsent(item.category, () => []).add(item);
     }
+    final isArabic = Get.find<LocaleController>().isArabic;
 
     return ListView(
       shrinkWrap: true,
@@ -204,9 +205,9 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
             child: Align(
-              alignment: Alignment.centerRight,
+              alignment: isArabic ? Alignment.centerRight : Alignment.centerLeft,
               child: Text(
-                entry.key.arabicLabel.tr,
+                entry.key.localizedLabel(isArabic),
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -252,6 +253,7 @@ class _ResultRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isArabic = Get.find<LocaleController>().isArabic;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -262,8 +264,8 @@ class _ResultRow extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                item.name.tr,
-                textAlign: TextAlign.right,
+                item.localizedName(isArabic),
+                textAlign: isArabic ? TextAlign.right : TextAlign.left,
                 style: AppTextStyles.facilityLabel
                     .copyWith(fontSize: 13, color: palette.textPrimary),
               ),

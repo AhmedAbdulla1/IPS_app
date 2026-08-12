@@ -24,6 +24,7 @@ class AppColors {
 
   // عناصر الحالة
   static const Color statusGreen = Color(0xFF4CAF50);
+  static const Color statusError = Color(0xFFA85C50);
   static const Color chipBackground = Color(0xFFF7F1E3);
 
   // ظلال

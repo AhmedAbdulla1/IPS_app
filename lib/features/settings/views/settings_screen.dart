@@ -5,7 +5,7 @@ import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/localization/locale_controller.dart';
-import '../../../views/calibration_page.dart';
+import '../../calibration/calibration_page.dart';
 import '../widgets/settings_tile.dart';
 import '../widgets/visual_toggle_switch.dart';
 

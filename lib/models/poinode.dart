@@ -17,6 +17,9 @@ class POINode {
   String nodeESP32ID;
   List<NeighbourNode> neighbourArray;
   String name;
+  /// الاسم الإنجليزي (من nodes.name_en في Supabase) — nullable لحد ما
+  /// يتحط لكل نود، أو لو النود ده لسه من الداتا الوهمية القديمة.
+  String? nameEn;
   POIType poiType;
   double x;
   double y;
@@ -35,6 +38,7 @@ class POINode {
     required this.nodeESP32ID,
     required this.neighbourArray,
     required this.name,
+    this.nameEn,
     required this.poiType,
     required this.x,
     required this.y,

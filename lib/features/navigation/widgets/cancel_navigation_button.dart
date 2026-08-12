@@ -15,31 +15,24 @@ class CancelNavigationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-          color: palette.gold,
-          borderRadius: BorderRadius.circular(24),
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStatePropertyAll(palette.gold),
+        minimumSize: WidgetStatePropertyAll(Size.fromHeight(48)),
+        shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+
+        )
+
         ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Text(
-              'إلغاء الملاحة'.tr,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: palette.textOnDark,
-              ),
-            ),
-            Positioned(
-              left: 8,
-              child: Icon(Icons.cancel_outlined, color: palette.textOnDark, size: 20),
-            ),
-          ],
+      ),
+      onPressed: onPressed,
+      child: Text(
+        'إلغاء'.tr,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          color: palette.textOnDark,
         ),
       ),
     );

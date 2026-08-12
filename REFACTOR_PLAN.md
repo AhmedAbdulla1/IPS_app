@@ -1,85 +1,135 @@
 # خطة ريفاكتور Pathfinder — Clean Architecture
 
-> ملف تتبّع حي. بيتحدّث أول ما أي مرحلة تخلص أو لو الكوته هتخلص عشان محدش يضيع تقدمه.
-> آخر تحديث: المرحلة 1 خلصت، بدء المرحلة 2
+> ملف تتبّع حي. آخر تحديث: طبقة الـ Destinations + إصلاحات بيانات الدورين.
 
 ---
 
-## السياق
+## الحالة الحالية (ملخّص سريع لو دخلت المحادثة دي تاني)
 
-كان فيه خوارزمية A* شغالة في `lib/controllers/navigation_controller.dart` بس بتعتمد على:
-- داتا وهمية مكتوبة يدوي (`fetchPoiNodes`/`fetchLocationInfo` في `beacon_controller.dart`)
-- حقلين `nearestLift`/`nextLevelLift` على كل `POINode` بيتحطوا يدوي، والخوارزمية بتعمل "قفزة" خاصة بينهم بدل ما تعتبرهم جزء طبيعي من الـ graph
-- ملاحظة مهمة اتكتشفت أثناء المراجعة: الداتا الوهمية نفسها كانت أصلاً بتمثّل الاتصال الرأسي (أسانسير/سلم) كـ edge عادي جوه `neighbourArray` (زي `NeighbourNode(nodeID: 10, levelNavigation: go_down)`) — يعني التمثيل الصح كان موجود جزئيًا، بس القفزة الخاصة بـ nearestLift كانت زيادة ومكررة.
+**الريفاكتور الأساسي (Clean Architecture) خلص بالكامل** من محادثة سابقة:
+- Domain layer كامل: `NavNode`, `NavEdge`, `NavLevel`, `BuildingGraph`, `PathStep`, `FindPathUseCase` (A* موحّد عبر كل الأدوار)
+- Data layer كامل: `SupabaseNavigationDataSource`, `NavigationRepositoryImpl`
+- مسجّلين في `main.dart` (`NavigationRepository`, `FindPathUseCase`)
+- `BeaconController` بيحمّل الداتا الحقيقية من الـ repository (مش mock) في `_loadNavigationData()`، وبيحوّلها لـ `POINode`/`LocationInfo` للتوافق مع باقي الكود القديم
+- `NavigationScreenController` (الشاشة الرئيسية) بيستخدم `FindPathUseCase`/`NavigationRepository` مباشرة، **مش** بيعتمد على `lib/controllers/navigation_controller.dart` القديم خالص (القديم لسه موجود بس مش بيشتغل في الشاشة الرئيسية)
 
-**القرار:** إلغاء الـ special-case بالكامل. الأسانسير/السلم بقى مجرد edge عادي في الـ graph الموحّد (كل الأدوار مع بعض)، والداتا بتيجي من سوبابيز مش متكتوبة يدوي.
+## الجلسة دي: طبقة الـ Destinations + مراجعة بيانات حقيقية
 
-## الـ Architecture الجديد
+### المشكلة اللي ظهرت
+بعد ما المستخدم حط بيانات حقيقية لدورين (رفع صورة الخريطة)، طلعت مشاكل:
+1. **تكرار "سلم"**: نودتين بنفس الاسم في الدور الأول (103 و105) — كان لازم يكونوا سلم واحد بس
+2. **السلم مش متسجل كـ vertical connector خالص** — الـ A* ماكانش بيقدر يستخدمه للتنقل بين الأدوار
+3. **عقدة واحدة (بيكون واحد) بتمثّل مكانين منطقيين مختلفين** (زي node 108: "حمام رجالي" + "مكتب الأمين العام") — والبحث كان لازم يعرضهم كوجهتين منفصلتين
+4. **عكس المشكلة**: عقدتين (106، 107 — مدخلين بيغطوا نفس المدخل الكبير) كانوا بيظهروا مرتين في نتائج البحث بنفس الاسم بالظبط — والمفروض يظهروا مرة واحدة
+5. **دروب داون البحث بيعرض عربي دايمًا** حتى لو لغة التطبيق إنجليزي
 
-```
-lib/features/navigation/
-├── domain/                          [Dart نقي — بدون Flutter/Supabase/GetX]
-│   ├── entities/
-│   │   ├── nav_node.dart            → NavNode (id, levelId, nameAr, nameEn, type, esp32Uuid, x, y)
-│   │   ├── nav_edge.dart            → NavEdge (fromId, toId, distanceMeters, kind: walk|elevator|stairs, direction)
-│   │   ├── nav_level.dart           → NavLevel (id, nameAr, nameEn, order)
-│   │   ├── node_alias.dart          → NodeAlias (nodeId, text, lang)
-│   │   ├── path_step.dart           → PathStep (مخرج A* — نقطة واحدة في المسار)
-│   │   └── building_graph.dart      → BuildingGraph (nodes, levels, adjacency, aliases) + helpers
-│   ├── repositories/
-│   │   └── navigation_repository.dart   → abstract: loadGraph(), get cachedGraph
-│   └── usecases/
-│       ├── find_path_usecase.dart   → A* الموحّد الجديد (بيشتغل عبر كل الأدوار مرة واحدة)
-│       ├── heading_calculator.dart  → حساب الاتجاه (heading) من إحداثيات x,y
-│       └── path_not_found_exception.dart
-├── data/
-│   ├── models/                      → NodeModel, EdgeModel, LevelModel, ... (fromMap + toEntity)
-│   ├── datasources/
-│   │   └── supabase_navigation_datasource.dart
-│   └── repositories/
-│       └── navigation_repository_impl.dart   → بيبني الـ graph (edges + connector_stops كـ edges بين الأدوار)
-└── (presentation موجودة بالفعل: controllers/views/widgets — هتتلمس بأقل قدر ممكن)
-```
+### الحل: طبقة "Destinations" منفصلة عن العقد الفيزيائية
+اتضح إن الافتراض الأساسي (عقدة = وجهة بحث واحدة، علاقة 1:1) غلط. اتعمل فصل حقيقي:
+- **node** = نقطة فيزيائية (بيكون BLE + إحداثيات) — تفضل للـ routing/الـ graph
+- **destination** = مكان منطقي قابل للبحث — ممكن يرتبط بعقدة أو أكتر (`destination_nodes`)، وعقدة واحدة ممكن تتربط بأكتر من وجهة
 
-### قرار التوافق مع الكود الحالي
-`NavigationScreenController` (الطبقة اللي الـ UI شغال عليها فعليًا: `idle_home_screen`, `active_navigation_screen`) **مش هتتغيّر خالص**. بدل كده:
-- `BeaconController` هيجيب الداتا الحقيقية من الـ repository بدل الداتا الوهمية، وهيفضل يعرض نفس الـ `POINode`/`LocationInfo` API القديمة (نفس الأسماء والأنواع) عشان أي حاجة تانية بتعتمد عليه متتكسرش.
-- `lib/controllers/navigation_controller.dart` (القديم) هيفضل بنفس الـ public API (`startNavigation`, `pathArray`, `levelNavigation`, `directionDegree`, ...) بس **جواه** هيستخدم `FindPathUseCase` الجديد بدل الخوارزمية القديمة. هيتحول لـ "adapter" بسيط.
+**تغييرات الداتا بيز (اتنفذت فعليًا على مشروع `dqnmxlljqiqgqmntzvcx`):**
+- حذف node 105 (السلم المكرر) + إعادة ربط edges (104↔106 مباشرة)
+- إضافة `vertical_connectors` صف جديد نوعه `stairs` + `connector_stops` لـ (103، L1) و(208، L2)
+- **جدول `node_aliases` اتحذف بالكامل** — استُبدل بـ:
+  - `destinations` (destination_id, name_ar, name_en)
+  - `destination_nodes` (destination_id, node_id) — many-to-many
+  - `destination_aliases` (destination_id, alias_text, lang)
+- 10 وجهات اتزرعت: 108 اتقسمت لـ "حمام رجالي" + "مكتب الأمين العام" (نفس node_id)، 209 اتقسمت لـ "حمام رجالي" + "قاعة اجتماعات 5"، 206 اتقسمت لـ "قاعة اجتماعات 4" + "حمام نسائي"، 106+107 اتدمجوا في وجهة "مدخل البواب" واحدة (node_ids: [106,107])
 
----
+**تغييرات الكود:**
+- `domain/entities/destination.dart` (جديد) — كيان `Destination` بـ `nodeIds: List<int>` و`aliasesAr`/`aliasesEn`
+- `BuildingGraph` بقى فيه `destinations: List<Destination>` بدل `aliasesByNode`/`NodeAlias` (اتشالوا تمامًا)
+- `data/models/destination_model.dart` (جديد) + 3 `fetch*` methods جداد في `SupabaseNavigationDataSource`
+- `NavigationRepositoryImpl.loadGraph()` بيجيب ويبني الـ destinations دلوقتي بدل node_aliases
+- `NavigationScreenController._buildDestinationList()` بيبني القائمة من `graph.destinations` بدل `graph.allNodes`
+- `BeaconController._convertGraphToLocationList()` نفس التغيير (للتوافق/الاتساق)
+- **إصلاح باگ اللغة**: `search_dropdown_field.dart` كان بيعرض `item.nameAr.tr` دايمًا (النص العربي بس، والـ `.tr` مش بينفع لأسماء ديناميكية جايه من الداتا بيز أصلاً). اتصلح لـ `item.localizedName(isArabic)` + نفس الإصلاح لعنوان التصنيف (`entry.key.localizedLabel(isArabic)` بدل `arabicLabel.tr`)
 
-## حالة التنفيذ
+### ملفات بقت orphaned (يدوي الحذف — الأداة معندهاش صلاحية حذف)
+- `lib/features/navigation/domain/entities/node_alias.dart`
+- `lib/features/navigation/data/models/node_alias_model.dart`
 
-- [x] **المرحلة 0**: مراجعة السكيما + سوبابيز + الكود الحالي (خلصت في المحادثة السابقة)
-- [x] **المرحلة 1**: Domain layer (entities + repository interface + usecases) — الملفات:
-      `nav_node.dart`, `nav_edge.dart`, `nav_level.dart`, `node_alias.dart`, `building_graph.dart`,
-      `path_step.dart`, `navigation_repository.dart` (interface), `heading_calculator.dart`,
-      `path_not_found_exception.dart`, `find_path_usecase.dart` (A* الموحّد)
-- [ ] **المرحلة 2**: Data layer (models + datasource + repository impl) ← **جاري التنفيذ دلوقتي**
-- [ ] **المرحلة 3**: تسجيل الـ repository في `main.dart` (DI عبر GetX)
-- [ ] **المرحلة 4**: تعديل `BeaconController` — يحمّل الداتا الحقيقية بدل `fetchPoiNodes`/`fetchLocationInfo`
-- [ ] **المرحلة 5**: تعديل `lib/controllers/navigation_controller.dart` — يستخدم `FindPathUseCase` بدل القديم
-- [ ] **المرحلة 6**: تعديل نداء `startNavigation` في `NavigationScreenController` (هيبقى مش محتاج يبعت hashMap/priorityQueue)
-- [ ] **المرحلة 7**: مراجعة نهائية — `flutter analyze` / التأكد من عدم كسر أي ملف بيستخدم `POINode`
+دول كانوا بيمثلوا `node_aliases` القديم، اللي اتحذف من الداتا بيز واتستبدل بـ `destinations`. الكود بقى مش بيستخدمهم خالص، آمن تمسحهم يدوي وقت ما تفتح المشروع.
 
 ---
 
-## قرارات تصميمية مهمة (لو الكوته خلصت، دي أهم حاجة ترجعلها)
+## حالة التنفيذ (الصورة الكاملة)
 
-1. **heading**: بيتحسب من إحداثيات x,y وقت بناء المسار، مش مخزّن في الداتا بيز. المعادلة اتستنتجت من الداتا الوهمية القديمة:
-   `heading = (atan2(dy, -dx) بالدرجات + 360) % 360` حيث `dx = xB - xA`, `dy = yB - yA`. (تم التحقق منها على 4 أمثلة من الداتا القديمة).
-
-2. **nearestLift/nextLevelLift**: اتلغوا تمامًا كحقول. الاتصال الرأسي بقى edge عادي في الـ graph الموحّد (نوعه `elevator` أو `stairs`، واتجاهه `up`/`down`)، والـ A* الجديد بيلاقي المسار عبره تلقائيًا زي أي edge تاني.
-
-3. **POINode.level (int)**: اتسابت زي ما هي (int) للتوافق مع باقي الكود، لكن مصدرها بقى `levels.level_order` من سوبابيز (مش نص levelId زي 'GF'/'F1' مباشرة). التحويل بيحصل في `BeaconController`/الـ mapper.
-
-4. **الـ heuristic في الـ A***: لو النودتين في نفس الدور، بتستخدم المسافة الإقليدية العادية زي الأول. لو في أدوار مختلفة، بيتضاف penalty ثابت لكل فرق دور (`levelOrder` diff × قيمة تقريبية) عشان الـ heuristic يفضل معقول من غير ما يبقى مضلل. القيمة دي `_levelChangePenalty` في `find_path_usecase.dart` — قابلة للتعديل لاحقًا لو المسارات طلعت غريبة.
-
-5. **الداتا لسه فاضية في سوبابيز** (الجداول اتعملت بس من غير صفوف — راجع محادثة سابقة). يعني بعد الريفاكتور، التطبيق هيشتغل لكن `poiList`/`locationList` هيكونوا فاضيين لحد ما تتحط الداتا الحقيقية. ده متوقع ومش خطأ.
+- [x] المرحلة 0: مراجعة السكيما + سوبابيز + الكود الحالي
+- [x] المرحلة 1: Domain layer
+- [x] المرحلة 2: Data layer
+- [x] المرحلة 3: تسجيل الـ repository في `main.dart`
+- [x] المرحلة 4: `BeaconController` بيحمّل داتا حقيقية
+- [x] المرحلة 5-6: `NavigationScreenController` بيستخدم `FindPathUseCase` مباشرة
+- [x] **طبقة الـ Destinations** (الجلسة دي) — فصل الوجهات المنطقية عن العقد الفيزيائية
+- [x] إصلاح تكرار السلم + إضافته كـ vertical connector
+- [x] إصلاح باگ لغة الدروب داون
+- [ ] **مراجعة نهائية**: `flutter analyze` / `flutter pub get` لسه ما اتعملوش فعليًا على جهاز المستخدم — لازم يتعملوا يدوي
+- [ ] `lib/controllers/navigation_controller.dart` القديم لسه موجود بس مش مستخدم في الشاشة الرئيسية — قرار مستقبلي: نمسحه لو مفيش شاشة تانية (calibration/onboarding) بتعتمد عليه فعليًا
 
 ---
 
-## خطوات بعد الريفاكتور (مش دلوقتي)
-- إدخال بيانات دور GF الحقيقية في سوبابيز (كانت جاهزة في `map_data_template.json`)
-- اختبار A* على بيانات حقيقية بعد الإدخال
-- التأكد من `flutter pub get` اتعمل بعد إضافة `supabase_flutter`/`flutter_dotenv`
+## قرارات تصميمية مهمة
+
+1. **heading**: بيتحسب من إحداثيات x,y وقت بناء المسار (`heading_calculator.dart` في domain + نسخة مطابقة جوه `BeaconController._calculateHeading`). المعادلة: `heading = (atan2(dy, -dx) بالدرجات + 360) % 360`.
+
+2. **nearestLift/nextLevelLift**: اتلغوا تمامًا. الاتصال الرأسي (أسانسير/سلم) بقى edge عادي بين أي دورين، والـ A* بيلاقيه تلقائيًا.
+
+3. **POINode.level (int)**: مصدره `levels.level_order` من سوبابيز.
+
+4. **heuristic الـ A***: نفس الدور = مسافة إقليدية عادية. أدوار مختلفة = + penalty ثابت لكل فرق دور (`_levelChangePenalty` في `find_path_usecase.dart`).
+
+5. **تكلفة عبور الاتصال الرأسي**: قيمة تقديرية ثابتة `_verticalTraversalCost = 3.0` متر في `NavigationRepositoryImpl` — قابلة للتعديل.
+
+6. **destinations vs nodes**: القاعدة العامة — أي مكان الناس بيدوروا عليه بالاسم لازم يكون له صف في `destinations`، مش بس في `nodes`. لو أضفت نقطة جديدة في `nodes` من غير ما تضيفها في `destinations` (+ `destination_nodes`)، هي مش هتظهر في نتائج البحث خالص (لكنها هتفضل شغالة في الـ graph نفسه لو حد وصلها كنقطة عبور).
+
+---
+
+## خطوات بعد كده
+- `flutter pub get` (لو لسه ما اتعملش بعد إضافة `supabase_flutter`/`flutter_dotenv`)
+- `flutter analyze` للتأكد إن مفيش أخطاء كومبايل بعد كل التعديلات دي
+- حذف الملفين الـ orphaned يدويًا (`node_alias.dart`, `node_alias_model.dart`)
+- اختبار A* فعليًا على الدورين الحقيقيين (تأكيد إن التنقل بالسلم شغال زي الأسانسير)
+- استكمال باقي بيانات المبنى (لسه دورين بس من كذا دور)
+
+---
+
+## جلسة إضافية: الاختصارات السريعة (مصاعد/دورات مياه) بقت تشتغل فعليًا
+
+### المشكلة
+بعد كل الإصلاحات فوق، سؤال المستخدم كان: ليه لسه لما يدوس على أيقونات الاختصار السريع
+(مصاعد/دورات مياه) في `idle_home_screen.dart` بيقوله "غير متاح حاليًا"، رغم إن الداتا
+مرفوعة ومربوطة صح دلوقتي؟
+
+السبب: `NavigationDestinationsData.quickShortcuts` كانت 4 كائنات **ثابتة (const)**
+بـ `nodeID: null` دايمًا — أصلًا معمولة كـ placeholder لحد ما "تتضاف نقاط حقيقية"،
+بس حتى بعد ما اتضافت الداتا، محدش وصّل الاختصارات بيها لأن الربط مش منطقي
+يكون 1:1 (فيه أسانسيرين في المبنى دلوقتي مش واحد، وحمامين رجالي مختلفين).
+
+### الحل: الاختصار بيدوّر على "أقرب وجهة حقيقية مطابقة" وقت الضغط
+- عمود جديد `destinations.shortcut_type` (`elevator`, `restroom_male`,
+  `restroom_female`) — اتحط تلقائيًا على الوجهات الموجودة فعلًا (الأسانسيرين،
+  الحمامات الرجالي، الحمام النسائي). `exit`/`cafeteria` لسه من غير أي وجهة
+  مطابقة في الداتا، فهيفضلوا يدّوا رسالة "غير متاح" — وده صح، مش باگ، لحد
+  ما تتضاف نقاط مخارج/كافيتيريا فعلية.
+- `Destination` (domain) و`BuildingDestination` (UI model) بقى فيهم
+  `shortcutType` كمان.
+- `NavigationScreenController.onShortcutTap`/`selectRestroomVariant` بقوا
+  بيعملوا `_resolveNearestReachableDestination(shortcutType)`: بيجيبوا كل
+  الوجهات المطابقة للنوع من `graph.destinations`، بيحسبوا طول المسار
+  الفعلي لكل واحدة من موقع المستخدم (عن طريق A*)، ويختاروا الأقرب فعليًا
+  (مش مجرد أقرب مسافة خط مستقيم). لو ولا وجهة قابلة للوصول، بترجع رسالة
+  "غير متاح" بس بمعنى مختلف (مفيش نقطة قابلة للوصول من موقعك، مش إن المكان
+  مش موجود خالص).
+
+### ملاحظة مهمة: سؤال "تعذّر إيجاد مسار" في المحادثة
+ده كان له سبب منطقي برضه: كان بيحصل قبل ما نصلح تكرار السلم (node 105) —
+قبل الإصلاح، لو المستخدم كان واقف على عقدة في نص المسار المكرر، أو حصل أي
+انقطاع في الـ graph بسبب التكرار، الـ A* كان ممكن يفشل. بعد إصلاح السلم
+(دمج 103/105 + إضافته كـ vertical connector)، الجراف بقى متصل بالكامل بين
+كل نقط الدورين، فالمفروض المشكلة دي متحلة تلقائيًا. لو استمرت تظهر، يبقى
+محتاجين نتأكد إن `esp32_uuid` اتحط فعليًا للعقد (لسه كله `null` وقت آخر
+مراجعة) — لأن من غيره، الموقع الحالي (`haveCurrentLocation`) مش هيتحدد
+خالص، والمستخدم هياخد رسالة "لسه بنحدد موقعك" بدل "تعذّر إيجاد مسار".
+
