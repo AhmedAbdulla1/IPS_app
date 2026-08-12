@@ -323,7 +323,7 @@ class NavigationScreenController extends GetxController {
     final isArabic = _isArabic;
 
     if (_currentPath.isEmpty || _currentStepIndex >= _currentPath.length) {
-      currentDirection.value = 'straight';
+      currentDirection.value = 'arrived';
       directionInstruction.value =
           isArabic ? 'لقد وصلت إلى وجهتك' : 'You have reached your destination';
       directionSubInstruction.value =
@@ -339,12 +339,12 @@ class NavigationScreenController extends GetxController {
     final step = _currentPath[_currentStepIndex];
 
     if (step.verticalDirection == VerticalDirection.VerticalDirection.up) {
-      currentDirection.value = 'straight';
+      currentDirection.value = 'up';
       directionInstruction.value = isArabic ? 'اصعد للدور التالي' : 'Go up to the next floor';
       directionSubInstruction.value =
           isArabic ? 'خُد المصعد أو السلم لأعلى' : 'Take the elevator or stairs up';
     } else if (step.verticalDirection == VerticalDirection.VerticalDirection.down) {
-      currentDirection.value = 'straight';
+      currentDirection.value = 'down';
       directionInstruction.value = isArabic ? 'انزل للدور التالي' : 'Go down to the next floor';
       directionSubInstruction.value =
           isArabic ? 'خُد المصعد أو السلم لأسفل' : 'Take the elevator or stairs down';

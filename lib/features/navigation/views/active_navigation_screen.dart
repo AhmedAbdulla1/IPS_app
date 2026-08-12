@@ -85,6 +85,12 @@ class ActiveNavigationScreen extends StatelessWidget {
         return DirectionType.straight;
       case 'uturn':
         return DirectionType.uTurn;
+      case 'up':
+        return DirectionType.up;
+      case 'down':
+        return DirectionType.down;
+      case 'arrived':
+        return DirectionType.arrived;
       case 'left':
       default:
         return DirectionType.left;
