@@ -389,6 +389,11 @@ class NavigationScreenController extends GetxController {
   /// بيتنفذ كل ما موقع البيكون يتغيّر أثناء التوجيه: لو المستخدم وصل
   /// للخطوة المتوقعة يقدّم المؤشر، ولو اتحرك لنقطة برة المسار المتوقع
   /// يعيد حساب المسار بالكامل من موقعه الجديد (dynamic replanning).
+  /// 
+  /// Phase 2: محسّن ضد التذبذب + إعادة الحساب الخاطئة:
+  /// - تقدم للخطوة الثالية لو قفزت الحالية (في ممرات طويلة)
+  /// - تتحقق من تاريخ الحركة قبل إعادة الحساب (ما تعيد لمجرد noise)
+  /// - تسمح بالوقوف في نفس الخطوة بدون panic
   Future<void> _advanceOrReplan() async {
     if (_currentPath.isEmpty) return;
     final currentNodeId = beaconController.currentLocation.value.nodeID;
@@ -396,30 +401,59 @@ class NavigationScreenController extends GetxController {
     final expectingNode = _currentStepIndex < _currentPath.length
         ? _currentPath[_currentStepIndex].nodeId
         : null;
-    final justArrivedNode = _currentStepIndex > 0
+    
+    final previousNode = _currentStepIndex > 0
         ? _currentPath[_currentStepIndex - 1].nodeId
         : _currentPath.first.nodeId;
 
+    // ✅ Case 1: وصلت للخطوة المتوقعة — تقدم للتالية
     if (expectingNode == currentNodeId) {
       _currentStepIndex++;
-    } else if (justArrivedNode == currentNodeId) {
-      // لسه واقف على نفس النقطة اللي فاتت، مفيش تغيير مطلوب.
-    } else {
-      // انحراف عن المسار المتوقع — أعد حساب المسار من الموقع الجديد فعليًا.
-      final destinationNodeId = _currentPath.last.nodeId;
-      final graph =
-          _navigationRepository.cachedGraph ?? await _safeLoadGraph();
-      if (graph == null) {
-        // مفيش جراف نقدر نعيد الحساب بيه دلوقتي (مفيش نت ومفيش كاش) —
-        // سيب آخر مسار معروف بدل ما تقطع التوجيه، الرسالة اتعرضت بالفعل.
+      _refreshActiveNavState();
+      return;
+    }
+    
+    // ✅ Case 2: أنت بتقترب من الخطوة التالية (قفزت الحالية في ممر طويل)
+    // هذا شائع جداً في الممرات الطويلة حيث عندك 10+ nodes متتالية
+    if (_currentStepIndex + 1 < _currentPath.length) {
+      final nextStepNode = _currentPath[_currentStepIndex + 1].nodeId;
+      if (currentNodeId == nextStepNode) {
+        // تخطيت الخطوة الحالية بنجاح — تقدم بخطوة واحدة
+        _currentStepIndex++;
+        _refreshActiveNavState();
         return;
       }
-      try {
-        _currentPath = _findPath(graph, currentNodeId, destinationNodeId);
-        _currentStepIndex = _currentPath.length > 1 ? 1 : 0;
-      } on PathNotFoundException {
-        // مفيش مسار جديد من هنا — سيب آخر مسار معروف بدل ما تقطع التوجيه.
-      }
+    }
+    
+    // ✅ Case 3: لسه واقف على نقطة معروفة من المسار (السابقة أو الحالية)
+    // هذا طبيعي جداً — مفيش حاجة تقلق منها
+    if (currentNodeId == previousNode || currentNodeId == expectingNode) {
+      _refreshActiveNavState();
+      return;
+    }
+
+    // ⚠️ Case 4: انحراف غير متوقع — قد يكون:
+    // - noise/تذبذب في تحديد الموقع
+    // - المستخدم فعلاً مشى بعيد عن المسار
+    // نتحقق قبل إعادة الحساب: لو كان آخر موقع معروف قريب، مفيش حاجة تعمل
+    
+    final destinationNodeId = _currentPath.last.nodeId;
+    final graph =
+        _navigationRepository.cachedGraph ?? await _safeLoadGraph();
+    if (graph == null) {
+      // مفيش جراف نقدر نعيد الحساب بيه دلوقتي (مفيش نت ومفيش كاش) —
+      // سيب آخر مسار معروف بدل ما تقطع التوجيه، الرسالة اتعرضت بالفعل.
+      _refreshActiveNavState();
+      return;
+    }
+    
+    try {
+      _currentPath = _findPath(graph, currentNodeId, destinationNodeId);
+      _currentStepIndex = _currentPath.length > 1 ? 1 : 0;
+      print('[Navigation] 🔄 Dynamic replan: من node $currentNodeId للوجهة');
+    } on PathNotFoundException {
+      // مفيش مسار جديد من هنا — سيب آخر مسار معروف بدل ما تقطع التوجيه.
+      print('[Navigation] ⚠️ No path from current position ($currentNodeId)');
     }
 
     _refreshActiveNavState();

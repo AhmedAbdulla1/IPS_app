@@ -15,6 +15,14 @@ import 'package:pathfinder/features/navigation/domain/entities/building_graph.da
 import 'package:pathfinder/features/navigation/domain/entities/nav_node.dart';
 import 'package:pathfinder/features/navigation/domain/entities/nav_edge.dart';
 
+/// نتيجة حساب الـ weighted position: النقطة الأقرب للمركز المرجح + المسافة
+/// الفعلية بينهم بالمتر (محتاجينها في hysteresis عشان نقرر التبديل من عدمه)
+class _WeightedMatch {
+  final POINode node;
+  final double distance;
+  _WeightedMatch(this.node, this.distance);
+}
+
 class BeaconController extends GetxController {
   var poiNodes = <int, POINode>{};
   var poiList = <POINode>[];
@@ -35,7 +43,20 @@ class BeaconController extends GetxController {
   var fetchingBeacons = true.obs;
   var haveCurrentLocation = false.obs;
   var beaconResult = ''.obs;
-  int beaconRssiCutoff = -80;
+  int beaconRssiCutoff = -50;
+
+  // ── Hysteresis ضد تذبذب RSSI ──────────────────────────────────────────
+  // من غير قفل، أي اهتزاز بسيط في الإشارة (تداخل/انعكاس) بيخلي أقرب نقطة
+  // للـ weighted center تتقلب بين نقطتين كل شوية حتى لو المستخدم واقف
+  // مكانه (ده اللي كان بيحصل بالظبط بين node 207 و209 في اللوج). الحل:
+  // نفضل على النقطة "المقفولة" حاليًا، ومنسمحش بالتبديل لنقطة تانية إلا
+  // لو قريب قوي منها فعلاً (مسافة صغيرة) وبإشارة مش ضعيفة، أو لو الدور
+  // اتغير خالص (انتقال حقيقي عبر أسانسير/سلم مش تذبذب).
+  int? _lockedNodeId;
+  int? _lockedFloor;
+  static const double _switchDistanceMeters = 1.5;
+  static const int _switchRssiThreshold = -75;
+
   Timer? _timer;
   int _timerTime = 0;
   Timer? _scanRestartTimer;
@@ -332,8 +353,8 @@ class BeaconController extends GetxController {
 
         final beaconData = _parseIBeacon(device);
         if (beaconData != null) {
-          // print(
-          //     '[BEACON] 📍 Beacon detected: UUID=${beaconData.uuid}, Major=${beaconData.major}, Minor=${beaconData.minor}, RSSI=${beaconData.rssi}');
+          print(
+              '[BEACON] 📍 Beacon detected: UUID=${beaconData.uuid}, Major=${beaconData.major}, Minor=${beaconData.minor}, RSSI=${beaconData.rssi}');
 
           fetchingBeacons.value = false;
           cancelTimer();
@@ -515,10 +536,26 @@ class BeaconController extends GetxController {
     beaconResult.value = tempString;
     // print('[BEACON] Visible beacons (${beaconDataPriorityQueue.length}): strongest=${beaconDataPriorityQueue.first.name} (RSSI=${beaconDataPriorityQueue.first.rssi})');
 
+    // ========== Phase 1: استخدم Weighted Centroid بدل Strongest Signal فقط ==========
     final nearestBeacon = beaconDataPriorityQueue.first;
     final nearestRssi = int.parse(nearestBeacon.rssi);
+    
     if (nearestRssi > beaconRssiCutoff) {
-      setCurrentLocation(nearestBeacon.uuid);
+      // حساب الموقع المرجح من جميع البيكونات المرئية
+      print('$beaconDataPriorityQueue');
+      final weightedMatch = _calculateWeightedPosition(beaconDataPriorityQueue);
+
+      if (weightedMatch != null) {
+        // قبل ما نستخدم النقطة المرشحة، نمررها على الـ hysteresis عشان مانقفزش بين
+        // نقطتين بسبب تذبذب الإشارة
+        final resolvedNode = _resolveNodeWithHysteresis(
+            weightedMatch.node, weightedMatch.distance, nearestRssi);
+        setCurrentLocationFromNode(resolvedNode);
+        print('[BEACON] ✓ Weighted position: Node ${resolvedNode.nodeID} ${resolvedNode.nodeESP32ID} (${resolvedNode.name})');
+      } else {
+        // Fallback: استخدم أقوي بيكون إذا فشل الحساب المرجح
+        setCurrentLocationFromUuid(nearestBeacon.uuid);
+      }
     }
   }
 
@@ -544,5 +581,158 @@ class BeaconController extends GetxController {
     return tempString;
   }
 
+  /// حساب الموقع المرجح من قائمة البيكونات المرئية
+  /// باستخدام صيغة: weight_i = 10^(RSSI_i / 10)
+  /// ثم البحث عن أقرب node للمركز الهندسي المرجح
+  /// حساب الموقع المرجح من قائمة البيكونات المرئية
+  /// باستخدام صيغة: weight_i = 10^(RSSI_i / 10)
+  /// ثم البحث عن أقرب node للمركز الهندسي المرجح **في نفس الدور فقط**
+  ///
+  /// FIX: الإحداثيات (x,y) محلية لكل دور — لو بحثنا في كل الدوور،
+  /// قد نختار node من دور غلط (نفس x,y لكن floor مختلف)
+  _WeightedMatch? _calculateWeightedPosition(List<BeaconData> visibleBeacons) {
+    if (visibleBeacons.isEmpty) return null;
+
+    // خطوة 1: احصل على البيكون الأقوي لتحديد الدور الحالي
+    final strongestBeacon = visibleBeacons.first;
+    final strongestNode = poiList.firstWhereOrNull(
+            (n) => n.nodeESP32ID.toLowerCase() == strongestBeacon.uuid.toLowerCase());
+
+    if (strongestNode == null) return null;
+
+    final currentFloor = strongestNode.level;
+    print('[BEACON] 🏢 Detected floor: $currentFloor (from strongest beacon: ${strongestBeacon.name})');
+
+    double totalWeight = 0;
+    double weightedX = 0;
+    double weightedY = 0;
+    int validBeacons = 0;
+
+    // خطوة 2: احسب المركز المرجح من البيكونات المرئية
+    for (final beacon in visibleBeacons) {
+      final rssi = int.parse(beacon.rssi);
+      // صيغة log-distance: weight = 10^(RSSI/10)
+      final weight = math.pow(10, rssi / 10.0).toDouble();
+
+      // ابحث عن node هذا البيكون
+      final node = poiList.firstWhereOrNull(
+              (n) => n.nodeESP32ID.toLowerCase() == beacon.uuid.toLowerCase());
+
+      if (node == null) continue;
+
+      totalWeight += weight;
+      weightedX += node.x * weight;
+      weightedY += node.y * weight;
+      validBeacons++;
+    }
+
+    if (totalWeight == 0 || validBeacons == 0) return null;
+
+    // المركز الهندسي المرجح
+    final centerX = weightedX / totalWeight;
+    final centerY = weightedY / totalWeight;
+
+    print('[BEACON] 📍 Weighted center: ($centerX, $centerY) from $validBeacons beacons on floor $currentFloor');
+
+    // خطوة 3: ابحث عن أقرب node **في نفس الدور فقط**
+    // هذا حل لمشكلة الإحداثيات المحلية: كل دور له نسخته الخاصة من (x,y)
+    POINode? nearest;
+    double minDistance = double.infinity;
+
+    final nodesInCurrentFloor = poiList.where((n) => n.level == currentFloor).toList();
+    print('[BEACON] 🔍 Searching in ${nodesInCurrentFloor.length} nodes on floor $currentFloor (from ${poiList.length} total)');
+
+    for (final node in nodesInCurrentFloor) {
+      final dist = math.sqrt(
+          math.pow(node.x - centerX, 2) +
+              math.pow(node.y - centerY, 2)
+      );
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearest = node;
+      }
+    }
+
+    if (nearest != null) {
+      print('[BEACON] ✅ Matched to: Node ${nearest.nodeID} "${nearest.name}" (floor $currentFloor, distance: ${minDistance.toStringAsFixed(2)}m)');
+    }
+
+    return nearest == null ? null : _WeightedMatch(nearest, minDistance);
+  }
+
+  /// يقرر هل نسمح بتغيير النقطة المقفولة للنقطة المرشحة الجديدة، أو نفضل
+  /// على النقطة القديمة (Hysteresis ضد تذبذب RSSI).
+  ///
+  /// قواعد التبديل:
+  /// 1. لو مفيش قفل حالي (أول قراءة) → نقفل على المرشح فورًا.
+  /// 2. لو المرشح نفسه النقطة المقفولة → نستمر عليها زي ما هي.
+  /// 3. لو الدور اتغير خالص (طابق مختلف) → نسمح بالتبديل فورًا (انتقال
+  ///    حقيقي عبر أسانسير/سلم، مش تذبذب).
+  /// 4. غير كده، نسمح بالتبديل فقط لو:
+  ///    - المسافة للمرشح من الـ weighted center أقل من أو تساوي
+  ///      [_switchDistanceMeters] (قريب قوي فعلاً من النقطة الجديدة)، و
+  ///    - أقوى إشارة ملتقطة أقوى من أو تساوي [_switchRssiThreshold]
+  ///      (مش إشارة ضعيفة ممكن تكون تشويش).
+  /// لو الشرطين مش متحققين، نفضل على النقطة القديمة المقفولة ولو الإشارة
+  /// ضعيفة منسمحشش بأي تبديل خالص لحد ما تقوى.
+  POINode _resolveNodeWithHysteresis(
+      POINode candidate, double distanceToCandidate, int nearestRssi) {
+    if (_lockedNodeId == null) {
+      _lockedNodeId = candidate.nodeID;
+      _lockedFloor = candidate.level;
+      return candidate;
+    }
+
+    if (candidate.nodeID == _lockedNodeId) {
+      return candidate;
+    }
+
+    final floorChanged = candidate.level != _lockedFloor;
+    final closeEnough = distanceToCandidate <= _switchDistanceMeters;
+    final strongEnough = nearestRssi >= _switchRssiThreshold;
+
+    if (floorChanged || (closeEnough && strongEnough)) {
+      print('[BEACON] 🔓 تبديل القفل: من Node $_lockedNodeId إلى Node ${candidate.nodeID} '
+          '(floorChanged=$floorChanged, distance=${distanceToCandidate.toStringAsFixed(2)}m, rssi=$nearestRssi)');
+      _lockedNodeId = candidate.nodeID;
+      _lockedFloor = candidate.level;
+      return candidate;
+    }
+
+    final lockedNode = poiNodes[_lockedNodeId];
+    if (lockedNode == null) {
+      // احتياطي: لو النقطة المقفولة اختفت من poiNodes لأي سبب، نقفل على المرشح
+      _lockedNodeId = candidate.nodeID;
+      _lockedFloor = candidate.level;
+      return candidate;
+    }
+
+    print('[BEACON] 🔒 محافظ على القفل عند Node $_lockedNodeId '
+        '(المرشح ${candidate.nodeID} بعيد=${distanceToCandidate.toStringAsFixed(2)}m أو إشارة ضعيفة=$nearestRssi)');
+    return lockedNode;
+  }
+
+  /// تحديث الموقع من POINode مباشرة (بعد حساب weighted position)
+  void setCurrentLocationFromNode(POINode location) {
+    final navController = Get.find<NavigationController>();
+    currentLocation.value = location;
+    navController.setCurrentLocation(currentLocation.value);
+    haveCurrentLocation.value = true;
+
+    cancelTimer();
+    startTimer(5);
+  }
+
+  /// تحديث الموقع من UUID (الطريقة القديمة — للـ fallback فقط)
+  void setCurrentLocationFromUuid(String uuid) {
+    final navController = Get.find<NavigationController>();
+    currentLocation.value = poiList.firstWhere(
+        (element) => element.nodeESP32ID.toLowerCase() == uuid.toLowerCase());
+    navController.setCurrentLocation(currentLocation.value);
+    haveCurrentLocation.value = true;
+
+    cancelTimer();
+    startTimer(5);
+  }
 
 }

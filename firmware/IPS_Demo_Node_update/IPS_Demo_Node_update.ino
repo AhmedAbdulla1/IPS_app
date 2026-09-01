@@ -59,7 +59,7 @@
 #include <BLEAdvertising.h>
 #include <Preferences.h>
 #include <string.h> // for memcpy
-
+#include "esp_system.h"
 // ---------------------------------------------------------------------
 // Demo node configuration — edit these per physical node.
 // ---------------------------------------------------------------------
@@ -117,6 +117,49 @@ unsigned long lastHeartbeat = 0;
 /// this demo firmware just reports a fixed value.
 uint8_t readBatteryPercent() {
   return 85; // placeholder — mains-powered demo board
+}
+
+
+void printResetReason()
+{
+    esp_reset_reason_t reason = esp_reset_reason();
+
+    Serial.print("[RESET REASON] ");
+
+    switch (reason)
+    {
+        case ESP_RST_POWERON:
+            Serial.println("POWER ON");
+            break;
+
+        case ESP_RST_SW:
+            Serial.println("SOFTWARE RESET");
+            break;
+
+        case ESP_RST_PANIC:
+            Serial.println("PANIC / CRASH");
+            break;
+
+        case ESP_RST_INT_WDT:
+            Serial.println("INTERRUPT WATCHDOG");
+            break;
+
+        case ESP_RST_TASK_WDT:
+            Serial.println("TASK WATCHDOG");
+            break;
+
+        case ESP_RST_WDT:
+            Serial.println("WATCHDOG");
+            break;
+
+        case ESP_RST_BROWNOUT:
+            Serial.println("BROWNOUT");
+            break;
+
+        default:
+            Serial.printf("OTHER (%d)\n", reason);
+            break;
+    }
 }
 
 /// Builds the 24-byte IPS payload described in the header comment.
@@ -310,9 +353,11 @@ void setup() {
   Serial.println();
   Serial.println("=== IPS Demo Node starting ===");
 
-  loadNodeIdFromNvs();
-
+  printResetReason();
+  // loadNodeIdFromNvs();
+ 
   BLEDevice::init("IPS-Node");
+  
 
   pAdvertising = BLEDevice::getAdvertising();
 
