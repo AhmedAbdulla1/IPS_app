@@ -1,0 +1,18 @@
+# إعدادات SDK افتراضية لـIPS_Mesh_Node.
+# مصدر القيم: توثيق "Arduino as an ESP-IDF component" الرسمي بيوصي
+# بـFreeRTOS tick rate = 1000Hz لتوافق أفضل مع مكتبات Arduino timing.
+CONFIG_FREERTOS_HZ=1000
+
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+
+# -----------------------------------------------------------------------
+# TODO حرج (BLE/WiFi coexistence - راجع MESH_DESIGN.md §2):
+# -----------------------------------------------------------------------
+# لازم نفعّل BT/WiFi coexistence عشان BLE advertising (positioning)
+# وmesh_lite (WiFi) يشتغلوا مع بعض من غير ما حد يقاطع التاني. اسم
+# الـKconfig option بالظبط بيختلف شوية حسب نسخة ESP-IDF المستخدمة، فمش
+# هحطه هنا افتراضًا عشان متتفاجئش إنه اسم غلط. بعد أول idf.py build:
+#   idf.py menuconfig -> Component config -> "Wi-Fi" أو
+#   "Bluetooth" -> دور على أي خيار اسمه فيه "coexist"/"coex" وفعّله.
+# ده لازم يتعمل قبل أي اختبار ميداني حقيقي، مش تفصيلة تأجيل.
+# -----------------------------------------------------------------------

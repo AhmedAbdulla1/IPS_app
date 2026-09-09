@@ -1,0 +1,4 @@
+# تبعية mesh_lite - هتتنزل تلقائيًا وقت idf.py build (component manager).
+# راجع MESH_PROGRESS.md لو محتاج نسخة محددة بدل "*".
+dependencies:
+  espressif/mesh_lite: "*"

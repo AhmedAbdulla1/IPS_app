@@ -1,0 +1,15 @@
+# إعدادات SDK افتراضية لمشروع الـRoot. القيم دي starting point - لازم
+# تتراجع فعليًا عبر `idf.py menuconfig` بعد أول build ناجح، لأن أسماء
+# بعض options بتختلف حسب نسخة الـmesh_lite component المُنزّلة.
+
+# الـRoot بيقدر يشتغل من غير راوتر خارجي (متأكد منها من توثيق mesh_lite
+# الرسمي: "Support establishing mesh network by root node even if no
+# router is connected"). فعّلها من Component config -> Mesh Lite في
+# menuconfig لو مكنش الافتراضي مفعّل.
+
+# TODO: بعد idf.py menuconfig، راجع وفعّل من "Component config -> Mesh Lite":
+#   - Max mesh layer (اقترحنا 8-10 في MESH_DESIGN.md §4.4)
+#   - تشفير بيانات الشبكة (AES) - اسم الـoption بيختلف حسب النسخة
+#   - "Allow root to run without router" (أو المكافئ ليها)
+
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
