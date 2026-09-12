@@ -29,11 +29,22 @@
      + reserved + uptime_ms) ويحدّث `health_table`
    - الـstruct وmsg_id (`0x1001`) متطابقين حرفيًا بين `IPS_Mesh_Node/main/config.h`
      و`IPS_Mesh_Root/main/config.h`
-2. **AES encryption** - `esp_mesh_lite_aes_set_key()` مُفعّل في المشروعين
-   (مفتاح placeholder مؤقت 16 بايت - **لازم يتغير قبل أي نشر فعلي**،
-   نفس المفتاح لازم يفضل متطابق بين Root وNode)
+2. **BLE/WiFi Coexistence** - تأكدنا فعليًا من الـ`sdkconfig` المولّد (مش
+   مجرد افتراض) إن `CONFIG_ESP_COEX_ENABLED=y` و`CONFIG_ESP_COEX_SW_COEXIST_ENABLE=y`
+   فعلاً مفعّلين تلقائيًا بمجرد وجود `bt` و`esp_wifi` مع بعض في
+   نفس البناء - مفيش حاجة لconfig يدوي إضافي. **متأكد من الإعداد،
+   لسه محتاج اختبار أداء ميداني** (هل BLE advertising بيستقر لما
+   mesh traffic يزيد؟).
 3. **Root election** - اتأكد إنه مفيش حقل صريح "أنا Root" في mesh_lite -
    بيتحدد بالانتخاب الطبيعي، ومؤكد شغال من لوج تشغيل حقيقي (level=0)
+
+## ⚠️ مفعّل بس لسه محتاج قرار - مش جاهز للنشر
+
+- **مفتاح AES** - `esp_mesh_lite_aes_set_key()` مفعّل فعليًا في المشروعين
+  (متطابقين) بمفتاح **لسه placeholder** (`IPS_mesh_lite_01` بالASCII) -
+  موجود حرفيًا في `mesh_participant.c` و`mesh_bridge.c`. لازم يتستبدل
+  بمفتاح عشوائي حقيقي قبل أي نشر فعلي (مش مجرد سيكريت في git -
+  مبنى المجلس نفسه).
 
 ---
 
@@ -47,16 +58,33 @@
 
 ---
 
-## أداة provisioning (UID + إحداثيات)
+## أداة provisioning (UID + إحداثيات) - تكتب في Supabase مباشرة
 
 `firmware/tools/ips_node_provisioning_tool.html` - صفحة ويب (Edge/Chrome،
-Web Serial API) بتولّد Node ID عشوائي، تبعته للجهاز عبر `SET_ID:<hex>`،
-وتجمع بيانات كل نود (UID + اسم + X + Y + الدور) في جدول محلي قابل
-للتصدير CSV. **مختبرة وشغالة فعليًا.**
+Web Serial API) للاستخدام الشخصي فقط على جهاز أحمد المحلي. الخطوات:
 
-**الحالة الحالية:** بترفع CSV بس لسه، **مش متربطة بـSupabase مباشرة**
-(الاتصال بقاعدة البيانات كان مقطوع وقت البناء - نرجعلها لما نتأكد من
-أعمدة جدول `nodes`).
+1. يدخل `node_id` (رقمي، يدوي حسب نظام الترقيم الخاص - مفيش
+   auto-increment)، الدور (من dropdown مربوط بجدول `levels`، مع زرار
+   لإضافة دور جديد لو محتاج)، X وY (إجباريين)، الاسم/النوع
+   (اختياريين - قيم افتراضية لو فاضيين)
+2. تولّد UID عشوائي محليًا (16 بايت)
+3. تبعته `SET_ID:<hex>` للجهاز عبر Web Serial
+4. تعمل INSERT مباشر في جدول `nodes` الحقيقي في Supabase (نفس
+   الجدول المستخدم في الـFlutter app للـpathfinding) - `esp32_uuid` = الـUID
+   المولّد
+5. بتعرض حالة كل خطوة لوحدها (Serial ✅/❌ و_منفصل_ Supabase ✅/❌)،
+   مع رسالة الخطأ الكاملة لو fail
+6. سجل محلي + CSV export **احتياطي إضافي** (مش المصدر الأساسي
+   بعد دلوقتي)
+
+**قرارات معمارية اتحسمت (2026-09-12):**
+- الصفحة بتكتب مباشرة بمفتاح `service_role` محفوظ في `localStorage`
+  المتصفح بتاع أحمد بس - **قرار مقصود لأداة استخدام محلي
+  شخصي بس**، ممنوع نشر/مشاركة الملف ده مع المفتاح محفوظ جواه
+- `node_id` رقمي مش auto-increment (schema الحقيقي) - أحمد
+  بيدخله يدوي كل مرة
+- تم إضافة ميزة إضافة دور جديد (levels) من نفس الصفحة لأن جدول
+  `levels` كان فاضي تمامًا وقت البناء
 
 ---
 
@@ -79,20 +107,34 @@ firmware/
 
 ## أولويات التنفيذ الجاية
 
-1. **تفعيل BLE/WiFi Coexistence** في `IPS_Mesh_Node` - أولوية حرجة قبل
-   أي اختبار ميداني حقيقي (مفيش داعي ليها في Root لأنه مفيهوش BLE)
-2. **اختبار Root + Node مع بعض** - تأكيد إن `HEALTH:` lines فعليًا
-   بتطلع على Serial monitor بتاع الـRoot بعد ما node يبعت heartbeat
-3. **استبدال مفتاح الـAES** بمفتاح حقيقي (مش placeholder) قبل أي نشر
-4. **ربط أداة الـprovisioning بـSupabase** - لما تتأكد الأعمدة، نضيف
+1. **اختبار Root + Node مع بعض ميدانيًا** - تم فعليًا ✅ (`HEALTH:`
+   lines طلعت على Serial بتاع الـRoot). لسه محتاج اختبار أداء
+   أطول (hop depth فعلي، RSSI بين نقاط متجاورة، ثبات BLE مع
+   زيادة mesh traffic)
+2. **استبدال مفتاح الـAES** بمفتاح حقيقي (مش placeholder) قبل أي نشر
+3. **ربط أداة الـprovisioning بـSupabase** - لما تتأكد الأعمدة، نضيف
    رفع مباشر بدل CSV اليدوي
-5. Supabase migration لجدول `node_health` (SQL جاهز في MESH_DESIGN.md §7)
-6. Dashboard للعرض - مكانه لسه مش محدد
-7. اختبار ميداني: hop depth فعلي، RSSI بين نقاط متجاورة، معايرة الـTimeout
+4. Supabase migration لجدول `node_health` (SQL جاهز في MESH_DESIGN.md §7)
+5. Dashboard للعرض - مكانه لسه مش محدد
 
 ## مشاكل/قرارات مفتوحة
 
-- **مكان الـDashboard:** لسه مش متفق عليه
-- **أعمدة جدول nodes في Supabase:** الاتصال كان مقطوع، محتاج تأكيد
-  قبل ربط أداة الـprovisioning تلقائيًا
+- **تغيير معماري مهم (2026-09-12): الـheartbeat/الحالة الحية مش هترفع
+  Supabase خالص.** القرار الجديد: online/offline + hop_count + last_seen
+  تفضل **محلية على اللابتوب** (الـRoot ينقلها للابتوب بطريقة لسه
+  مش متحددة - الافتراض الأصلي كان Serial/USB زي الموثق في
+  MESH_DESIGN.md §4.7، لسه مش مؤكد نهائي)، واللابتوب هو اللي بيعرضها.
+  **مفيش جدول `node_health` في Supabase** - الSQL المقترح في
+  MESH_DESIGN.md §7 مُلغي.
+  - ⚠️ **هذا يعارض كود موجود بالفعل**: `pc_health_service/lib/supabase_uploader.dart`
+    مكتوب ليرفع `node_health` لـSupabase - لسه محتاج يتشال أو
+    يتستبدل بطريقة عرض محلية (مكان Dashboard لسه محدد - نفس
+    النقطة المفتوحة تحت). `health_protocol.dart` و`node_health_table.dart`
+    لسه صحيحين ومفيدين (parsing + in-memory state) - المشكلة في
+    الـuploader بس.
+- **مكان الـDashboard:** لسه مش متفق عليه - دلوقتي أهم لأنه هيحدد
+  طريقة نقل البيانات من Root للابتوب (Serial المفترض الأصلي، أو
+  حاجة تانية)
+- **أعمدة جدول nodes في Supabase:** ✅ اتأكدت (موثقة فوق)، أداة
+  الـprovisioning بقت تكتب فيها مباشرة
 - **auto-detect لمنفذ الـSerial في pc_health_service:** حاليًا ثابت في `.env`
