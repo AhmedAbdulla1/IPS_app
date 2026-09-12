@@ -1,18 +1,28 @@
-# إعدادات SDK افتراضية لـIPS_Mesh_Node.
-# مصدر القيم: توثيق "Arduino as an ESP-IDF component" الرسمي بيوصي
-# بـFreeRTOS tick rate = 1000Hz لتوافق أفضل مع مكتبات Arduino timing.
-CONFIG_FREERTOS_HZ=1000
-
+# إعدادات SDK لـIPS_Mesh_Node - ESP-IDF native (بدون Arduino من دلوقتي).
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 
-# -----------------------------------------------------------------------
-# TODO حرج (BLE/WiFi coexistence - راجع MESH_DESIGN.md §2):
-# -----------------------------------------------------------------------
-# لازم نفعّل BT/WiFi coexistence عشان BLE advertising (positioning)
-# وmesh_lite (WiFi) يشتغلوا مع بعض من غير ما حد يقاطع التاني. اسم
-# الـKconfig option بالظبط بيختلف شوية حسب نسخة ESP-IDF المستخدمة، فمش
-# هحطه هنا افتراضًا عشان متتفاجئش إنه اسم غلط. بعد أول idf.py build:
-#   idf.py menuconfig -> Component config -> "Wi-Fi" أو
-#   "Bluetooth" -> دور على أي خيار اسمه فيه "coexist"/"coex" وفعّله.
-# ده لازم يتعمل قبل أي اختبار ميداني حقيقي، مش تفصيلة تأجيل.
-# -----------------------------------------------------------------------
+# partition table مخصص (2MB factory app) - الافتراضي (1MB) مش كافي
+# لحجم mesh_lite + NimBLE مع بعض (~1.04MB فعليًا). الفلاش 4MB
+# فمفيش مشكلة في المساحة.
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# إصلاح بعد crash حقيقي ظهر في اختبار IPS_Mesh_Root (نفس mesh_lite/
+# iot_bridge موجودين هنا كمان) - stack overflow في "Tmr Svc" task.
+CONFIG_FREERTOS_TIMER_TASK_STACK_DEPTH=4096
+
+# منع النود من الاتصال تلقائيًا بأي راوتر خارجي - جزء أساسي من
+# تصميمنا (الشبكة معزولة تمامًا عن الإنترنت).
+# CONFIG_BRIDGE_EXTERNAL_NETIF_STATION is not set
+
+# --- BLE stack: NimBLE بدل Bluedroid (أخف وأنسب لـadvertising بسيط) ---
+CONFIG_BT_ENABLED=y
+CONFIG_BT_NIMBLE_ENABLED=y
+CONFIG_BT_BLUEDROID_ENABLED=n
+
+# ملحوظة (BLE/WiFi coexistence - راجع MESH_PROGRESS.md):
+# اتأكد فعليًا من محتوى sdkconfig المتولّد إن CONFIG_ESP_COEX_ENABLED=y
+# وCONFIG_ESP_COEX_SW_COEXIST_ENABLE=y مفعّلين تلقائيًا بمجرد وجود
+# مكوّني bt وesp_wifi في نفس البناء - مفيش داعي لإضافة config يدوي هنا.
+# لسه محتاج اختبار ميداني فعلي: هل BLE advertising بيستقر لما mesh
+# traffic يزيد؟ (ده اختبار أداء، مش إعداد ناقص).

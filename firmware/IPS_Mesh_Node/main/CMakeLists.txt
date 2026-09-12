@@ -1,4 +1,5 @@
 idf_component_register(
-    SRCS "main.cpp" "ble_node.cpp" "mesh_participant.cpp"
+    SRCS "main.c" "node_id_store.c" "ble_node.c" "provisioning.c" "mesh_participant.c"
     INCLUDE_DIRS "."
+    REQUIRES bt nvs_flash driver
 )

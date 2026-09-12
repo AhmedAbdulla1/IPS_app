@@ -1,0 +1,79 @@
+#include "mesh_participant.h"
+
+#include "ble_node.h"
+#include "config.h"
+
+#include "esp_event.h"
+#include "esp_log.h"
+#include "esp_mesh_lite.h"
+#include "esp_netif.h"
+#include "esp_wifi.h"
+#include "nvs_flash.h"
+
+static const char *TAG = "mesh_participant";
+
+void meshParticipantSetup() {
+  ESP_LOGI(TAG, "بيهيّئ mesh_lite (non-root)...");
+
+  // NVS/netif/event loop ممكن يكونوا اتعملوا بالفعل من جوه Arduino core
+  // (initArduino قبل ما setup() بتاعنا يتنادى) - بنتجاهل
+  // ESP_ERR_INVALID_STATE هنا بس عشان منكسرش لو كده. لو ظهر error تاني
+  // غريب وقت أول اختبار فعلي، ده أول مكان تدور فيه.
+  esp_err_t nvs_ret = nvs_flash_init();
+  if (nvs_ret == ESP_ERR_NVS_NO_FREE_PAGES || nvs_ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    nvs_ret = nvs_flash_init();
+  }
+  if (nvs_ret != ESP_OK && nvs_ret != ESP_ERR_INVALID_STATE) {
+    ESP_ERROR_CHECK(nvs_ret);
+  }
+
+  esp_err_t netif_ret = esp_netif_init();
+  if (netif_ret != ESP_OK && netif_ret != ESP_ERR_INVALID_STATE) {
+    ESP_ERROR_CHECK(netif_ret);
+  }
+
+  esp_err_t evt_ret = esp_event_loop_create_default();
+  if (evt_ret != ESP_OK && evt_ret != ESP_ERR_INVALID_STATE) {
+    ESP_ERROR_CHECK(evt_ret);
+  }
+
+  // إحنا مش بنستخدم WiFi.h بتاع Arduino خالص هنا - mesh_lite بيدير
+  // راديو الـWiFi بنفسه عبر esp_wifi_* مباشرة.
+  wifi_init_config_t wifi_cfg = WIFI_INIT_CONFIG_DEFAULT();
+  esp_err_t wifi_ret = esp_wifi_init(&wifi_cfg);
+  if (wifi_ret != ESP_OK && wifi_ret != ESP_ERR_INVALID_STATE) {
+    ESP_ERROR_CHECK(wifi_ret);
+  }
+
+  esp_mesh_lite_config_t mesh_lite_config = ESP_MESH_LITE_DEFAULT_INIT();
+
+  // TODO: لازم نفعّل هنا تحديدًا وضع "non-root" (الـnode ميحاولش ياخد
+  // دور root). اسم الحقل بالظبط في esp_mesh_lite_config_t محتاج تأكيد
+  // من الـheader بعد أول build (نفس ملاحظة IPS_Mesh_Root/mesh_bridge.c).
+
+  ESP_ERROR_CHECK(esp_mesh_lite_init(&mesh_lite_config));
+  ESP_ERROR_CHECK(esp_mesh_lite_start());
+
+  ESP_LOGI(TAG, "mesh_lite اشتغل (node). الطبقة الحالية: %d",
+           esp_mesh_lite_get_level());
+}
+
+void meshParticipantSendHeartbeat() {
+  // -----------------------------------------------------------------
+  // TODO حرج (نفس الملاحظة في IPS_Mesh_Root/main/mesh_bridge.c) -
+  // راجع MESH_PROGRESS.md:
+  // -----------------------------------------------------------------
+  // دالة إرسال بيانات خام من child لـroot (زي esp_mesh_lite_try_add_msg
+  // أو المكافئ ليها) محتاجة تأكيد من esp_mesh_lite.h بعد أول
+  // idf.py build. لحد ما نأكدها، الدالة دي placeholder بس - مبتبعتش
+  // حاجة فعليًا للراديو دلوقتي.
+  //
+  // البيانات اللي المفروض تتبعت (HealthHeartbeat من MESH_DESIGN.md §5):
+  //   node_id   = g_nodeId (من ble_node.h، 16 بايت)
+  //   hop_count = بيتحسب من esp_mesh_lite_get_level() أو المكافئ
+  //   seq       = عداد متزايد محلي (static uint16_t بجوه الدالة دي)
+  //   uptime_ms = millis()
+  // -----------------------------------------------------------------
+  ESP_LOGD(TAG, "TODO: إرسال heartbeat فعلي - راجع mesh_participant.cpp");
+}

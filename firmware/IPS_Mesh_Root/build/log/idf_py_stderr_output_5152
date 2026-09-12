@@ -1,0 +1,10 @@
+Command: cmake -G Ninja -DPYTHON_DEPS_CHECKED=1 -DPYTHON=C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe -DESP_PLATFORM=1 -DIDF_TARGET=esp32 -DCCACHE_ENABLE=1 E:\IPS_app\firmware\IPS_Mesh_Root
+warning: the int symbol BRIDGE_SOFTAP_MAX_CONNECT_NUMBER (defined at E:/IPS_app/firmware/IPS_Mesh_Root/managed_components/espressif__iot_bridge/Kconfig:108) has a non-int default BRIDGE_CUSTOM_MAX_CONNECT_NUMBER (undefined)
+error: patch failed: src/core/ipv4/dhcp.c:779
+error: src/core/ipv4/dhcp.c: patch does not apply
+error: patch failed: components/lwip/apps/dhcpserver/dhcpserver.c:1267
+error: components/lwip/apps/dhcpserver/dhcpserver.c: patch does not apply
+error: patch failed: src/core/ipv4/ip4.c:332
+error: src/core/ipv4/ip4.c: patch does not apply
+error: patch failed: src/core/ipv4/ip4_napt.c:41
+error: src/core/ipv4/ip4_napt.c: patch does not apply

@@ -1,0 +1,2 @@
+source E:/IPS_app/firmware/IPS_Mesh_Node/build/gdbinit/symbols
+source E:/IPS_app/firmware/IPS_Mesh_Node/build/gdbinit/connect

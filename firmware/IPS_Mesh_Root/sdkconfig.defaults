@@ -1,15 +1,44 @@
-# إعدادات SDK افتراضية لمشروع الـRoot. القيم دي starting point - لازم
-# تتراجع فعليًا عبر `idf.py menuconfig` بعد أول build ناجح، لأن أسماء
-# بعض options بتختلف حسب نسخة الـmesh_lite component المُنزّلة.
+# This file was generated using idf.py save-defconfig or menuconfig [D] key. It can be edited manually.
+# Espressif IoT Development Framework (ESP-IDF) 5.5.5 Project Minimal Configuration
+#
 
-# الـRoot بيقدر يشتغل من غير راوتر خارجي (متأكد منها من توثيق mesh_lite
-# الرسمي: "Support establishing mesh network by root node even if no
-# router is connected"). فعّلها من Component config -> Mesh Lite في
-# menuconfig لو مكنش الافتراضي مفعّل.
-
-# TODO: بعد idf.py menuconfig، راجع وفعّل من "Component config -> Mesh Lite":
-#   - Max mesh layer (اقترحنا 8-10 في MESH_DESIGN.md §4.4)
-#   - تشفير بيانات الشبكة (AES) - اسم الـoption بيختلف حسب النسخة
-#   - "Allow root to run without router" (أو المكافئ ليها)
-
+#
+# Serial flasher config
+#
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+
+# partition table مخصص (2MB factory app) - نفس سبب IPS_Mesh_Node (mesh_lite +
+# wifi_provisioning/protocomm/mbedtls أكبر من 1MB الافتراضي). الفلاش 4MB
+# فمفيش مشكلة في المساحة.
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# إصلاح بعد crash حقيقي وقت الاختبار على الروت (stack overflow
+# في "Tmr Svc" task) - الافتراضي (2048) مش كافي مع حمل mesh_lite/OTA
+# وقت البدء.
+CONFIG_FREERTOS_TIMER_TASK_STACK_DEPTH=4096
+
+# منع الروتر من الاتصال تلقائيًا بأي راوتر خارجي (حتى لو متخزّن
+# credentials قديمة في NVS من استخدام سابق لنفس الشريحة) - ده
+# جزء أساسي من تصميمنا: الشبكة معزولة تمامًا عن الإنترنت.
+# CONFIG_BRIDGE_EXTERNAL_NETIF_STATION is not set
+# end of Serial flasher config
+
+#
+# Component config
+#
+
+#
+# ESP Wi-Fi Mesh Lite
+#
+CONFIG_MESH_LITE_ENABLE=y
+
+#
+# Mesh-Lite info configuration
+#
+CONFIG_MESH_LITE_MAXIMUM_LEVEL_ALLOWED=10
+# end of Mesh-Lite info configuration
+
+CONFIG_ESP_MESH_LITE_OTA_ENABLE=y
+# end of ESP Wi-Fi Mesh Lite
+# end of Component config

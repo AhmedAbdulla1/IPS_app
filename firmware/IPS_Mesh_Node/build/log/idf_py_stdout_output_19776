@@ -1,0 +1,551 @@
+Command: C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe E:\.espressif\v5.5.5\esp-idf\tools/idf_monitor.py -p COM8 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 E:\IPS_app\firmware\IPS_Mesh_Node\build\ips_mesh_node.elf E:\IPS_app\firmware\IPS_Mesh_Node\build\bootloader\bootloader.elf --force-color -m 'C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe' 'E:\.espressif\v5.5.5\esp-idf\tools\idf.py' '-p' 'COM8'
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 06:15:20[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (470) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (505) cpu_start: Pro cpu start user code[0m
+[0;32mI (505) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (515) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 06:15:10[0m
+[0;32mI (524) app_init: ELF file SHA256:  f78717572...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (537) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (541) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (769) phy_init: Saving new calibration data due to checksum failure or outdated calibration data, mode(0)[0m
+[0;32mI (1079) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1079) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1109) wifi:wifi driver task: 3ffd6c54, prio:23, stack:6656, core=0[0m
+[0;32mI (1129) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1129) wifi:wifi certification version: v7.0[0m
+[0;32mI (1129) wifi:config NVS flash: enabled[0m
+[0;32mI (1129) wifi:config nano formatting: disabled[0m
+[0;32mI (1129) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1139) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1139) wifi:Init management short buffer num: 32[0m
+[0;32mI (1149) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1149) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1159) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1159) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1169) wifi_init: rx ba win: 6[0m
+[0;32mI (1169) wifi_init: accept mbox: 6[0m
+[0;32mI (1169) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1169) wifi_init: udp mbox: 6[0m
+[0;32mI (1179) wifi_init: tcp mbox: 6[0m
+[0;32mI (1179) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1179) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1179) wifi_init: tcp mss: 1440[0m
+[0;32mI (1189) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1189) NimBLE: disc_mode=2[0m
+[0;32mI (1189) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1199) NimBLE: [0m
+
+[0;32mI (1209) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1209) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1209) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1219) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1229) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1229) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1229) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1239) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1239) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1249) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1249) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1259) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1259) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1269) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1269) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1279) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1579) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: f431e6972aad94c9a2c904a118954f07c539f37ee669db69ae5f09cbb5e631af [0m
+[0;32mI (1579) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1579) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1589) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1589) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1599) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (1849) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (1849) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (1849) main_task: Returned from app_main()[0m
+[0;33mW (6259) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6259) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+[1;31mE (6859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (6859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (6859) task_wdt: Tasks currently running:[0m
+[1;31mE (6859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (6859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (6859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3310 0x40090D0A:0x3FFE3320 0x40090784:0x3FFE3340 0x40090826:0x3FFE3380 0x40082B89:0x3FFE33A0 0x40082C91:0x3FFE33D0 0x400D7AD4:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (11259) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (11259) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+[1;31mE (11859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (11859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (11859) task_wdt: Tasks currently running:[0m
+[1;31mE (11859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (11859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (11859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x40090786:0x3FFE3430 0x40090826:0x3FFE3470 0x40082B89:0x3FFE3490 0x40082C91:0x3FFE34C0 0x40082D0A:0x3FFE34E0 0x4017A283:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (16859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (16859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (16859) task_wdt: Tasks currently running:[0m
+[1;31mE (16859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (16859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (16859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x400D91AB:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (21259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (21299) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (21859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (21859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (21859) task_wdt: Tasks currently running:[0m
+[1;31mE (21859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (21859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (21859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x400017EC:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (26859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (26859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (26859) task_wdt: Tasks currently running:[0m
+[1;31mE (26859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (26859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (26859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3310 0x40090D0A:0x3FFE3320 0x40090784:0x3FFE3340 0x40090826:0x3FFE3380 0x40082B89:0x3FFE33A0 0x40082C91:0x3FFE33D0 0x400D7AD4:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (31259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (31259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (31859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (31859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (31859) task_wdt: Tasks currently running:[0m
+[1;31mE (31859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (31859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (31859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x40092ED8:0x3FFE3410 0x40090719:0x3FFE3430 0x40090826:0x3FFE3470 0x40082B89:0x3FFE3490 0x40082C91:0x3FFE34C0 0x40082D0A:0x3FFE34E0 0x4017A283:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (36859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (36859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (36859) task_wdt: Tasks currently running:[0m
+[1;31mE (36859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (36859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (36859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3400 0x40090D0A:0x3FFE3410 0x40090363:0x3FFE3430 0x40090456:0x3FFE3470 0x40082BFF:0x3FFE3490 0x40082CD1:0x3FFE34C0 0x40082D1E:0x3FFE34E0 0x4017A2AF:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (41259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (41259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (41859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (41859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (41859) task_wdt: Tasks currently running:[0m
+[1;31mE (41859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (41859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (41859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4017A33E:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (46859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (46859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (46859) task_wdt: Tasks currently running:[0m
+[1;31mE (46859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (46859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (46859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3460 0x40092F0A:0x3FFE3470 0x40082BBB:0x3FFE3490 0x40082CD1:0x3FFE34C0 0x40082D1E:0x3FFE34E0 0x4017A2AF:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (51259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (51259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (51859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (51859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (51859) task_wdt: Tasks currently running:[0m
+[1;31mE (51859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (51859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (51859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3310 0x40090D0A:0x3FFE3320 0x40090784:0x3FFE3340 0x40090826:0x3FFE3380 0x40082B89:0x3FFE33A0 0x40082C91:0x3FFE33D0 0x400D7AD4:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (56859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (56859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (56859) task_wdt: Tasks currently running:[0m
+[1;31mE (56859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (56859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (56859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3400 0x40090D0A:0x3FFE3410 0x40090784:0x3FFE3430 0x40090826:0x3FFE3470 0x40082B89:0x3FFE3490 0x40082C91:0x3FFE34C0 0x40082D0A:0x3FFE34E0 0x4017A283:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (61259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (61259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (61859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (61859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (61859) task_wdt: Tasks currently running:[0m
+[1;31mE (61859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (61859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (61859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x40092BEE:0x3FFE3360 0x4009043F:0x3FFE3380 0x40082BFF:0x3FFE33A0 0x40082CD1:0x3FFE33D0 0x400D7B9B:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (66859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (66859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (66859) task_wdt: Tasks currently running:[0m
+[1;31mE (66859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (66859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (66859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x400D91D4:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (71259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (71259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (71859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (71859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (71859) task_wdt: Tasks currently running:[0m
+[1;31mE (71859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (71859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (71859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x40082B3F:0x3FFE3490 0x40082C91:0x3FFE34C0 0x40082D0A:0x3FFE34E0 0x4017A283:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (76859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (76859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (76859) task_wdt: Tasks currently running:[0m
+[1;31mE (76859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (76859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (76859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3460 0x40092F0A:0x3FFE3470 0x40082B3F:0x3FFE3490 0x40082C91:0x3FFE34C0 0x40082D0A:0x3FFE34E0 0x4017A283:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (81259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (81259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (81859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (81859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (81859) task_wdt: Tasks currently running:[0m
+[1;31mE (81859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (81859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (81859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3440 0x40092BEE:0x3FFE3450 0x4009080C:0x3FFE3470 0x40082B89:0x3FFE3490 0x40082C91:0x3FFE34C0 0x40082D0A:0x3FFE34E0 0x4017A283:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (86859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (86859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (86859) task_wdt: Tasks currently running:[0m
+[1;31mE (86859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (86859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (86859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x400D91D4:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (91259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (91259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (91859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (91859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (91859) task_wdt: Tasks currently running:[0m
+[1;31mE (91859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (91859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (91859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x400D7AF2:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (96859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (96859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (96859) task_wdt: Tasks currently running:[0m
+[1;31mE (96859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (96859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (96859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x400D6B7D:0x3FFE33C0 0x400D7AF5:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (101259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (101259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (101859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (101859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (101859) task_wdt: Tasks currently running:[0m
+[1;31mE (101859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (101859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (101859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3400 0x40090D0A:0x3FFE3410 0x40090784:0x3FFE3430 0x40090826:0x3FFE3470 0x40082B89:0x3FFE3490 0x40082C91:0x3FFE34C0 0x40082D0A:0x3FFE34E0 0x4017A283:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (106859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (106859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (106859) task_wdt: Tasks currently running:[0m
+[1;31mE (106859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (106859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (106859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x400D91B6:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (111259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (111259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (111859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (111859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (111859) task_wdt: Tasks currently running:[0m
+[1;31mE (111859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (111859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (111859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3310 0x40090D0A:0x3FFE3320 0x40090363:0x3FFE3340 0x40090456:0x3FFE3380 0x40082BFF:0x3FFE33A0 0x40082CD1:0x3FFE33D0 0x400D7B9B:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (116859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (116859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (116859) task_wdt: Tasks currently running:[0m
+[1;31mE (116859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (116859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (116859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x400D7AB5:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (121259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (121259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (121859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (121859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (121859) task_wdt: Tasks currently running:[0m
+[1;31mE (121859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (121859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (121859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3310 0x40090D0A:0x3FFE3320 0x40090363:0x3FFE3340 0x40090456:0x3FFE3380 0x40082BFF:0x3FFE33A0 0x40082CD1:0x3FFE33D0 0x400D7B9B:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (126859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (126859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (126859) task_wdt: Tasks currently running:[0m
+[1;31mE (126859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (126859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (126859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3310 0x40090D0A:0x3FFE3320 0x40090784:0x3FFE3340 0x40090826:0x3FFE3380 0x40082B89:0x3FFE33A0 0x40082C91:0x3FFE33D0 0x400D7AD4:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (131259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (131259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (131859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (131859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (131859) task_wdt: Tasks currently running:[0m
+[1;31mE (131859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (131859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (131859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3400 0x40090D0A:0x3FFE3410 0x40090363:0x3FFE3430 0x40090456:0x3FFE3470 0x40082BFF:0x3FFE3490 0x40082CD1:0x3FFE34C0 0x40082D1E:0x3FFE34E0 0x4017A2AF:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (136859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (136859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (136859) task_wdt: Tasks currently running:[0m
+[1;31mE (136859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (136859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (136859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3310 0x40090D0A:0x3FFE3320 0x40090363:0x3FFE3340 0x40090456:0x3FFE3380 0x40082BFF:0x3FFE33A0 0x40082CD1:0x3FFE33D0 0x400D7B9B:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (141259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (141259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (141859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (141859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (141859) task_wdt: Tasks currently running:[0m
+[1;31mE (141859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (141859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (141859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3310 0x40090D0A:0x3FFE3320 0x40090363:0x3FFE3340 0x40090456:0x3FFE3380 0x40082BFF:0x3FFE33A0 0x40082CD1:0x3FFE33D0 0x400D7B9B:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (146859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (146859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (146859) task_wdt: Tasks currently running:[0m
+[1;31mE (146859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (146859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (146859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x40090735:0x3FFE3340 0x40090826:0x3FFE3380 0x40082B89:0x3FFE33A0 0x40082C91:0x3FFE33D0 0x400D7AD4:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (151259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (151259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (151859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (151859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (151859) task_wdt: Tasks currently running:[0m
+[1;31mE (151859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (151859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (151859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3400 0x40090D0A:0x3FFE3410 0x40090363:0x3FFE3430 0x40090456:0x3FFE3470 0x40082BFF:0x3FFE3490 0x40082CD1:0x3FFE34C0 0x40082D1E:0x3FFE34E0 0x4017A2AF:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (156859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (156859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (156859) task_wdt: Tasks currently running:[0m
+[1;31mE (156859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (156859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (156859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x40090B21:0x3FFE3430 0x40090826:0x3FFE3470 0x40082B89:0x3FFE3490 0x40082C91:0x3FFE34C0 0x40082D0A:0x3FFE34E0 0x4017A283:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (161259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (161259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (161859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (161859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (161859) task_wdt: Tasks currently running:[0m
+[1;31mE (161859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (161859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (161859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x400D8698:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (166859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (166859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (166859) task_wdt: Tasks currently running:[0m
+[1;31mE (166859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (166859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (166859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x400D91B6:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (171259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (171259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (171859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (171859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (171859) task_wdt: Tasks currently running:[0m
+[1;31mE (171859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (171859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (171859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3310 0x40090D0A:0x3FFE3320 0x40090363:0x3FFE3340 0x40090456:0x3FFE3380 0x40082BFF:0x3FFE33A0 0x40082CD1:0x3FFE33D0 0x400D7B9B:0x3FFE33F0 0x400D91D2:0x3FFE3410 0x4000BDBB:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (176859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (176859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (176859) task_wdt: Tasks currently running:[0m
+[1;31mE (176859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (176859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (176859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BDAF:0x3FFE3430 0x400017EA:0x3FFE3450 0x400D86A7:0x3FFE3470 0x400D91D2:0x3FFE3490 0x4000BDBB:0x3FFE34B0 0x40001125:0x3FFE34D0 0x4017A8CE:0x3FFE34F0 0x4017A295:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (181259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (181259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (181859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (181859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (181859) task_wdt: Tasks currently running:[0m
+[1;31mE (181859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (181859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (181859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3400 0x40090D0A:0x3FFE3410 0x40090363:0x3FFE3430 0x40090456:0x3FFE3470 0x40082BFF:0x3FFE3490 0x40082CD1:0x3FFE34C0 0x40082D1E:0x3FFE34E0 0x4017A2AF:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (186859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (186859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (186859) task_wdt: Tasks currently running:[0m
+[1;31mE (186859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (186859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (186859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x40082B3F:0x3FFE3490 0x40082C91:0x3FFE34C0 0x40082D0A:0x3FFE34E0 0x4017A283:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[0;33mW (191259) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (191259) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[1;31mE (191859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (191859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (191859) task_wdt: Tasks currently running:[0m
+[1;31mE (191859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (191859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (191859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x4000BFED:0x3FFE3400 0x40090D0A:0x3FFE3410 0x40090363:0x3FFE3430 0x40090456:0x3FFE3470 0x40082BFF:0x3FFE3490 0x40082CD1:0x3FFE34C0 0x40082D1E:0x3FFE34E0 0x4017A2AF:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+
+[1;31mE (196859) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[1;31mE (196859) task_wdt:  - IDLE1 (CPU 1)[0m
+[1;31mE (196859) task_wdt: Tasks currently running:[0m
+[1;31mE (196859) task_wdt: CPU 0: IDLE0[0m
+[1;31mE (196859) task_wdt: CPU 1: provisioning[0m
+[1;31mE (196859) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x40084B0E:0x3FFC01E0 0x40083A2D:0x3FFC0200 0x40090292:0x3FFE3430 0x40090456:0x3FFE3470 0x40082BFF:0x3FFE3490 0x40082CD1:0x3FFE34C0 0x40082D1E:0x3FFE34E0 0x4017A2AF:0x3FFE3510 0x4017A34A:0x3FFE3540 0x400DA8BD:0x3FFE3560 0x40090981:0x3FFE35D0
+

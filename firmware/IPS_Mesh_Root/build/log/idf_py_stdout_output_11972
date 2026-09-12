@@ -1,0 +1,302 @@
+Command: C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe E:\.espressif\v5.5.5\esp-idf\tools/idf_monitor.py -p COM8 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 E:\IPS_app\firmware\IPS_Mesh_Root\build\ips_mesh_root.elf E:\IPS_app\firmware\IPS_Mesh_Root\build\bootloader\bootloader.elf --force-color -m 'C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe' 'E:\.espressif\v5.5.5\esp-idf\tools\idf.py' '-p' 'COM8'
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:51:23[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=1f6a4h (128676) map[0m
+[0;32mI (132) esp_image: segment 1: paddr=0002f6cc vaddr=3ffb0000 size=0094ch (  2380) load[0m
+[0;32mI (134) esp_image: segment 2: paddr=00030020 vaddr=400d0020 size=9dfa4h (647076) map[0m
+[0;32mI (357) esp_image: segment 3: paddr=000cdfcc vaddr=3ffb094c size=03a8ch ( 14988) load[0m
+[0;32mI (363) esp_image: segment 4: paddr=000d1a60 vaddr=40080000 size=1853ch ( 99644) load[0m
+[0;32mI (403) esp_image: segment 5: paddr=000e9fa4 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (415) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (415) boot: Disabling RNG early entropy source...[0m
+[0;32mI (425) cpu_start: Multicore app[0m
+[0;32mI (434) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (434) cpu_start: Pro cpu start user code[0m
+[0;32mI (434) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (436) app_init: Application information:[0m
+[0;32mI (440) app_init: Project name:     ips_mesh_root[0m
+[0;32mI (444) app_init: App version:      04a9967-dirty[0m
+[0;32mI (449) app_init: Compile time:     Sep 11 2026 05:50:59[0m
+[0;32mI (454) app_init: ELF file SHA256:  347aeba80...[0m
+[0;32mI (458) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (462) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (466) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (470) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (474) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (480) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (485) heap_init: At 3FFB99D0 len 00026630 (153 KiB): DRAM[0m
+[0;32mI (491) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (496) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (501) heap_init: At 4009853C len 00007AC4 (30 KiB): IRAM[0m
+[0;32mI (508) spi_flash: detected chip: generic[0m
+[0;32mI (510) spi_flash: flash io: dio[0m
+[0;32mI (514) main_task: Started on CPU0[0m
+[0;32mI (514) main_task: Calling app_main()[0m
+[0;32mI (514) ips_mesh_root: === IPS Mesh Root starting ===[0m
+[0;32mI (524) mesh_bridge: بيهيّئ mesh bridge (Root role)...[0m
+[0;32mI (594) wifi:wifi driver task: 3ffc21f8, prio:23, stack:6656, core=0[0m
+[0;32mI (604) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (604) wifi:wifi certification version: v7.0[0m
+[0;32mI (604) wifi:config NVS flash: enabled[0m
+[0;32mI (604) wifi:config nano formatting: disabled[0m
+[0;32mI (614) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (614) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (624) wifi:Init management short buffer num: 32[0m
+[0;32mI (624) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (634) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (634) wifi:Init static rx buffer num: 10[0m
+[0;32mI (634) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (644) wifi_init: rx ba win: 6[0m
+[0;32mI (644) wifi_init: accept mbox: 6[0m
+[0;32mI (644) wifi_init: tcpip mbox: 32[0m
+[0;32mI (654) wifi_init: udp mbox: 6[0m
+[0;32mI (654) wifi_init: tcp mbox: 6[0m
+[0;32mI (654) wifi_init: tcp tx win: 5760[0m
+[0;32mI (664) wifi_init: tcp rx win: 5760[0m
+[0;32mI (664) wifi_init: tcp mss: 1440[0m
+[0;32mI (664) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (674) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (674) bridge_common: esp-iot-bridge version: 1.0.1[0m
+[0;32mI (684) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (764) wifi:mode : null[0m
+[0;32mI (764) wifi:mode : softAP (88:13:bf:0c:44:41)[0m
+[0;32mI (774) wifi:Total power save buffer number: 16[0m
+[0;32mI (774) wifi:Init max length of beacon: 752/752[0m
+[0;32mI (774) wifi:Init max length of beacon: 752/752[0m
+Add netif ap with 04a9967(commit id)
+[0;32mI (774) esp_netif_lwip: DHCP server started on interface WIFI_AP_DEF with IP: 192.168.4.1[0m
+[0;32mI (784) bridge_common: netif list add success[0m
+[0;32mI (794) bridge_common: [WIFI_AP_DEF ][0m
+[0;32mI (794) bridge_common: Set ip info:192.168.5.1[0m
+[0;32mI (804) bridge_wifi: SoftAP IP network segment has changed, deauth all station[0m
+[0;32mI (814) wifi:Disabled PMF config for SoftAP[0m
+[0;32mI (814) wifi:Total power save buffer number: 16[0m
+[0;32mI (814) bridge_common: DHCPS Restart, deauth all station[0m
+[0;32mI (814) esp_netif_lwip: DHCP server started on interface WIFI_AP_DEF with IP: 192.168.5.1[0m
+[0;32mI (824) bridge_common: [WIFI_AP_DEF ]Name Server1: 114.114.114.114[0m
+Add netif sta with 04a9967(commit id)
+[0;32mI (834) bridge_common: netif list add success[0m
+[0;32mI (844) wifi:mode : sta (88:13:bf:0c:44:40) + softAP (88:13:bf:0c:44:41)[0m
+[0;32mI (844) wifi:enable tsf[0m
+[0;32mI (854) bridge_wifi: Found ssid 123[0m
+[0;32mI (854) bridge_wifi: Found password @hmed147852#:;[0m
+[1;31mE (854) NVS: Failed to read IP info from NVS[0m
+[0;32mI (864) wifi:Disabled PMF config for STA[0m
+[0;32mI (864) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (874) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (874) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (884) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (884) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (884) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (894) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (894) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (904) wifi:Haven't to connect to a suitable AP now![0m
+[0;32mI (904) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (914) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (914) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (924) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (924) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1164) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 71a3341d9cceeec1900d8afb0b7ef836bdc50821d0f5b9a7c65ff4aaba5b373b [0m
+[0;32mI (1174) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1174) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1174) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1184) wifi:In 2G band, 5G channel bitmap does not take effect[0m
+[1;31mE (1184) wifi:2g bitmap contains only invalid channels= 0xfba0[0m
+[0;32mI (1194) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_OK [0m
+[0;32mI (1204) mesh_bridge: mesh_lite اشتغل. الطبقة الحالية: 0[0m
+[0;32mI (1204) ips_mesh_root: Root جاهز - بينتظر heartbeats من الـnodes.[0m
+[0;32mI (1214) main_task: Returned from app_main()[0m
+[0;32mI (4034) [vendor_ie]: Mesh-Lite Scan done [0m
+[0;33mW (4034) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;33mW (4044) wifi:Haven't to connect to a suitable AP now![0m
+[0;32mI (4044) [vendor_ie]: wifi_cfg 123, ap_info.ssid , router_config 123  [0m
+[0;32mI (4054) [vendor_ie]: wifi_cfg mac 00:00:00:00:00:00, ap_info mac 6c:c4:00:40:77:c4 [0m
+[0;32mI (4064) [vendor_ie]: esp_wifi_connect return ESP_OK [0m
+[0;32mI (4064) [vendor_ie]: RTC store: temp_mesh_id:255; ssid:123; bssid:00:00:00:00:00:00; crc:2647006634 [0m
+[0;32mI (5004) [vendor_ie]: esp_wifi_connect return ESP_OK [0m
+[0;32mI (5004) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x40088bd9:0x3ffbcf00 0x40088ba1:0x3ffbcf20 0x40089c56:0x3ffbcf40 0x4008b497:0x3ffbcfc0 0x40089d60:0x3ffbcfe0 0x40089d12:0x00000000 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 347aeba80
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:51:23[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=1f6a4h (128676) map[0m
+[0;32mI (132) esp_image: segment 1: paddr=0002f6cc vaddr=3ffb0000 size=0094ch (  2380) load[0m
+[0;32mI (134) esp_image: segment 2: paddr=00030020 vaddr=400d0020 size=9dfa4h (647076) map[0m
+[0;32mI (357) esp_image: segment 3: paddr=000cdfcc vaddr=3ffb094c size=03a8ch ( 14988) load[0m
+[0;32mI (363) esp_image: segment 4: paddr=000d1a60 vaddr=40080000 size=1853ch ( 99644) load[0m
+[0;32mI (403) esp_image: segment 5: paddr=000e9fa4 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (415) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (415) boot: Disabling RNG early entropy source...[0m
+[0;32mI (425) cpu_start: Multicore app[0m
+[0;32mI (434) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (434) cpu_start: Pro cpu start user code[0m
+[0;32mI (434) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (436) app_init: Application information:[0m
+[0;32mI (439) app_init: Project name:     ips_mesh_root[0m
+[0;32mI (444) app_init: App version:      04a9967-dirty[0m
+[0;32mI (448) app_init: Compile time:     Sep 11 2026 05:50:59[0m
+[0;32mI (453) app_init: ELF file SHA256:  347aeba80...[0m
+[0;32mI (458) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (462) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (466) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (470) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (474) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (480) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (485) heap_init: At 3FFB99D0 len 00026630 (153 KiB): DRAM[0m
+[0;32mI (490) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (496) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (501) heap_init: At 4009853C len 00007AC4 (30 KiB): IRAM[0m
+[0;32mI (508) spi_flash: detected chip: generic[0m
+[0;32mI (510) spi_flash: flash io: dio[0m
+[0;32mI (514) main_task: Started on CPU0[0m
+[0;32mI (514) main_task: Calling app_main()[0m
+[0;32mI (514) ips_mesh_root: === IPS Mesh Root starting ===[0m
+[0;32mI (524) mesh_bridge: بيهيّئ mesh bridge (Root role)...[0m
+[0;32mI (604) wifi:wifi driver task: 3ffc21f8, prio:23, stack:6656, core=0[0m
+[0;32mI (614) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (614) wifi:wifi certification version: v7.0[0m
+[0;32mI (614) wifi:config NVS flash: enabled[0m
+[0;32mI (614) wifi:config nano formatting: disabled[0m
+[0;32mI (624) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (624) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (634) wifi:Init management short buffer num: 32[0m
+[0;32mI (634) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (644) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (644) wifi:Init static rx buffer num: 10[0m
+[0;32mI (644) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (654) wifi_init: rx ba win: 6[0m
+[0;32mI (654) wifi_init: accept mbox: 6[0m
+[0;32mI (654) wifi_init: tcpip mbox: 32[0m
+[0;32mI (664) wifi_init: udp mbox: 6[0m
+[0;32mI (664) wifi_init: tcp mbox: 6[0m
+[0;32mI (664) wifi_init: tcp tx win: 5760[0m
+[0;32mI (674) wifi_init: tcp rx win: 5760[0m
+[0;32mI (674) wifi_init: tcp mss: 1440[0m
+[0;32mI (674) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (684) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (684) bridge_common: esp-iot-bridge version: 1.0.1[0m
+[0;32mI (694) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (774) wifi:mode : null[0m
+[0;32mI (784) wifi:mode : softAP (88:13:bf:0c:44:41)[0m
+[0;32mI (784) wifi:Total power save buffer number: 16[0m
+[0;32mI (784) wifi:Init max length of beacon: 752/752[0m
+[0;32mI (784) wifi:Init max length of beacon: 752/752[0m
+Add netif ap with 04a9967(commit id)
+[0;32mI (794) esp_netif_lwip: DHCP server started on interface WIFI_AP_DEF with IP: 192.168.4.1[0m
+[0;32mI (804) bridge_common: netif list add success[0m
+[0;32mI (804) bridge_common: [WIFI_AP_DEF ][0m
+[0;32mI (804) bridge_common: Set ip info:192.168.5.1[0m
+[0;32mI (814) bridge_wifi: SoftAP IP network segment has changed, deauth all station[0m
+[0;32mI (824) wifi:Disabled PMF config for SoftAP[0m
+[0;32mI (824) wifi:Total power save buffer number: 16[0m
+[0;32mI (824) bridge_common: DHCPS Restart, deauth all station[0m
+[0;32mI (834) esp_netif_lwip: DHCP server started on interface WIFI_AP_DEF with IP: 192.168.5.1[0m
+[0;32mI (844) bridge_common: [WIFI_AP_DEF ]Name Server1: 114.114.114.114[0m
+Add netif sta with 04a9967(commit id)
+[0;32mI (844) bridge_common: netif list add success[0m
+[0;32mI (854) wifi:mode : sta (88:13:bf:0c:44:40) + softAP (88:13:bf:0c:44:41)[0m
+[0;32mI (864) wifi:enable tsf[0m
+[0;32mI (864) bridge_wifi: Found ssid 123[0m
+[0;32mI (864) bridge_wifi: Found password @hmed147852#:;[0m
+[1;31mE (874) NVS: Failed to read IP info from NVS[0m
+[0;32mI (874) wifi:Disabled PMF config for STA[0m
+[0;32mI (874) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (884) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (884) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (894) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (894) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (904) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (904) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (914) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (914) wifi:Haven't to connect to a suitable AP now![0m
+[0;32mI (924) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (924) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (924) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (934) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (934) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1184) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 71a3341d9cceeec1900d8afb0b7ef836bdc50821d0f5b9a7c65ff4aaba5b373b [0m
+[0;32mI (1184) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1184) [mesh-lite-espnow]: Start espnow task [0m
+[0;33mW (1194) [vendor_ie]: [Unexpected restart]: the rtc data: temp_mesh_id:255, level:1, ssid:123, bssid 00:00:00:00:00:00 [0m
+[0;33mW (1204) [vendor_ie]: Try to connect the original parent node [0m
+[0;33mW (1204) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;32mI (1214) [vendor_ie]: esp_wifi_connect return ESP_OK [0m
+[0;32mI (1224) mesh_bridge: mesh_lite اشتغل. الطبقة الحالية: 1[0m
+[0;32mI (1224) ips_mesh_root: Root جاهز - بينتظر heartbeats من الـnodes.[0m
+[0;32mI (1234) main_task: Returned from app_main()[0m
+[0;32mI (2684) wifi:ap channel adjust o:1,1 n:9,1[0m
+[0;32mI (2684) wifi:new:<9,1>, old:<1,1>, ap:<9,1>, sta:<9,1>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (2684) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (2694) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (2704) wifi:state: assoc -> run (0x10)[0m
+[0;32mI (2734) wifi:[ADDBA]RX DELBA, reason:39, delete tid:6, initiator:1(originator)[0m
+[0;32mI (2804) wifi:connected with 123, aid = 4, channel 9, 40U, bssid = e8:81:75:00:d1:18[0m
+[0;32mI (2804) wifi:security: WPA2-PSK, phy: bgn, rssi: -25, cipher(pairwise:0x3, group:0x3), pmf:0[0m
+[0;32mI (2814) wifi:pm start, type: 1[0m
+
+[0;32mI (2814) wifi:dp: 1, bi: 102400, li: 3, scale listen interval from 307200 us to 307200 us[0m
+[0;32mI (2824) wifi:AP's beacon interval = 102400 us, DTIM period = 1[0m
+[0;32mI (2824) wifi:<ba-add>idx:0 (ifx:0, e8:81:75:00:d1:18), tid:6, ssn:5, winSize:64[0m
+[0;32mI (5974) esp_netif_handlers: sta ip: 192.168.1.18, mask: 255.255.255.0, gw: 192.168.1.1[0m
+[0;32mI (5974) bridge_wifi: Connected with IP Address:192.168.1.18[0m
+[0;32mI (5974) bridge_common: [WIFI_AP_DEF ]Name Server1: 8.8.8.8[0m
+[0;32mI (5974) [vendor_ie]: RTC store: temp_mesh_id:18; ssid:123; bssid:00:00:00:00:00:00; crc:3708618289 [0m
+[0;33mW (5984) [ESP_Mesh_Lite_Comm]: argot is not saved in flash [0m

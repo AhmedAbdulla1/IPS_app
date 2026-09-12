@@ -1,11 +1,6 @@
-# تبعيات المشروع:
-#   - arduino-esp32: بيستضيف كود الـBLE advertising الحالي (منقول من
-#     IPS_Demo_Node_v2.0.0.ino) من غير إعادة كتابته من الصفر.
-#   - mesh_lite: مشاركة الـnode في شبكة الـhealth monitoring.
-#
-# TODO: تأكد من توافق نسخة arduino-esp32 مع نسخة ESP-IDF المثبتة عندك
-# (مثال معروف وقت الكتابة: Arduino Core 3.3.11 متوافق مع ESP-IDF v5.5) -
-# راجع https://github.com/espressif/arduino-esp32/releases
+# تبعية واحدة بس دلوقتي - شلنا arduino-esp32 نهائيًا عشان مشكلة توافق
+# النسخ مع ESP-IDF v6.1 (راجع MESH_PROGRESS.md للتفاصيل). الـBLE
+# advertising بقى مكتوب مباشرة بـESP-IDF native (NimBLE، مكوّن "bt"
+# المدمج في IDF نفسه - مش محتاج تبعية خارجية منفصلة).
 dependencies:
-  espressif/arduino-esp32: "*"
   espressif/mesh_lite: "*"

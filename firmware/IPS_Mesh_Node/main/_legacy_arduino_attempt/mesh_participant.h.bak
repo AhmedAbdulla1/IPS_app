@@ -1,0 +1,12 @@
+#pragma once
+
+// مشاركة الـnode في شبكة ESP-MESH-LITE (non-root) + إرسال heartbeat
+// دوري للـparent/root. التصميم الكامل: ../MESH_DESIGN.md
+
+// بيهيّئ mesh_lite كـnode عادي (مش root). لازم ينادى بعد بدء الـWiFi
+// الداخلي (بيعمل ده هو نفسه لو مش متعمل قبل كده).
+void meshParticipantSetup();
+
+// بيبعت heartbeat واحدة دلوقتي (يحتوي g_nodeId من ble_node.h + hop
+// count الحالي). بينادى دوريًا من loop() كل IPS_HEARTBEAT_INTERVAL_MS.
+void meshParticipantSendHeartbeat();

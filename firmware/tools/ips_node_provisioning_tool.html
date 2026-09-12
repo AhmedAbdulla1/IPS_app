@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>أداة تجهيز نقاط الـIPS (Node Provisioning)</title>
+<style>
+  :root {
+    --bg: #0f1220;
+    --card: #1a1e33;
+    --accent: #4f8cff;
+    --accent2: #34c77b;
+    --text: #e8eaf6;
+    --muted: #9aa0c3;
+    --danger: #ff5c5c;
+    --border: #2a2f4a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    max-width: 720px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 16px 0;
+    color: var(--accent);
+  }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .field { flex: 1; min-width: 140px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #10132400;
+    background: #12162a;
+    color: var(--text);
+    font-size: 14px;
+  }
+  input:focus { outline: none; border-color: var(--accent); }
+  button {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-success { background: var(--accent2); color: white; }
+  .btn-secondary { background: #2a2f4a; color: var(--text); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .status {
+    margin-top: 10px;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #12162a;
+    border: 1px solid var(--border);
+    white-space: pre-wrap;
+    max-height: 160px;
+    overflow-y: auto;
+    direction: ltr;
+    text-align: left;
+    font-family: Consolas, monospace;
+  }
+  .status.ok { border-color: var(--accent2); }
+  .status.err { border-color: var(--danger); }
+  .uid-display {
+    font-family: Consolas, monospace;
+    font-size: 16px;
+    background: #12162a;
+    border: 1px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-top: 12px;
+    direction: ltr;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    text-align: center;
+  }
+  th { background: #12162a; color: var(--muted); }
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: var(--accent2);
+    color: white;
+  }
+  .top-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>🛰️ أداة تجهيز نقاط الـIPS</h1>
+<div class="subtitle">
+  توليد Node ID لكل جهاز، إرساله عبر USB، وتجميع بيانات الموقع لتصديرها لاحقًا لـSupabase.
+  تعمل على Edge أو Chrome فقط (Web Serial API).
+</div>
+
+<!-- الخطوة 1: الاتصال -->
+<div class="card">
+  <h2>1. الاتصال بالجهاز</h2>
+  <div class="row">
+    <button id="connectBtn" class="btn-primary">🔌 اتصل بالجهاز</button>
+    <button id="disconnectBtn" class="btn-secondary" disabled>قطع الاتصال</button>
+  </div>
+  <div id="connStatus" class="status">مش متصل لسه. دوس "اتصل بالجهاز" واختار المنفذ من نافذة المتصفح.</div>
+</div>
+
+<!-- الخطوة 2: بيانات النود -->
+<div class="card">
+  <h2>2. بيانات النود (المكان في المبنى)</h2>
+  <div class="row">
+    <div class="field">
+      <label>اسم/وصف المكان</label>
+      <input id="nodeName" type="text" placeholder="مثال: ممر دائري - بجوار السلم الشرقي">
+    </div>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label>X (سم)</label>
+      <input id="nodeX" type="number" placeholder="مثال: 1000">
+    </div>
+    <div class="field">
+      <label>Y (سم)</label>
+      <input id="nodeY" type="number" placeholder="مثال: 600">
+    </div>
+    <div class="field">
+      <label>الدور</label>
+      <input id="nodeFloor" type="number" placeholder="مثال: 0" value="0">
+    </div>
+  </div>
+</div>
+
+<!-- الخطوة 3: التوليد والإرسال -->
+<div class="card">
+  <h2>3. توليد الـUID وإرساله للجهاز</h2>
+  <button id="generateBtn" class="btn-success" disabled>⚡ ولّد UID وابعته للجهاز</button>
+  <div id="uidDisplay" class="uid-display" style="display:none;"></div>
+  <div id="sendStatus" class="status" style="display:none;"></div>
+  <div class="hint">
+    الجهاز هيعمل إعادة تشغيل (reboot) تلقائيًا بعد ما يحفظ الـID - ده طبيعي.
+  </div>
+</div>
+
+<!-- الخطوة 4: السجل والتصدير -->
+<div class="card">
+  <h2>4. سجل النودز المُجهّزة (هذه الجلسة فقط)</h2>
+  <div class="top-actions">
+    <button id="exportBtn" class="btn-primary" disabled>⬇️ تصدير CSV</button>
+    <span id="countPill" class="pill">0 نود</span>
+  </div>
+  <table id="recordsTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Node ID (hex)</th>
+        <th>الاسم</th>
+        <th>X</th>
+        <th>Y</th>
+        <th>الدور</th>
+        <th>الوقت</th>
+      </tr>
+    </thead>
+    <tbody id="recordsBody"></tbody>
+  </table>
+  <div class="hint">
+    ⚠️ السجل ده مش متخزن دائمًا - لو قفلت الصفحة هيتمسح. صدّره بـCSV بعد كل مجموعة نودز
+    عشان متفقدش البيانات، وارفعه لـSupabase يدويًا أو قولّي لما الاتصال يرجع نكمل الربط التلقائي.
+  </div>
+</div>
+
+<script>
+let port = null;
+let reader = null;
+let writer = null;
+let readLoopPromise = null;
+let keepReading = false;
+const records = [];
+
+const connectBtn = document.getElementById('connectBtn');
+const disconnectBtn = document.getElementById('disconnectBtn');
+const connStatus = document.getElementById('connStatus');
+const generateBtn = document.getElementById('generateBtn');
+const uidDisplay = document.getElementById('uidDisplay');
+const sendStatus = document.getElementById('sendStatus');
+const exportBtn = document.getElementById('exportBtn');
+const recordsBody = document.getElementById('recordsBody');
+const countPill = document.getElementById('countPill');
+
+function setStatus(el, text, kind) {
+  el.textContent = text;
+  el.style.display = 'block';
+  el.classList.remove('ok', 'err');
+  if (kind) el.classList.add(kind);
+}
+
+function randomNodeIdHex() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function connect() {
+  if (!('serial' in navigator)) {
+    setStatus(connStatus, 'المتصفح ده مش بيدعم Web Serial. افتح الصفحة في Edge أو Chrome.', 'err');
+    return;
+  }
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 115200 });
+
+    const textDecoder = new TextDecoderStream();
+    port.readable.pipeTo(textDecoder.writable);
+    reader = textDecoder.readable.getReader();
+
+    const textEncoder = new TextEncoderStream();
+    textEncoder.readable.pipeTo(port.writable);
+    writer = textEncoder.writable.getWriter();
+
+    keepReading = true;
+    readLoopPromise = readLoop();
+
+    setStatus(connStatus, '✅ متصل بالجهاز. جاهز نبعت أوامر.', 'ok');
+    connectBtn.disabled = true;
+    disconnectBtn.disabled = false;
+    generateBtn.disabled = false;
+  } catch (err) {
+    setStatus(connStatus, 'فشل الاتصال: ' + err.message, 'err');
+  }
+}
+
+let incomingBuffer = '';
+async function readLoop() {
+  while (keepReading) {
+    try {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (value) {
+        incomingBuffer += value;
+        // اعرض آخر البيانات في مربع حالة الإرسال لو موجود
+        if (sendStatus.style.display !== 'none') {
+          sendStatus.textContent = incomingBuffer.slice(-2000);
+        }
+      }
+    } catch (err) {
+      break;
+    }
+  }
+}
+
+async function disconnect() {
+  keepReading = false;
+  try {
+    if (reader) { await reader.cancel(); reader.releaseLock(); }
+    if (writer) { await writer.close(); }
+    if (port) { await port.close(); }
+  } catch (err) { /* تجاهل أخطاء الإغلاق */ }
+  port = null; reader = null; writer = null;
+  setStatus(connStatus, 'اتقطع الاتصال.', null);
+  connectBtn.disabled = false;
+  disconnectBtn.disabled = true;
+  generateBtn.disabled = true;
+}
+
+async function generateAndSend() {
+  const name = document.getElementById('nodeName').value.trim();
+  const x = document.getElementById('nodeX').value;
+  const y = document.getElementById('nodeY').value;
+  const floor = document.getElementById('nodeFloor').value;
+
+  if (!name || x === '' || y === '') {
+    alert('املأ اسم المكان و X و Y الأول.');
+    return;
+  }
+
+  const uidHex = randomNodeIdHex();
+  uidDisplay.textContent = uidHex;
+  uidDisplay.style.display = 'block';
+
+  incomingBuffer = '';
+  setStatus(sendStatus, 'بيبعت SET_ID:' + uidHex + ' ...', null);
+
+  try {
+    await writer.write('SET_ID:' + uidHex + '\n');
+  } catch (err) {
+    setStatus(sendStatus, 'فشل الإرسال: ' + err.message, 'err');
+    return;
+  }
+
+  // بننتظر شوية عشان الجهاز يرد ويعمل reboot، ونعرض اللي وصل.
+  await new Promise(r => setTimeout(r, 2500));
+
+  const success = incomingBuffer.includes('saved to NVS');
+  if (success) {
+    setStatus(sendStatus, incomingBuffer.slice(-2000), 'ok');
+  } else {
+    setStatus(sendStatus, incomingBuffer.slice(-2000) || 'مفيش رد وصل - تأكد إن الجهاز متصل صح.', 'err');
+  }
+
+  // نضيف السجل في كل الأحوال (تقدر تتأكد بعدين لو الرد مكنش واضح)
+  const record = {
+    uid: uidHex,
+    name, x, y, floor,
+    time: new Date().toLocaleString('ar-EG')
+  };
+  records.push(record);
+  renderRecords();
+}
+
+function renderRecords() {
+  recordsBody.innerHTML = '';
+  records.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td style="direction:ltr">${r.uid}</td>
+      <td>${r.name}</td>
+      <td>${r.x}</td>
+      <td>${r.y}</td>
+      <td>${r.floor}</td>
+      <td>${r.time}</td>
+    `;
+    recordsBody.appendChild(tr);
+  });
+  countPill.textContent = records.length + ' نود';
+  exportBtn.disabled = records.length === 0;
+}
+
+function exportCsv() {
+  const header = 'esp32_uuid,name,x,y,floor,provisioned_at\n';
+  const rows = records.map(r =>
+    `${r.uid},"${r.name.replace(/"/g, '""')}",${r.x},${r.y},${r.floor},"${r.time}"`
+  ).join('\n');
+  const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ips_nodes_provisioned_' + Date.now() + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+connectBtn.addEventListener('click', connect);
+disconnectBtn.addEventListener('click', disconnect);
+generateBtn.addEventListener('click', generateAndSend);
+exportBtn.addEventListener('click', exportCsv);
+</script>
+
+</body>
+</html>

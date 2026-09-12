@@ -1,0 +1,48 @@
+#pragma once
+
+// إعدادات مشتركة لفيرموير الـNode - ESP-IDF native (NimBLE + mesh_lite،
+// من غير Arduino). زامن أي تعديل هنا مع ../MESH_DESIGN.md
+// وpc_health_service/lib/config.dart لو القيم اتغيرت.
+
+#include <stdint.h>
+
+// طول node_id بالبايت = esp32_uuid (زي فيرموير الـpositioning الأصلي).
+#define IPS_NODE_ID_LEN 16
+
+// كل قد إيه (بالمللي ثانية) الـnode يبعت heartbeat لأقرب parent/root.
+#define IPS_HEARTBEAT_INTERVAL_MS 2000
+
+// سقف طبقات الـmesh (لازم يتطابق مع القيمة في menuconfig وفي فيرموير
+// الـRoot - MESH_DESIGN.md §4.4).
+#define IPS_MESH_MAX_LAYER 10
+
+// --- BLE advertising (نفس قيم IPS_Demo_Node_v2.0.0.ino الأصلية) ---
+
+// Must match BleConstants.manufacturerCompanyId في تطبيق الـFlutter.
+#define IPS_BLE_COMPANY_ID 0xFFFF
+
+#define IPS_NODE_X_CM 1000
+#define IPS_NODE_Y_CM 600
+#define IPS_NODE_FLOOR 0
+
+#define IPS_FW_VERSION_MAJOR 1
+#define IPS_FW_VERSION_MINOR 0
+
+// وحدة الإعلان = 0.625ms - نفس القيمة الأصلية (244 وحدة \u2248 152.5ms).
+#define IPS_ADV_INTERVAL_UNITS 244
+
+// --- بروتوكول heartbeat شبكة health monitoring (MESH_DESIGN.md §5) ---
+// msg_id للرسائل الخام (raw) اللي بتتبعت من الـnode للـroot عبر
+// esp_mesh_lite_send_msg(ESP_MESH_LITE_RAW_MSG, ...). لازم يتطابق مع
+// نفس القيمة بالظبط في IPS_Mesh_Root/main/config.h.
+#define IPS_MSG_ID_HEARTBEAT 0x1001
+
+#pragma pack(push, 1)
+typedef struct {
+    uint8_t  node_id[IPS_NODE_ID_LEN]; // = g_nodeId (esp32_uuid)
+    uint16_t seq;                       // عداد متزايد محلي لاكتشاف الفقد
+    uint8_t  hop_count;                 // = esp_mesh_lite_get_level() وقت الإرسال
+    uint8_t  reserved;                  // مكان لبيانات مستقبلية (battery لو بطارية)
+    uint32_t uptime_ms;                 // esp_timer_get_time() / 1000
+} ips_health_heartbeat_t;
+#pragma pack(pop)

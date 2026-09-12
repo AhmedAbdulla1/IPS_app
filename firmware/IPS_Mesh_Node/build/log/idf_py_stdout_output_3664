@@ -1,0 +1,1823 @@
+Command: C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe E:\.espressif\v5.5.5\esp-idf\tools/idf_monitor.py -p COM8 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 E:\IPS_app\firmware\IPS_Mesh_Node\build\ips_mesh_node.elf E:\IPS_app\firmware\IPS_Mesh_Node\build\bootloader\bootloader.elf --force-color -m 'C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe' 'E:\.espressif\v5.5.5\esp-idf\tools\idf.py' '-p' 'COM8'
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (470) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (505) cpu_start: Pro cpu start user code[0m
+[0;32mI (505) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (515) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (537) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (541) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1009) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1009) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1039) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1059) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1059) wifi:wifi certification version: v7.0[0m
+[0;32mI (1059) wifi:config NVS flash: enabled[0m
+[0;32mI (1059) wifi:config nano formatting: disabled[0m
+[0;32mI (1059) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1069) wifi:Init management short buffer num: 32[0m
+[0;32mI (1079) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1079) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1089) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1089) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1099) wifi_init: rx ba win: 6[0m
+[0;32mI (1099) wifi_init: accept mbox: 6[0m
+[0;32mI (1099) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1099) wifi_init: udp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1109) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1119) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1119) NimBLE: disc_mode=2[0m
+[0;32mI (1119) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1129) NimBLE: [0m
+
+[0;32mI (1129) wifi_init: tcp mss: 1440[0m
+[0;32mI (1139) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1139) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1149) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1149) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1159) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1159) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1169) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1509) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1509) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1509) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1519) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1519) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1529) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2019) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2019) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2019) main_task: Returned from app_main()[0m
+[0;33mW (6189) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6189) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (514) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1009) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1009) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1039) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1059) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1059) wifi:wifi certification version: v7.0[0m
+[0;32mI (1059) wifi:config NVS flash: enabled[0m
+[0;32mI (1059) wifi:config nano formatting: disabled[0m
+[0;32mI (1069) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1069) wifi:Init management short buffer num: 32[0m
+[0;32mI (1079) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1079) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1089) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1089) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1099) wifi_init: rx ba win: 6[0m
+[0;32mI (1099) wifi_init: accept mbox: 6[0m
+[0;32mI (1099) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1099) wifi_init: udp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1109) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1119) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1119) NimBLE: disc_mode=2[0m
+[0;32mI (1119) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1129) NimBLE: [0m
+
+[0;32mI (1129) wifi_init: tcp mss: 1440[0m
+[0;32mI (1139) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1139) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1149) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1149) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1159) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1159) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1169) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1509) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1509) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1509) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1519) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1519) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1529) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2019) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2019) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2019) main_task: Returned from app_main()[0m
+[0;33mW (6189) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6189) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+ets Jul 29 2019 12:21:46
+
+rst:0x10 (RTCWDT_RTC_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (30) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (30) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (30) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (42) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (50) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (59) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (72) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (159) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (470) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (486) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (486) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (505) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (505) cpu_start: Pro cpu start user code[0m
+[0;32mI (505) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (507) app_init: Application information:[0m
+[0;32mI (511) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (515) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (529) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (537) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (541) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (572) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (600) main_task: Started on CPU0[0m
+[0;32mI (600) main_task: Calling app_main()[0m
+[0;32mI (600) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (670) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (670) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (670) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (680) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (680) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (690) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1010) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1010) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1040) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1060) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1060) wifi:wifi certification version: v7.0[0m
+[0;32mI (1060) wifi:config NVS flash: enabled[0m
+[0;32mI (1060) wifi:config nano formatting: disabled[0m
+[0;32mI (1060) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1070) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1070) wifi:Init management short buffer num: 32[0m
+[0;32mI (1080) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1080) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1080) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1090) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1100) wifi_init: rx ba win: 6[0m
+[0;32mI (1100) wifi_init: accept mbox: 6[0m
+[0;32mI (1100) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1100) wifi_init: udp mbox: 6[0m
+[0;32mI (1110) wifi_init: tcp mbox: 6[0m
+[0;32mI (1110) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1110) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1110) wifi_init: tcp mss: 1440[0m
+[0;32mI (1120) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1120) NimBLE: disc_mode=2[0m
+[0;32mI (1120) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1130) NimBLE: [0m
+
+[0;32mI (1140) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1140) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1140) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1150) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1150) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1160) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1160) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1170) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1170) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1180) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1180) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1190) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1190) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1200) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1200) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1210) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1510) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1510) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1510) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1520) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1520) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1530) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2020) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2020) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2020) main_task: Returned from app_main()[0m
+[0;33mW (6190) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6190) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (515) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1009) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1019) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1039) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1059) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1059) wifi:wifi certification version: v7.0[0m
+[0;32mI (1059) wifi:config NVS flash: enabled[0m
+[0;32mI (1059) wifi:config nano formatting: disabled[0m
+[0;32mI (1059) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1069) wifi:Init management short buffer num: 32[0m
+[0;32mI (1079) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1079) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1089) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1089) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1099) wifi_init: rx ba win: 6[0m
+[0;32mI (1099) wifi_init: accept mbox: 6[0m
+[0;32mI (1099) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1099) wifi_init: udp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1109) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1119) wifi_init: tcp mss: 1440[0m
+[0;32mI (1119) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1119) NimBLE: disc_mode=2[0m
+[0;32mI (1129) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1139) NimBLE: [0m
+
+[0;32mI (1139) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1139) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1139) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1149) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1159) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1159) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1169) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1509) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1509) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1509) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1519) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1519) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1529) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2019) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2019) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2019) main_task: Returned from app_main()[0m
+[0;33mW (6189) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6189) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (514) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1009) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1009) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1029) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1049) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1049) wifi:wifi certification version: v7.0[0m
+[0;32mI (1049) wifi:config NVS flash: enabled[0m
+[0;32mI (1049) wifi:config nano formatting: disabled[0m
+[0;32mI (1049) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1059) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1059) wifi:Init management short buffer num: 32[0m
+[0;32mI (1069) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1079) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1079) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1089) wifi_init: rx ba win: 6[0m
+[0;32mI (1089) wifi_init: accept mbox: 6[0m
+[0;32mI (1089) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1089) wifi_init: udp mbox: 6[0m
+[0;32mI (1099) wifi_init: tcp mbox: 6[0m
+[0;32mI (1099) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1099) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1109) wifi_init: tcp mss: 1440[0m
+[0;32mI (1109) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1109) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1119) NimBLE: disc_mode=2[0m
+[0;32mI (1119) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1129) NimBLE: [0m
+
+[0;32mI (1129) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1129) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1139) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1149) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1149) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1159) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1159) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1159) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1169) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1169) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1179) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1499) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1499) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1499) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1509) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1509) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1519) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (1919) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (1919) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (1919) main_task: Returned from app_main()[0m
+[0;33mW (6179) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6179) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (515) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1009) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1009) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1029) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1049) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1049) wifi:wifi certification version: v7.0[0m
+[0;32mI (1049) wifi:config NVS flash: enabled[0m
+[0;32mI (1049) wifi:config nano formatting: disabled[0m
+[0;32mI (1049) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1059) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1059) wifi:Init management short buffer num: 32[0m
+[0;32mI (1069) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1069) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1079) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1089) wifi_init: rx ba win: 6[0m
+[0;32mI (1089) wifi_init: accept mbox: 6[0m
+[0;32mI (1089) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1089) wifi_init: udp mbox: 6[0m
+[0;32mI (1089) wifi_init: tcp mbox: 6[0m
+[0;32mI (1099) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1099) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1099) wifi_init: tcp mss: 1440[0m
+[0;32mI (1109) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1109) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1119) NimBLE: disc_mode=2[0m
+[0;32mI (1119) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1129) NimBLE: [0m
+
+[0;32mI (1129) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1129) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1139) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1139) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1149) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1149) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1159) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1159) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1169) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1169) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1179) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1179) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1489) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1499) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1499) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1499) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1509) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1519) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2019) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2019) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2019) main_task: Returned from app_main()[0m
+[0;33mW (6179) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6179) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (514) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1019) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1019) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1039) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1059) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1059) wifi:wifi certification version: v7.0[0m
+[0;32mI (1059) wifi:config NVS flash: enabled[0m
+[0;32mI (1059) wifi:config nano formatting: disabled[0m
+[0;32mI (1059) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1069) wifi:Init management short buffer num: 32[0m
+[0;32mI (1079) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1079) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1089) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1089) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1099) wifi_init: rx ba win: 6[0m
+[0;32mI (1099) wifi_init: accept mbox: 6[0m
+[0;32mI (1099) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1099) wifi_init: udp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1109) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1109) wifi_init: tcp mss: 1440[0m
+[0;32mI (1119) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1119) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1129) NimBLE: disc_mode=2[0m
+[0;32mI (1129) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1139) NimBLE: [0m
+
+[0;32mI (1139) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1139) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1149) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1159) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1159) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1159) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1509) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1509) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1509) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1519) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1519) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1529) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2029) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2029) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2029) main_task: Returned from app_main()[0m
+[0;33mW (6189) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6189) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (514) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1019) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1019) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1039) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1059) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1059) wifi:wifi certification version: v7.0[0m
+[0;32mI (1059) wifi:config NVS flash: enabled[0m
+[0;32mI (1059) wifi:config nano formatting: disabled[0m
+[0;32mI (1059) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1069) wifi:Init management short buffer num: 32[0m
+[0;32mI (1079) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1079) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1089) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1089) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1099) wifi_init: rx ba win: 6[0m
+[0;32mI (1099) wifi_init: accept mbox: 6[0m
+[0;32mI (1099) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1099) wifi_init: udp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1109) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1119) wifi_init: tcp mss: 1440[0m
+[0;32mI (1119) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1119) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1129) NimBLE: disc_mode=2[0m
+[0;32mI (1129) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1139) NimBLE: [0m
+
+[0;32mI (1139) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1139) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1149) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1159) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1159) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1169) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1509) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1509) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1509) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1519) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1519) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1529) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2029) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2029) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2029) main_task: Returned from app_main()[0m
+[0;33mW (6189) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6189) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (515) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1009) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1009) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1039) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1059) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1059) wifi:wifi certification version: v7.0[0m
+[0;32mI (1059) wifi:config NVS flash: enabled[0m
+[0;32mI (1059) wifi:config nano formatting: disabled[0m
+[0;32mI (1059) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1069) wifi:Init management short buffer num: 32[0m
+[0;32mI (1079) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1079) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1089) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1089) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1099) wifi_init: rx ba win: 6[0m
+[0;32mI (1099) wifi_init: accept mbox: 6[0m
+[0;32mI (1099) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1099) wifi_init: udp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1109) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1119) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1119) NimBLE: disc_mode=2[0m
+[0;32mI (1119) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1129) NimBLE: [0m
+
+[0;32mI (1129) wifi_init: tcp mss: 1440[0m
+[0;32mI (1139) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1139) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1149) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1149) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1159) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1159) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1169) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1509) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1509) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1509) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1519) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1519) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1529) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2019) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2019) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2019) main_task: Returned from app_main()[0m
+[0;33mW (6189) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6189) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (514) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1009) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1009) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1029) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1049) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1049) wifi:wifi certification version: v7.0[0m
+[0;32mI (1049) wifi:config NVS flash: enabled[0m
+[0;32mI (1049) wifi:config nano formatting: disabled[0m
+[0;32mI (1049) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1059) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1059) wifi:Init management short buffer num: 32[0m
+[0;32mI (1069) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1079) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1079) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1089) wifi_init: rx ba win: 6[0m
+[0;32mI (1089) wifi_init: accept mbox: 6[0m
+[0;32mI (1089) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1089) wifi_init: udp mbox: 6[0m
+[0;32mI (1099) wifi_init: tcp mbox: 6[0m
+[0;32mI (1099) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1099) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1099) wifi_init: tcp mss: 1440[0m
+[0;32mI (1109) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1109) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1119) NimBLE: disc_mode=2[0m
+[0;32mI (1119) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1129) NimBLE: [0m
+
+[0;32mI (1129) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1129) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1139) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1149) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1149) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1149) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1159) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1159) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1169) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1169) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1179) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1179) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1499) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1499) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1499) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1509) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1509) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1519) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2019) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2019) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2019) main_task: Returned from app_main()[0m
+[0;33mW (6179) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6179) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (514) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1009) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1009) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1039) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1059) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1059) wifi:wifi certification version: v7.0[0m
+[0;32mI (1059) wifi:config NVS flash: enabled[0m
+[0;32mI (1059) wifi:config nano formatting: disabled[0m
+[0;32mI (1059) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1069) wifi:Init management short buffer num: 32[0m
+[0;32mI (1079) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1079) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1089) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1089) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1099) wifi_init: rx ba win: 6[0m
+[0;32mI (1099) wifi_init: accept mbox: 6[0m
+[0;32mI (1099) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1099) wifi_init: udp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1109) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1119) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1119) NimBLE: disc_mode=2[0m
+[0;32mI (1119) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1129) NimBLE: [0m
+
+[0;32mI (1129) wifi_init: tcp mss: 1440[0m
+[0;32mI (1139) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1139) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1149) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1149) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1159) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1159) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1169) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1509) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1509) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1509) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1519) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1519) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1529) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2019) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2019) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2019) main_task: Returned from app_main()[0m
+[0;33mW (6189) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6189) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (514) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1019) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1019) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1039) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1059) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1059) wifi:wifi certification version: v7.0[0m
+[0;32mI (1059) wifi:config NVS flash: enabled[0m
+[0;32mI (1059) wifi:config nano formatting: disabled[0m
+[0;32mI (1059) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1069) wifi:Init management short buffer num: 32[0m
+[0;32mI (1079) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1079) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1089) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1089) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1099) wifi_init: rx ba win: 6[0m
+[0;32mI (1099) wifi_init: accept mbox: 6[0m
+[0;32mI (1099) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1099) wifi_init: udp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1109) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1119) wifi_init: tcp mss: 1440[0m
+[0;32mI (1119) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1119) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1129) NimBLE: disc_mode=2[0m
+[0;32mI (1129) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1139) NimBLE: [0m
+
+[0;32mI (1139) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1139) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1149) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1159) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1159) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1169) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1509) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1509) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1509) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1519) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1519) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1529) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (1629) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (1629) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (1629) main_task: Returned from app_main()[0m
+[0;33mW (6189) [vendor_ie]: esp_wifi_disconnect[352] return ESP_FAIL:0x3002 [0m
+[0;32mI (6189) [ESP_Mesh_Lite_Comm]: Retry to connect to the AP [0m
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace: 0x4008fcc5:0x3ffbce70 0x4008fc8d:0x3ffbce90 0x40090d56:0x3ffbceb0 0x40092597:0x3ffbcf30 0x40090e60:0x3ffbcf50 0x40090e12:0x656d6840 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 52bb52a35
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (469) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (504) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (515) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (536) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (540) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1019) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1019) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1049) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1069) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1069) wifi:wifi certification version: v7.0[0m
+[0;32mI (1069) wifi:config NVS flash: enabled[0m
+[0;32mI (1069) wifi:config nano formatting: disabled[0m
+[0;32mI (1069) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1079) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1079) wifi:Init management short buffer num: 32[0m
+[0;32mI (1089) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1089) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1099) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1099) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1109) wifi_init: rx ba win: 6[0m
+[0;32mI (1109) wifi_init: accept mbox: 6[0m
+[0;32mI (1109) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1109) wifi_init: udp mbox: 6[0m
+[0;32mI (1119) wifi_init: tcp mbox: 6[0m
+[0;32mI (1119) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1119) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1129) NimBLE: disc_mode=2[0m
+[0;32mI (1129) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1139) NimBLE: [0m
+
+[0;32mI (1139) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1139) wifi_init: tcp mss: 1440[0m
+[0;32mI (1149) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1149) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1159) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1159) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1169) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1169) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1179) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1179) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1179) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1189) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1189) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1219) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1519) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1519) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1519) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1529) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1529) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1539) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2029) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2029) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2029) main_task: Returned from app_main()[0m
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 11 2026 05:08:19[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=248b8h (149688) map[0m
+[0;32mI (140) esp_image: segment 1: paddr=000348e0 vaddr=3ffbdb60 size=05d44h ( 23876) load[0m
+[0;32mI (149) esp_image: segment 2: paddr=0003a62c vaddr=40080000 size=059ech ( 23020) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=c00f0h (786672) map[0m
+[0;32mI (427) esp_image: segment 4: paddr=00100118 vaddr=400859ec size=1a268h (107112) load[0m
+[0;32mI (470) esp_image: segment 5: paddr=0011a388 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (485) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (485) boot: Disabling RNG early entropy source...[0m
+[0;32mI (496) cpu_start: Multicore app[0m
+[0;32mI (504) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (504) cpu_start: Pro cpu start user code[0m
+[0;32mI (505) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (506) app_init: Application information:[0m
+[0;32mI (510) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (515) app_init: App version:      04a9967-dirty[0m
+[0;32mI (519) app_init: Compile time:     Sep 11 2026 05:07:54[0m
+[0;32mI (524) app_init: ELF file SHA256:  52bb52a35...[0m
+[0;32mI (528) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (533) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (537) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (541) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (545) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (551) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (556) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (566) heap_init: At 3FFC91C8 len 00016E38 (91 KiB): DRAM[0m
+[0;32mI (571) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (577) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (582) heap_init: At 4009FC54 len 000003AC (0 KiB): IRAM[0m
+[0;32mI (589) spi_flash: detected chip: generic[0m
+[0;32mI (591) spi_flash: flash io: dio[0m
+[0;32mI (595) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (599) main_task: Started on CPU0[0m
+[0;32mI (599) main_task: Calling app_main()[0m
+[0;32mI (599) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;33mW (669) node_id_store: ⚠ NOT PROVISIONED - no NVS namespace, using default (all zeros).[0m
+[0;33mW (669) node_id_store: Send 'SET_ID:<hex>' over Serial to provision this node.[0m
+[0;32mI (669) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (679) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (679) BTDM_INIT: Bluetooth MAC: 88:13:bf:0c:44:42[0m
+[0;32mI (689) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (1009) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (1009) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (1039) wifi:wifi driver task: 3ffd6454, prio:23, stack:6656, core=0[0m
+[0;32mI (1059) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1059) wifi:wifi certification version: v7.0[0m
+[0;32mI (1059) wifi:config NVS flash: enabled[0m
+[0;32mI (1059) wifi:config nano formatting: disabled[0m
+[0;32mI (1069) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1069) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1069) wifi:Init management short buffer num: 32[0m
+[0;32mI (1079) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1079) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1089) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1089) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1099) wifi_init: rx ba win: 6[0m
+[0;32mI (1099) wifi_init: accept mbox: 6[0m
+[0;32mI (1099) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1099) wifi_init: udp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp mbox: 6[0m
+[0;32mI (1109) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1109) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1119) NimBLE: disc_mode=2[0m
+[0;32mI (1119) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1129) NimBLE: [0m
+
+[0;32mI (1129) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1139) wifi_init: tcp mss: 1440[0m
+[0;32mI (1139) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1139) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1149) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1149) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1159) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1159) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1169) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1169) wifi:the vendor ie has been setted, clear it before setting again[0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;33mW (1179) [vendor_ie]: Error Get[4354] [0m
+[0;32mI (1189) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 54, port 6364 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 55, port 6363 [0m
+[0;32mI (1199) [ESP_Mesh_Lite_Comm]: Bind Socket 56, port 6366 [0m
+[0;32mI (1209) [ESP_Mesh_Lite_Comm]: Bind Socket 57, port 6365 [0m
+[0;32mI (1509) [ESP_Mesh_Lite_OTA]: SHA-256 for current firmware: 194085973ef68985c4a17082ccda34451e758cbb7614bb0d8213ce370cd8c90b [0m
+[0;32mI (1509) [ESP_Mesh_Lite_Comm]: msg action add success [0m
+[0;32mI (1509) [mesh-lite-espnow]: Start espnow task [0m
+[0;32mI (1519) Mesh-Lite: Mesh-Lite connecting[0m
+[0;33mW (1519) [vendor_ie]: esp_mesh_lite_wifi_scan_start return ESP_FAIL:0x3002 [0m
+[0;32mI (1529) mesh_participant: mesh_lite اشتغل (node). الطبقة الحالية: 0[0m
+[0;32mI (2019) provisioning: Provisioning task شغال - في انتظار أوامر SET_ID/GET_ID.[0m
+[0;32mI (2019) ips_mesh_node: Node جاهز - BLE advertising شغال + mesh_lite متصل.[0m
+[0;32mI (2019) main_task: Returned from app_main()[0m

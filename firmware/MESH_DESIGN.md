@@ -1,7 +1,7 @@
 # تصميم شبكة مراقبة صحة النودز (Node Health Monitoring Network)
 
-**الحالة:** تصميم معتمد - قبل التنفيذ
-**تاريخ التوثيق:** 2026-09-09
+**الحالة:** تصميم معتمد - قيد التنفيذ
+**آخر تحديث:** 2026-09-10
 **يخص:** مبنى مجلس النواب - الدور الواحد (المرحلة الأولى)
 
 ---
@@ -22,7 +22,7 @@ BLE مش مناسب لده لوحده، لأن دوره الأساسي حالي�
 ```
 Positioning Network                    Health Monitoring Network
 ──────────────────                    ──────────────────────────
-BLE Advertisements                     ESP-WIFI-MESH
+BLE Advertisements (NimBLE)            ESP-WIFI-MESH (mesh_lite)
         │                                      │
     Smartphone                            Root Node(s)
         │                                      │
@@ -33,10 +33,9 @@ BLE Advertisements                     ESP-WIFI-MESH
 
 القناتين لازم يفضلوا منفصلين تمامًا في الكود والبروتوكول. التقاطع
 الوحيد بينهم: **شريحة الراديو الفيزيائية نفسها** (BLE + WiFi على نفس
-الـRF front-end في ESP32) - وده بيتطلب تفعيل `esp_coex` من أول التصميم،
-مش إضافته لاحقًا. لازم يتفحص عمليًا: هل BLE advertising (اللي عليه
-الـhysteresis fix في `beacon_controller.dart`) بيتأثر لما حركة الـmesh
-تزيد؟
+الـRF front-end في ESP32) - وده بيتطلب تفعيل الـcoexistence من أول
+التصميم، مش إضافته لاحقًا. لازم يتفحص عمليًا: هل BLE advertising
+بيتأثر لما حركة الـmesh تزيد؟
 
 ---
 
@@ -73,10 +72,25 @@ BLE Advertisements                     ESP-WIFI-MESH
 
 ## 4. القرارات المعمارية
 
-### 4.1 استخدام ESP-WIFI-MESH بدل بروتوكول مخصص
-مكوّن جاهز في ESP-IDF، بيوفر Node Discovery, Routing, Forwarding,
-ACK/Retry, TTL, و**Self-Healing عبر Orphan Re-parenting** بشكل مُختبر
-وجاهز. متعملش إعادة اختراع لعجلة الـmesh stack.
+### 4.1 استخدام ESP-WIFI-MESH (mesh_lite) بدل بروتوكول مخصص
+مكوّن جاهز في ESP-IDF (ESP-MESH-LITE، الوريث لـESP-MDF المتوقف)، بيوفر
+Node Discovery, Routing, Forwarding, ACK/Retry, TTL, و**Self-Healing
+عبر Orphan Re-parenting** بشكل مُختبر وجاهز. متعملش إعادة اختراع لعجلة
+الـmesh stack.
+
+### 4.1.1 [محدّث] الفيرموير كله ESP-IDF native - مفيش Arduino
+**القرار الأصلي كان "Arduino as an ESP-IDF component"** عشان نحافظ على
+كود الـBLE الموجود (`IPS_Demo_Node_v2.0.0.ino`) من غير إعادة كتابته.
+اتغيّر القرار بعد ما واجهنا مشكلة توافق حقيقية: `arduino-esp32` لسه مش
+بيدعم ESP-IDF v6.x رسميًا (النسخة المتوافقة لسه alpha وموثّقة رسميًا
+إنها ناقصة مكونات).
+
+بما إن كود الـBLE advertising بسيط (non-connectable advertisement،
+مفيش GATT services ولا اتصالات)، اتقرر **إعادة كتابته مباشرة بـNimBLE**
+(المكوّن `bt` المدمج في ESP-IDF نفسه، مش تبعية خارجية). الفايدة:
+- مفيش مشكلة توافق نسخ بين framework وتاني (كله ESP-IDF نضيف)
+- مفيش overhead طبقة توافق Arduino فوق ESP-IDF
+- الكود الأصلي محفوظ كمرجع في `IPS_Mesh_Node/main/_legacy_arduino_attempt/`
 
 ### 4.2 مكان الـRoot: على الـRing
 الـRoot لازم يتحط على الممر الدائري (الـRing) نفسه، مش في نقطة عشوائية
@@ -90,9 +104,9 @@ ACK/Retry, TTL, و**Self-Healing عبر Orphan Re-parenting** بشكل مُخت�
 بجدول `nodes` في Supabase من غير أي تعارض.
 
 ### 4.4 سقف الـLayers
-`CONFIG_MESH_MAX_LAYER` يتحدد بـ **8-10** (مش الافتراضي 25، ومش 4-6
-زي ما كان مفترض قبل ما نشوف الطوبولوجيا الفعلية) - عشان الأفرع الطويلة
-(~20 node) ممكن توصل لعمق قفزات كبير نسبيًا حتى مع الـoverlap.
+`CONFIG_MESH_MAX_LAYER` يتحدد بـ **8-10** (مش الافتراضي 25) - عشان
+الأفرع الطويلة (~20 node) ممكن توصل لعمق قفزات كبير نسبيًا حتى مع
+الـoverlap.
 
 ### 4.5 Timeout ديناميكي حسب عدد القفزات
 ```
@@ -103,7 +117,7 @@ node_timeout_ms = BASE_TIMEOUT_MS + (hop_count × PER_HOP_MARGIN_MS)
 - `PER_HOP_MARGIN_MS = 800`
 
 ### 4.6 التشفير
-AES encryption المدمج في ESP-WIFI-MESH لازم يتفعّل من أول يوم (مبنى
+AES encryption المدمج في ESP-MESH-LITE لازم يتفعّل من أول يوم (مبنى
 حساس أمنيًا).
 
 ### 4.7 اتصال الـRoot بالخارج: عبر PC محلي، مش WiFi مباشر
@@ -112,10 +126,8 @@ Serial/USB بس. الـPC هو المسؤول الوحيد عن الرفع لـS
 
 **الأسباب:**
 - أمان: مفيش جهاز IoT رخيص متصل مباشرة بالإنترنت في مبنى حساس
-- تبسيط الراديو: الـRoot مشغول أصلاً بإدارة شجرة الـmesh، مش هيتحمّل
-  دور WiFi Station للإنترنت كمان
-- موثوقية: انقطاع الإنترنت مش بيأثر على تجميع بيانات الـhealth نفسها،
-  البيانات بتتراكم محليًا وترفع لما الاتصال يرجع
+- تبسيط الراديو: الـRoot مشغول أصلاً بإدارة شجرة الـmesh
+- موثوقية: انقطاع الإنترنت مش بيأثر على تجميع بيانات الـhealth نفسها
 
 ```
 ESP32 Nodes (Mesh, per Arm)
@@ -146,8 +158,6 @@ struct HealthHeartbeat {
 
 ## 6. بروتوكول الـSerial (Root → PC)
 
-نفس فلسفة أوامر SET_ID/GET_ID الموجودة في firmware الـpositioning:
-
 ```
 HEALTH:<node_id_hex>:<status>:<hop_count>:<last_seen_ms>
 ```
@@ -168,32 +178,24 @@ create table node_health (
 ```
 
 **ملاحظة مهمة للداشبورد:** "Offline" معناها "مفيش بيانات وصلت من النود
-دي للـRoot"، مش بالضرورة "النود نفسها معطوبة". لو node في نص فرع طويل
-وقعت، اللي بعدها في نفس الفرع ممكن يظهروا Offline كمان حتى لو شغالين
-فعليًا - فرق مهم لو حد هيتحرك يفحص فيزيائيًا.
+دي للـRoot"، مش بالضرورة "النود نفسها معطوبة".
 
 ---
 
 ## 8. المخاطر المفتوحة (لسه محتاجة اختبار فعلي)
 
 1. **تأثير BLE/WiFi coexistence على استقرار advertising** - لازم
-   يتفحص على node حقيقي بعد تفعيل الـmesh، مش نظريًا بس.
-2. **قيم الـTimeout مبدئية** - محتاجة معايرة بعد قياس الـhop depth
-   الفعلي في كل فرع.
-3. **مدى فعالية الـoverlap في كل فرع** - مش كل الأفرع بالضرورة عندها
-   نفس درجة التراكب؛ محتاج قياس RSSI فعلي بين النقاط المتجاورة.
+   يتفحص على node حقيقي، مش نظريًا بس.
+2. **قيم الـTimeout مبدئية** - محتاجة معايرة بعد قياس الـhop depth الفعلي.
+3. **مدى فعالية الـoverlap في كل فرع** - محتاج قياس RSSI فعلي.
+4. **API إرسال/استقبال raw data في mesh_lite** - مش موثّق بالتفصيل
+   الكافي في المصادر المتاحة، محتاج تأكيد من الـheader بعد أول build
+   (راجع MESH_PROGRESS.md).
+5. **NimBLE على ESP-IDF v6.1** - أسماء دوال init ممكن تكون اتغيّرت
+   شوية بين النسخ (راجع TODO في `ble_node.c`).
 
 ---
 
-## 9. خطوات التنفيذ (المرحلة القادمة)
+## 9. خطوات التنفيذ
 
-- [ ] تفعيل `esp_coex` في firmware الـRoot والـNodes
-- [ ] كتابة firmware الـRoot (ESP-WIFI-MESH root role + Serial output)
-- [ ] تعديل firmware الـNode الحالي (`IPS_Demo_Node_v2.0.0`) عشان
-      يشارك في الـmesh كـnode role، مع الاحتفاظ بالـBLE advertising
-      زي ما هو
-- [ ] خدمة الـPC (parser للـSerial + batch upload لـSupabase)
-- [ ] migration لجدول `node_health` في Supabase
-- [ ] Dashboard بسيط لعرض حالة النودز (ONLINE/OFFLINE)
-- [ ] اختبار ميداني: قياس hop depth الفعلي وRSSI بين النقاط المتجاورة
-      في فرع واحد على الأقل قبل التعميم على باقي الأفرع
+راجع `MESH_PROGRESS.md` للحالة اللحظية والـfile structure الفعلي.
