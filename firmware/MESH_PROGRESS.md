@@ -58,6 +58,30 @@
 
 ---
 
+## داشبورد العرض المحلي - ✅ اتبنى
+
+**قرار 2026-09-12 النهائي:** الـheartbeat/الحالة الحية بتفضل محلية
+على اللابتوب بس - مفيش Supabase خالص. اتبنى dashboard محلي جوه
+`pc_health_service` نفسه:
+
+- `lib/local_dashboard_server.dart` - سيرفر HTTP محلي
+  (`127.0.0.1:8787` بس، مفيش اتصال برة الجهاز) بيعرض جدول
+  النودز (Online/Offline، hop_count، آخر ظهور، الـtimeout المحسوب) -
+  HTML/CSS/JS مُضمّنة في الكود نفسه (مفيش asset bundling)، بتتحدث
+  بيعمل fetch لـ`/api/health` كل ثانية
+- `lib/browser_launcher.dart` - بتفتح الداشبورد في نافذة "تطبيق"
+  مستقلة (`--app=`) بدل تاب متصفح عادي - جرّب Edge الأول بعدين
+  Chrome، ولو فشلت الاتنين بتطبع الرابط في الترمينال
+- `bin/health_service.dart` - اتعدّل بالكامل: شال ربط Supabase من الـ
+  main flow، بقى بيشغّل الداشبورد ويفتحه تلقائيًا وقت التشغيل
+- `lib/supabase_uploader.dart` **لسه موجود في المشروع بس مش مستدعي**
+  (محفوظ للرجوع لو رفع سحابي اتطلب لاحقًا)
+
+**⚠️ لسه محتاج اختبار فعلي على هاردوير** (Root متوصل فعليًا
+بالسيريال وبيبعت `HEALTH:` lines حقيقية).
+
+---
+
 ## أداة provisioning (UID + إحداثيات) - تكتب في Supabase مباشرة
 
 `firmware/tools/ips_node_provisioning_tool.html` - صفحة ويب (Edge/Chrome،
@@ -107,34 +131,19 @@ firmware/
 
 ## أولويات التنفيذ الجاية
 
-1. **اختبار Root + Node مع بعض ميدانيًا** - تم فعليًا ✅ (`HEALTH:`
-   lines طلعت على Serial بتاع الـRoot). لسه محتاج اختبار أداء
-   أطول (hop depth فعلي، RSSI بين نقاط متجاورة، ثبات BLE مع
-   زيادة mesh traffic)
-2. **استبدال مفتاح الـAES** بمفتاح حقيقي (مش placeholder) قبل أي نشر
-3. **ربط أداة الـprovisioning بـSupabase** - لما تتأكد الأعمدة، نضيف
-   رفع مباشر بدل CSV اليدوي
-4. Supabase migration لجدول `node_health` (SQL جاهز في MESH_DESIGN.md §7)
-5. Dashboard للعرض - مكانه لسه مش محدد
+1. **اختبار الداشبورد المحلي فعليًا على هاردوير** - Root متوصل بالسيريال +
+   `dart run bin/health_service.dart` + تأكيد النافذة بتتحدث لما
+   node يبعت heartbeat
+2. **اختبار Root + Node مع بعض ميدانيًا أطول** - hop depth فعلي، RSSI
+   بين نقاط متجاورة، ثبات BLE مع زيادة mesh traffic
+3. **استبدال مفتاح الـAES** بمفتاح حقيقي (مش placeholder) قبل أي نشر
+4. استمرار provisioning النودز الفعلية واحدة واحدة (أول واحدة تمت
+   يدويًا مباشرة: node_id **107** "مدخل النواب" - `esp32_uuid` =
+   `881324ae-02c6-0b9b-1c2e-c79f6d4d5ad2`)
 
 ## مشاكل/قرارات مفتوحة
 
-- **تغيير معماري مهم (2026-09-12): الـheartbeat/الحالة الحية مش هترفع
-  Supabase خالص.** القرار الجديد: online/offline + hop_count + last_seen
-  تفضل **محلية على اللابتوب** (الـRoot ينقلها للابتوب بطريقة لسه
-  مش متحددة - الافتراض الأصلي كان Serial/USB زي الموثق في
-  MESH_DESIGN.md §4.7، لسه مش مؤكد نهائي)، واللابتوب هو اللي بيعرضها.
-  **مفيش جدول `node_health` في Supabase** - الSQL المقترح في
-  MESH_DESIGN.md §7 مُلغي.
-  - ⚠️ **هذا يعارض كود موجود بالفعل**: `pc_health_service/lib/supabase_uploader.dart`
-    مكتوب ليرفع `node_health` لـSupabase - لسه محتاج يتشال أو
-    يتستبدل بطريقة عرض محلية (مكان Dashboard لسه محدد - نفس
-    النقطة المفتوحة تحت). `health_protocol.dart` و`node_health_table.dart`
-    لسه صحيحين ومفيدين (parsing + in-memory state) - المشكلة في
-    الـuploader بس.
-- **مكان الـDashboard:** لسه مش متفق عليه - دلوقتي أهم لأنه هيحدد
-  طريقة نقل البيانات من Root للابتوب (Serial المفترض الأصلي، أو
-  حاجة تانية)
-- **أعمدة جدول nodes في Supabase:** ✅ اتأكدت (موثقة فوق)، أداة
-  الـprovisioning بقت تكتب فيها مباشرة
+- **طريقة نقل البيانات من Root للابتوب** - لسه مش مؤكدة نهائيًا،
+  الافتراض العامل دلوقتي هو Serial/USB (موثق في MESH_DESIGN.md §4.7
+  ومطبق فعليًا في `pc_health_service`)
 - **auto-detect لمنفذ الـSerial في pc_health_service:** حاليًا ثابت في `.env`

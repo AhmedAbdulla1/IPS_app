@@ -1,9 +1,10 @@
 name: pc_health_service
 description: >
   خدمة PC محلية بتقرأ بيانات صحة النودز من ESP32 Mesh Root عبر Serial/USB
-  وترفعها batch لـSupabase (جدول node_health). شايفة تفاصيل البروتوكول في
-  ../MESH_DESIGN.md.
-version: 0.1.0
+  وتعرضها في داشبورد محلي (نافذة متصفح مستقلة على localhost) - مفيش
+  أي رفع لـSupabase حاليًا (قرار 2026-09-12، راجع MESH_PROGRESS.md).
+  شايفة تفاصيل البروتوكول في ../MESH_DESIGN.md.
+version: 0.2.0
 publish_to: 'none'
 
 environment:

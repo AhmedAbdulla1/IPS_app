@@ -1,33 +1,27 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:pc_health_service/browser_launcher.dart';
 import 'package:pc_health_service/config.dart';
 import 'package:pc_health_service/env_loader.dart';
 import 'package:pc_health_service/health_protocol.dart';
+import 'package:pc_health_service/local_dashboard_server.dart';
 import 'package:pc_health_service/node_health_table.dart';
 import 'package:pc_health_service/serial_reader.dart';
-import 'package:pc_health_service/supabase_uploader.dart';
 
 /// نقطة الدخول. بتشتغل: قراءة .env → فتح الـSerial → استقبال أسطر
-/// HEALTH:... → تحديث الجدول المحلي → رفع batch دوري لـSupabase.
+/// HEALTH:... → تحديث الجدول المحلي → عرضه في نافذة داشبورد محلية
+/// (localhost بس - مفيش رفع لأي سيرفر برة الجهاز).
 ///
 /// التشغيل: dart run bin/health_service.dart
 Future<void> main() async {
   final env = {...Platform.environment, ...loadEnvFile('.env')};
   final config = HealthServiceConfig.fromEnv(env);
 
-  if (config.supabaseServiceKey.isEmpty) {
-    stderr.writeln(
-      '[health_service] تحذير: SUPABASE_SERVICE_KEY فاضي في .env - '
-      'الرفع لـSupabase هيفشل. راجع .env.example.',
-    );
-  }
-
   print('[health_service] بيفتح الـSerial على ${config.serialPortName} '
       '(${config.baudRate} baud)...');
 
   final table = NodeHealthTable(config);
-  final uploader = SupabaseHealthUploader(config);
 
   late final SerialLineReader reader;
   try {
@@ -58,18 +52,13 @@ Future<void> main() async {
     table.applyUpdate(update);
   });
 
-  // رفع دوري batch لـSupabase - مش على كل رسالة.
-  Timer.periodic(Duration(milliseconds: config.uploadIntervalMs), (_) async {
-    final records = table.allRecords;
-    if (records.isEmpty) return;
-
-    await uploader.uploadBatch(records);
-    print(
-      '[health_service] رفع ${records.length} node '
-      '(${table.onlineRecords.length} online, '
-      '${table.offlineRecords.length} offline)',
-    );
-  });
+  // الداشبورد المحلي - بيتعرض في نافذة مستقلة (--app)، مفيش أي رفع
+  // لـSupabase أو أي سيرفر بره الجهاز (قرار معماري 2026-09-12، راجع
+  // MESH_PROGRESS.md). لو محتاج ترجع رفع سحابي تاني في المستقبل،
+  // lib/supabase_uploader.dart لسه موجود ومحفوظ للرجوع له.
+  final dashboard = LocalDashboardServer(table, config);
+  final dashboardUrl = await dashboard.start();
+  await openAsAppWindow(dashboardUrl);
 
   // بيفضل شغال - مفيش exit condition، ده long-running service.
   print('[health_service] شغال. Ctrl+C للإيقاف.');
