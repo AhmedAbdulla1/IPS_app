@@ -46,3 +46,16 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ESP-IDF (firmware/) related - build artifacts وmanaged_components
+# (بتتنزل تلقائيًا من idf_component.yml)، وsdkconfig.old (نسخة قديمة
+# من sdkconfig بيعملها idf.py لوحده). مفيش داعي نرفعهم - بيتعملوا
+# من idf.py build وmanaged_components حجمه كبير جدًا.
+firmware/**/build/
+firmware/**/managed_components/
+firmware/**/sdkconfig.old
+firmware/**/flash_logs/
+
+# pc_health_service (Dart) - ملف .env فيه مفتاح Supabase حقيقي
+firmware/pc_health_service/.env
+firmware/pc_health_service/.dart_tool/

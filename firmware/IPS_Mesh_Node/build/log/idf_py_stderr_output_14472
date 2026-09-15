@@ -1,8 +1,0 @@
-Command: C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe D:\.espressif\.espressif\v5.5.5\esp-idf\tools/idf_monitor.py -p COM5 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 D:\IPS_app\IPS_app\firmware\IPS_Mesh_Node\build\ips_mesh_node.elf D:\IPS_app\IPS_app\firmware\IPS_Mesh_Node\build\bootloader\bootloader.elf --force-color -m 'C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe' 'D:\.espressif\.espressif\v5.5.5\esp-idf\tools\idf.py' '-p' 'COM5'
---- WARNING: GDB cannot open serial ports accessed as COMx
---- NOTE: Using \\.\COM5 instead...
---- esp-idf-monitor 1.10.0 on \\.\COM5 115200
---- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
---- 0x40080400: _invalid_pc_placeholder at D:/.espressif/.espressif/v5.5.5/esp-idf/components/xtensa/xtensa_vectors.S:2259
---- 0x40080644: call_start_cpu0 at D:/.espressif/.espressif/v5.5.5/esp-idf/components/bootloader/subproject/main/bootloader_start.c:27
-
