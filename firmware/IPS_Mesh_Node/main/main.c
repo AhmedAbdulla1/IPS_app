@@ -7,6 +7,7 @@
 // حالة التنفيذ وTODOs مفتوحة: ../../MESH_PROGRESS.md
 
 #include "esp_log.h"
+#include "esp_ota_ops.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
@@ -44,6 +45,13 @@ void app_main(void) {
     provisioning_task_start();
 
     xTaskCreate(heartbeat_task, "health_heartbeat", 4096, NULL, 5, NULL);
+
+    // أمان الـrollback: لو وصلنا للنقطة دي من غير crash (كل الإعدادات
+    // الأساسية نجحت)، نأكد للبوتلودر إن الـfirmware الجديدة شغالة كويس،
+    // فيلغي احتمال الـrollback التلقائي للنسخة القديمة بعد OTA (راجع
+    // OTA_PLAN.md). لو المكالمة دي ماتتناداش، البوتلودر هيرجّع للنسخة القديمة
+    // لوحده في البوت الجاي.
+    esp_ota_mark_app_valid_cancel_rollback();
 
     ESP_LOGI(TAG, "Node جاهز - BLE advertising شغال + mesh_lite متصل.");
 }

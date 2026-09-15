@@ -116,11 +116,13 @@ static void serial_output_task(void *arg) {
 
             // إرسال سطر JSON نظيف وسهل البارسينج
             snprintf(line_buffer, sizeof(line_buffer),
-                     "{\"type\":\"health\",\"node_id\":\"%s\",\"status\":\"%s\",\"hop_count\":%u,\"last_seen_ms\":%lld}\n",
+                     "{\"type\":\"health\",\"node_id\":\"%s\",\"status\":\"%s\",\"hop_count\":%u,\"last_seen_ms\":%lld,\"fw_major\":%u,\"fw_minor\":%u}\n",
                      node_id_hex,
                      is_online ? "online" : "offline",
                      (unsigned)entry->hop_count,
-                     (long long)last_seen_ms);
+                     (long long)last_seen_ms,
+                     (unsigned)entry->fw_major,
+                     (unsigned)entry->fw_minor);
 
             printf("%s", line_buffer);
             tcp_send_line(line_buffer);

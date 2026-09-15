@@ -8,6 +8,7 @@
 // حالة التنفيذ وTODOs مفتوحة: ../../MESH_PROGRESS.md
 
 #include "esp_log.h"
+#include "esp_ota_ops.h"
 
 #include "health_table.h"
 #include "mesh_bridge.h"
@@ -21,6 +22,9 @@ void app_main(void) {
     ips_health_table_init();
     ips_mesh_bridge_init();
     ips_serial_output_start();
+
+    // أمان الـrollback (راجع OTA_PLAN.md ونفس الملاحظة في IPS_Mesh_Node/main/main.c).
+    esp_ota_mark_app_valid_cancel_rollback();
 
     ESP_LOGI(TAG, "Root جاهز - بينتظر heartbeats من الـnodes.");
 }

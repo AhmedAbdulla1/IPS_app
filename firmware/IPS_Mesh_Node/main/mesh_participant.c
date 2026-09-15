@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "driver/gpio.h"
 #include "esp_bridge.h"
 #include "esp_event.h"
 #include "esp_log.h"
@@ -15,6 +16,8 @@
 #include "node_id_store.h"
 
 static const char *TAG = "mesh_participant";
+
+#define IPS_LED_GPIO 2
 
 // منقول من مثال mesh_lite/examples/no_router الرسمي - بيضبط STA (الاسكان
 // اللي الـnode بيستخدمه للـscan وللبحث عن Root) وAP (نفس SSID/Password/Channel
@@ -56,6 +59,17 @@ static void app_wifi_set_softap_info(void) {
 
 void mesh_participant_setup(void) {
     ESP_LOGI(TAG, "بيهيّئ mesh_lite (non-root)...");
+
+    // إعداد LED GPIO2 — بيومض مع كل heartbeat كمؤشر حيوية مرئي
+    gpio_config_t led_cfg = {
+        .pin_bit_mask = (1ULL << IPS_LED_GPIO),
+        .mode         = GPIO_MODE_OUTPUT,
+        .pull_up_en   = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type    = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&led_cfg);
+    gpio_set_level(IPS_LED_GPIO, 0);
 
     // NVS اتعملها init بالفعل في app_main قبل node_id_store_init() -
     // نادي هنا تاني وتجاهل ESP_ERR_INVALID_STATE لو حصل.
@@ -128,23 +142,30 @@ void mesh_participant_send_heartbeat(void) {
 
     ips_health_heartbeat_t hb = {0};
     memcpy(hb.node_id, g_nodeId, IPS_NODE_ID_LEN);
-    hb.seq        = s_seq++;
-    hb.hop_count  = esp_mesh_lite_get_level();
-    hb.reserved   = 0;
-    hb.uptime_ms  = (uint32_t)(esp_timer_get_time() / 1000);
+    hb.seq       = s_seq++;
+    hb.hop_count = esp_mesh_lite_get_level();
+    hb.fw_major  = IPS_FW_VERSION_MAJOR;
+    hb.fw_minor  = IPS_FW_VERSION_MINOR;
+    hb.uptime_ms = (uint32_t)(esp_timer_get_time() / 1000);
 
     esp_mesh_lite_msg_config_t conf = {0};
-    conf.raw_msg.msg_id            = IPS_MSG_ID_HEARTBEAT;
-    conf.raw_msg.expect_resp_msg_id = 0; // fire-and-forget - مفيش response متوقع
-    conf.raw_msg.max_retry          = 1; // محاولة واحدة بس - الـheartbeat نفسه بيتكرر كل IPS_HEARTBEAT_INTERVAL_MS
+    conf.raw_msg.msg_id             = IPS_MSG_ID_HEARTBEAT;
+    conf.raw_msg.expect_resp_msg_id = 0;
+    conf.raw_msg.max_retry          = 1;
     conf.raw_msg.retry_interval     = 100;
     conf.raw_msg.data               = (const uint8_t *)&hb;
     conf.raw_msg.size               = sizeof(hb);
-    conf.raw_msg.raw_resend          = esp_mesh_lite_send_raw_msg_to_root;
-    conf.raw_msg.raw_send_fail       = NULL;
+    conf.raw_msg.raw_resend         = esp_mesh_lite_send_raw_msg_to_root;
+    conf.raw_msg.raw_send_fail      = NULL;
 
     esp_err_t err = esp_mesh_lite_send_msg(ESP_MESH_LITE_RAW_MSG, &conf);
     if (err != ESP_OK) {
         ESP_LOGD(TAG, "heartbeat send fail (seq=%u): %s", hb.seq, esp_err_to_name(err));
+        return;
     }
+
+    // وميض LED قصير (50ms) — مؤشر مرئي أن الـheartbeat اتبعت بنجاح
+    gpio_set_level(IPS_LED_GPIO, 1);
+    vTaskDelay(pdMS_TO_TICKS(50));
+    gpio_set_level(IPS_LED_GPIO, 0);
 }

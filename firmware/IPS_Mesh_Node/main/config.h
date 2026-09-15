@@ -47,7 +47,8 @@ typedef struct {
     uint8_t  node_id[IPS_NODE_ID_LEN]; // = g_nodeId (esp32_uuid)
     uint16_t seq;                       // عداد متزايد محلي لاكتشاف الفقد
     uint8_t  hop_count;                 // = esp_mesh_lite_get_level() وقت الإرسال
-    uint8_t  reserved;                  // مكان لبيانات مستقبلية (battery لو بطارية)
+    uint8_t  fw_major;                  // = IPS_FW_VERSION_MAJOR
+    uint8_t  fw_minor;                  // = IPS_FW_VERSION_MINOR
     uint32_t uptime_ms;                 // esp_timer_get_time() / 1000
 } ips_health_heartbeat_t;
 #pragma pack(pop)

@@ -16,8 +16,10 @@
 static const char *TAG = "mesh_bridge";
 
 void ips_mesh_bridge_on_heartbeat_received(const uint8_t node_id[IPS_NODE_ID_LEN],
-                                            uint8_t hop_count) {
-    ips_health_table_update(node_id, hop_count);
+                                            uint8_t hop_count,
+                                            uint8_t fw_major,
+                                            uint8_t fw_minor) {
+    ips_health_table_update(node_id, hop_count, fw_major, fw_minor);
 }
 
 // بيتنادى من mesh_lite لما raw message بالـmsg_id = IPS_MSG_ID_HEARTBEAT
@@ -37,7 +39,8 @@ static esp_err_t handle_heartbeat_raw_msg(uint8_t *data, uint32_t len,
     }
 
     const ips_health_heartbeat_t *hb = (const ips_health_heartbeat_t *)data;
-    ips_mesh_bridge_on_heartbeat_received(hb->node_id, hb->hop_count);
+    ips_mesh_bridge_on_heartbeat_received(hb->node_id, hb->hop_count,
+                                          hb->fw_major, hb->fw_minor);
     return ESP_OK;
 }
 

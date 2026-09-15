@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة مراقبة شبكة IPS Mesh (System Monitor + OTA)</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="title-group">
+            <h1>📡 مراقب شبكة IPS Mesh + OTA Updater</h1>
+            <p>قراءة مباشرة من ESP32 Root عبر USB Serial + رفع فيرموير جديد</p>
+        </div>
+        <div class="header-actions">
+            <button id="connectBtn" class="btn btn-primary">🔌 اتصل بـ Root</button>
+            <button id="disconnectBtn" class="btn btn-danger" style="display: none;">قطع الاتصال</button>
+            
+            <!-- Auth Section (Hidden by default) -->
+            <div id="authSection" class="auth-section" style="display: none;">
+                <button id="adminPanelBtn" class="btn btn-secondary">⚙️ لوحة Admin</button>
+                <button id="signOutBtn" class="btn btn-secondary">تسجيل خروج</button>
+            </div>
+            <div id="loginSection" class="login-section">
+                <button id="loginBtn" class="btn btn-secondary">تسجيل دخول (Admin)</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="label">إجمالي النودز</div>
+            <div class="value" id="statTotal">0</div>
+        </div>
+        <div class="stat-card online">
+            <div class="label">النودز النشطة</div>
+            <div class="value" id="statOnline">0</div>
+        </div>
+        <div class="stat-card offline">
+            <div class="label">النودز المقطوعة</div>
+            <div class="value" id="statOffline">0</div>
+        </div>
+        <div class="stat-card hops">
+            <div class="label">أقصى عمق (Max Hops)</div>
+            <div class="value" id="statHops">0</div>
+        </div>
+    </div>
+
+    <!-- Main Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="dashboard">📊 الداشبورد</button>
+        <button class="tab-btn" data-tab="ota" id="otaTabBtn" style="display: none;">⬆️ رفع الفيرموير</button>
+        <button class="tab-btn" data-tab="logs">📜 السجلات</button>
+    </div>
+
+    <!-- Tab 1: Dashboard -->
+    <div id="dashboard" class="tab-content active">
+        <div class="table-card">
+            <div class="table-header">
+                <h2>📊 حالة النودز في الشبكة</h2>
+                <div id="lastUpdate" style="font-size: 12px; color: var(--muted);">آخر تحديث: لم يبدأ بعد</div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>الحالة</th>
+                        <th style="text-align: left;">UUID (HEX)</th>
+                        <th>الاسم (AR)</th>
+                        <th style="text-align: center;">الطبقة</th>
+                        <th style="text-align: center;">آخر ظهور</th>
+                        <th style="text-align: center;">المهلة</th>
+                    </tr>
+                </thead>
+                <tbody id="nodesTableBody">
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            اضغط على <b>"اتصل بـ Root"</b> لبدء الاستقبال...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab 2: OTA Updater (Admin Only) -->
+    <div id="ota" class="tab-content" style="display: none;">
+        <div class="table-card">
+            <div class="table-header">
+                <h2>⬆️ رفع فيرموير جديد للـ Root</h2>
+                <p style="color: var(--muted); font-size: 12px;">ملحوظة: سيتم توزيع الفيرموير الجديد تلقائياً على كل الـ Nodes المتصلة</p>
+            </div>
+
+            <div class="ota-form">
+                <div class="form-group">
+                    <label>اختر ملف الفيرموير (.bin)</label>
+                    <input type="file" id="firmwareFileInput" accept=".bin" style="display: block; margin: 10px 0;">
+                    <div id="fileInfo" style="font-size: 12px; color: var(--muted); margin: 10px 0;">
+                        لم يتم اختيار ملف بعد
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>النسخة الجديدة (optional)</label>
+                    <input type="text" id="firmwareVersionInput" placeholder="v1.2.3" style="padding: 8px; border-radius: 6px; background: var(--card-border); border: 1px solid var(--border); color: var(--text);">
+                </div>
+
+                <button id="uploadFirmwareBtn" class="btn btn-primary" style="width: 100%; margin-top: 16px;">
+                    🚀 رفع الفيرموير (OTA)
+                </button>
+
+                <div id="otaProgress" style="margin-top: 20px; display: none;">
+                    <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+                        <span>جاري الرفع...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div style="background: var(--card-border); border-radius: 8px; height: 24px; overflow: hidden;">
+                        <div id="progressBar" style="background: var(--accent); height: 100%; width: 0%; transition: width 0.2s;"></div>
+                    </div>
+                </div>
+
+                <div id="otaMessage" style="margin-top: 16px; padding: 12px; border-radius: 8px; display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 3: Logs -->
+    <div id="logs" class="tab-content" style="display: none;">
+        <div class="console-card">
+            <div class="console-header">
+                <h3>📜 سجل Serial المباشر</h3>
+                <button id="clearLogBtn" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">مسح السجل</button>
+            </div>
+            <div id="logConsole" class="log-box"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal (Hidden by default) -->
+<div id="loginModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h2>تسجيل دخول Admin</h2>
+        <div class="form-group">
+            <label>البريد الإلكتروني</label>
+            <input type="email" id="emailInput" placeholder="admin@example.com">
+        </div>
+        <div class="form-group">
+            <label>كلمة المرور</label>
+            <input type="password" id="passwordInput" placeholder="••••••••">
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button id="cancelLoginBtn" class="btn btn-secondary">إلغاء</button>
+            <button id="doLoginBtn" class="btn btn-primary">دخول</button>
+        </div>
+        <div id="loginError" style="color: var(--bad); margin-top: 12px; display: none;"></div>
+    </div>
+</div>
+
+<!-- Scripts (Order Matters!) -->
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/serial.js"></script>
+<script src="js/nodes-repo.js"></script>
+<script src="js/ota.js"></script>
+<script src="js/dashboard.js"></script>
+
+</body>
+</html>

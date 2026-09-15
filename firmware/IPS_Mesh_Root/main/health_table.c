@@ -28,7 +28,9 @@ static int find_free_slot(void) {
 
 
 void ips_health_table_update(const uint8_t node_id[IPS_NODE_ID_LEN],
-                              uint8_t hop_count) {
+                              uint8_t hop_count,
+                              uint8_t fw_major,
+                              uint8_t fw_minor) {
     int idx = find_entry_index(node_id);
     if (idx < 0) {
         idx = find_free_slot();
@@ -39,7 +41,9 @@ void ips_health_table_update(const uint8_t node_id[IPS_NODE_ID_LEN],
         s_table[idx].in_use = true;
     }
 
-    s_table[idx].hop_count = hop_count;
+    s_table[idx].hop_count   = hop_count;
+    s_table[idx].fw_major    = fw_major;
+    s_table[idx].fw_minor    = fw_minor;
     s_table[idx].last_seen_us = esp_timer_get_time();
 }
 

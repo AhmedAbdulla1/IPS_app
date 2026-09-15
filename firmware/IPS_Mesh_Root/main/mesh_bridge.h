@@ -13,4 +13,6 @@ void ips_mesh_bridge_init(void);
 // بينادى من جوه mesh_bridge.c لما heartbeat توصل من أي child node.
 // health_table.c هو المسؤول عن التخزين - الدالة دي بس بتوصل البيانات.
 void ips_mesh_bridge_on_heartbeat_received(const uint8_t node_id[IPS_NODE_ID_LEN],
-                                            uint8_t hop_count);
+                                            uint8_t hop_count,
+                                            uint8_t fw_major,
+                                            uint8_t fw_minor);

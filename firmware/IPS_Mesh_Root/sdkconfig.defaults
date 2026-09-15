@@ -13,6 +13,12 @@ CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 
+# دعم OTA بأمان: لو فيرموير جديد متحدّث كرش (crash loop)، البوتلودر
+# يرجع تلقائيًا للنسخة القديمة المستقرة (راجع OTA_PLAN.md). الأبليكيشن
+# لازم تنادي esp_ota_mark_app_valid_cancel_rollback() بعد التأكد إنه
+# شغال كويس (موجودة في app_main).
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
+
 # إصلاح بعد crash حقيقي وقت الاختبار على الروت (stack overflow
 # في "Tmr Svc" task) - الافتراضي (2048) مش كافي مع حمل mesh_lite/OTA
 # وقت البدء.
