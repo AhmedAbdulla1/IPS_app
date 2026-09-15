@@ -9,6 +9,11 @@
 // طول node_id بالبايت = esp32_uuid (زي فيرموير الـpositioning الأصلي).
 #define IPS_NODE_ID_LEN 16
 
+// قناة WiFi الثابتة اللي الـmesh الداخلي (SoftAP) بيشتغل عليها - لازم
+// تتطابق حرفيًا مع نفس القيمة في IPS_Mesh_Root/main/config.h، وإلا الأجهزة
+// ممكن متلاقيش بعض حتى لو كل حاجة تانية مظبوطة صح.
+#define IPS_MESH_CHANNEL 11
+
 // كل قد إيه (بالمللي ثانية) الـnode يبعت heartbeat لأقرب parent/root.
 #define IPS_HEARTBEAT_INTERVAL_MS 2000
 

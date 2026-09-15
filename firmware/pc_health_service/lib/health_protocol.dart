@@ -1,8 +1,4 @@
-/// بارسر بروتوكول HEALTH:... الموثق في MESH_DESIGN.md §6.
-///
-/// الصيغة: HEALTH:<node_id_hex>:<status>:<hop_count>:<last_seen_ms>
-/// مثال:   HEALTH:0000000000000000000000000000c8:online:3:128340
-library;
+import 'dart:convert';
 
 class HealthUpdate {
   const HealthUpdate({
@@ -13,19 +9,33 @@ class HealthUpdate {
   });
 
   final String nodeIdHex;
-
-  /// "online" أو "offline" - القيمة اللي بعتها الـRoot نفسه وقت الرسالة.
-  /// ملحوظة: الحالة النهائية المعروضة في الداشبورد بتتحسب محليًا هنا
-  /// (NodeHealthTable) بناءً على dynamic timeout، مش بس بالقيمة دي.
   final String status;
-
   final int hopCount;
   final int lastSeenMs;
 
-  /// بيرجع null لو السطر مش matching للصيغة المتوقعة (بيتجاهل بهدوء -
-  /// ممكن يكون سطر تاني زي [RESET REASON] أو رسايل تصحيح أخطاء عادية).
+  /// بيرجع null لو السطر مش matching للصيغة المتوقعة (سواء كانت JSON أو HEALTH:...).
   static HealthUpdate? tryParse(String line) {
     final trimmed = line.trim();
+    if (trimmed.isEmpty) return null;
+
+    // 1. محاولة البارسينج كـ JSON
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        final Map<String, dynamic> json = jsonDecode(trimmed);
+        if (json['node_id'] != null && json['hop_count'] != null) {
+          return HealthUpdate(
+            nodeIdHex: json['node_id'].toString(),
+            status: json['status']?.toString() ?? 'online',
+            hopCount: (json['hop_count'] as num).toInt(),
+            lastSeenMs: (json['last_seen_ms'] as num?)?.toInt() ?? 0,
+          );
+        }
+      } catch (_) {
+        // ليس JSON صالح
+      }
+    }
+
+    // 2. محاولة البارسينج كـ صيغة قديمة HEALTH:
     if (!trimmed.startsWith('HEALTH:')) return null;
 
     final parts = trimmed.substring('HEALTH:'.length).split(':');

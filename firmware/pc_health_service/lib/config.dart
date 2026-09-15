@@ -4,6 +4,10 @@ library;
 
 class HealthServiceConfig {
   HealthServiceConfig({
+    required this.connectionMode,
+    required this.rootHost,
+    required this.rootPort,
+    required this.mockData,
     required this.serialPortName,
     required this.baudRate,
     required this.supabaseUrl,
@@ -13,9 +17,19 @@ class HealthServiceConfig {
     required this.perHopMarginMs,
   });
 
-  /// اسم منفذ الـSerial بتاع الـRoot (مثال: "COM5" على ويندوز).
-  /// TODO: يتحدد فعليًا وقت التوصيل - ممكن نضيف auto-detect لاحقًا
-  /// (يدور على أول منفذ بيبعت سطر يبدأ بـ"HEALTH:" أو "[RESET REASON]").
+  /// طريقة الاتصال: 'tcp' لشبكة الـWi-Fi أو 'serial' لكابل الـUSB
+  final String connectionMode;
+
+  /// عنوان الـ IP الخاص بـ ESP32 Root (مثلاً "192.168.5.1" عند الاتصال بشبكته)
+  final String rootHost;
+
+  /// منفذ الـ TCP الخاص بـ Root (الافتراضي 9998)
+  final int rootPort;
+
+  /// تفعيل وضع البيانات التجريبية للاختبار بدون بورد حقيقية
+  final bool mockData;
+
+  /// اسم منفذ الـSerial بتاعة الـRoot (مثال: "COM4" على ويندوز).
   final String serialPortName;
 
   final int baudRate;
@@ -37,7 +51,11 @@ class HealthServiceConfig {
   /// بيحمّل الإعدادات من متغيرات البيئة (اتحملت مسبقًا من .env في main).
   factory HealthServiceConfig.fromEnv(Map<String, String> env) {
     return HealthServiceConfig(
-      serialPortName: env['SERIAL_PORT'] ?? 'COM5',
+      connectionMode: env['CONNECTION_MODE'] ?? 'tcp',
+      rootHost: env['ROOT_HOST'] ?? '192.168.5.1',
+      rootPort: int.tryParse(env['ROOT_PORT'] ?? '') ?? 9998,
+      mockData: env['MOCK_DATA']?.toLowerCase() == 'true',
+      serialPortName: env['SERIAL_PORT'] ?? 'COM4',
       baudRate: int.tryParse(env['BAUD_RATE'] ?? '') ?? 115200,
       supabaseUrl: env['SUPABASE_URL'] ?? '',
       supabaseServiceKey: env['SUPABASE_SERVICE_KEY'] ?? '',

@@ -1,4 +1,4 @@
-# Install script for directory: E:/IPS_app/firmware/IPS_Mesh_Root/main
+# Install script for directory: D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

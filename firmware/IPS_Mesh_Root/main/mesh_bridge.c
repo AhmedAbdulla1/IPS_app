@@ -1,5 +1,7 @@
 #include "mesh_bridge.h"
 
+#include <string.h>
+
 #include "esp_bridge.h"
 #include "esp_event.h"
 #include "esp_log.h"
@@ -8,6 +10,7 @@
 #include "esp_wifi.h"
 #include "nvs_flash.h"
 
+#include "config.h"
 #include "health_table.h"
 
 static const char *TAG = "mesh_bridge";
@@ -59,6 +62,45 @@ static void wifi_init(void) {
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 }
 
+// منقول من مثال mesh_lite/examples/no_router الرسمي - بيضبط STA (فاضي،
+// مش هنستخدمه) وAP (نفس SSID/Password/Channel بتاع الـmesh الداخلي).
+// من غيرها، اتضح إن الأجهزة (Root وNode) ممكن تفضل ما بتلاقيش بعض حتى
+// لو الـlevel مظبوط صح.
+static void configure_wifi_interfaces(void) {
+    wifi_config_t sta_cfg;
+    memset(&sta_cfg, 0, sizeof(sta_cfg));
+    esp_bridge_wifi_set_config(WIFI_IF_STA, &sta_cfg);
+
+    wifi_config_t ap_cfg = {
+        .ap = {
+            .ssid = CONFIG_BRIDGE_SOFTAP_SSID,
+            .password = CONFIG_BRIDGE_SOFTAP_PASSWORD,
+            .channel = IPS_MESH_CHANNEL,
+        },
+    };
+    esp_bridge_wifi_set_config(WIFI_IF_AP, &ap_cfg);
+}
+
+// منقول من نفس المثال الرسمي - بيضبط SSID/Password الداخليين اللي
+// الـmesh بتستخدمهم عشان الأجهزة تتصل ببعض (مش أي شبكة خارجية).
+// بيدوّر الأول في NVS (لو كان متسجل قبل كده)، ولو مش لاقي بيرجع للقيم
+// الافتراضية من menuconfig (CONFIG_BRIDGE_SOFTAP_SSID/PASSWORD).
+static void app_wifi_set_softap_info(void) {
+    char softap_ssid[33] = {0};
+    char softap_psw[64] = {0};
+    size_t ssid_size = sizeof(softap_ssid);
+    size_t psw_size = sizeof(softap_psw);
+
+    if (esp_mesh_lite_get_softap_ssid_from_nvs(softap_ssid, &ssid_size) != ESP_OK) {
+        snprintf(softap_ssid, sizeof(softap_ssid), "%.32s", CONFIG_BRIDGE_SOFTAP_SSID);
+    }
+    if (esp_mesh_lite_get_softap_psw_from_nvs(softap_psw, &psw_size) != ESP_OK) {
+        strlcpy(softap_psw, CONFIG_BRIDGE_SOFTAP_PASSWORD, sizeof(softap_psw));
+    }
+
+    esp_mesh_lite_set_softap_info(softap_ssid, softap_psw);
+}
+
 void ips_mesh_bridge_init(void) {
     ESP_LOGI(TAG, "بيهيّئ mesh bridge (Root role)...");
 
@@ -68,18 +110,21 @@ void ips_mesh_bridge_init(void) {
     // esp-mesh-lite (esp-bridge component).
     esp_bridge_create_all_netif();
 
+    // إضافة حرجة (راجع MESH_PROGRESS.md 2026-09-13): من غيرها الأجهزة
+    // مش بتتفق على إعدادات WiFi الداخلية بتاعة الـmesh بشكل كامل.
+    configure_wifi_interfaces();
+
     esp_mesh_lite_config_t mesh_lite_config = ESP_MESH_LITE_DEFAULT_INIT();
 
-    // ملحوظة: mesh_lite مالوش حقل صريح لـ"الجهاز ده Root، مش child" - الروت
-    // بيتحدد بالانتخاب الطبيعي (أول جهاز مبيلاقي راوتر/مفيش mesh تاني
-    // بيقرر Root لوحده) - مؤكدين منها فعليًا من لوج التشغيل الحقيقي
-    // (level=0). الـjoin_mesh_ignore_router_status المفعّل في menuconfig هو اللي
-    // بيضمن إنه يقدر يقرر Root من غير راوتر.
+    // بنفرض القيم دي صراحة في الكود (مش بس نعتمد على menuconfig) - نفس
+    // اللي عامله مثال mesh_lite/examples/no_router الرسمي بالظبط.
+    mesh_lite_config.join_mesh_ignore_router_status = true;
+    // الـRoot تحديدًا: false هنا (عكس الـNode) - الروت مش بيحاول "ينضم"
+    // لحاجة، هو اللي بيتكوّن حواليه الشبكة.
+    mesh_lite_config.join_mesh_without_configured_wifi = false;
 
-    // esp_mesh_lite_init/start بترجع void في النسخة دي من mesh_lite (تأكدنا منها وقت بناء
-    // IPS_Mesh_Node) - من غير ESP_ERROR_CHECK.
     // TODO أمني مهم: مفتاح وهمي لحد الدراسة - لازم يتستبدل قبل أي نشر
-    // فعلي (مبنى المبنى، مش مجرد secret في git). لازم يطابق نفس
+    // فعلي (مبنى البرلمان، مش مجرد secret في git). لازم يطابق نفس
     // المفتاح في IPS_Mesh_Node/main/mesh_participant.c.
     static const uint8_t s_mesh_aes_key[16] = {
         0x49, 0x50, 0x53, 0x5f, 0x6d, 0x65, 0x73, 0x68,
@@ -88,6 +133,13 @@ void ips_mesh_bridge_init(void) {
     esp_mesh_lite_aes_set_key(s_mesh_aes_key, 128);
 
     esp_mesh_lite_init(&mesh_lite_config);
+
+    // منقول من المثال الرسمي - لازم يتنادى بعد init وقبل start.
+    app_wifi_set_softap_info();
+
+    // حرج: تحديد صريح لمين مسموح ياخد level 1 (Root). راجع
+    // MESH_PROGRESS.md 2026-09-13 للتفاصيل.
+    esp_mesh_lite_set_allowed_level(1);
 
     // تسجيل الـcallback اللي بيستقبل heartbeat راو من الـchild nodes - لازم
     // قبل esp_mesh_lite_start() عشان مايفوتش أول heartbeat لو child اتصل بسرعة.

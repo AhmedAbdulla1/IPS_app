@@ -18,8 +18,8 @@ end
 
 # Load bootloader symbols
 set confirm off
-    add-symbol-file E:/IPS_app/firmware/IPS_Mesh_Node/build/bootloader/bootloader.elf
+    add-symbol-file D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/build/bootloader/bootloader.elf
 set confirm on
 
 # Load application symbols
-file E:/IPS_app/firmware/IPS_Mesh_Node/build/ips_mesh_node.elf
+file D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/build/ips_mesh_node.elf

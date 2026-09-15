@@ -22,4 +22,4 @@ set confirm off
 set confirm on
 
 # Load application symbols
-file E:/IPS_app/firmware/IPS_Mesh_Root/build/bootloader/bootloader.elf
+file D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/bootloader/bootloader.elf

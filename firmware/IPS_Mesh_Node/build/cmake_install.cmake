@@ -1,4 +1,4 @@
-# Install script for directory: E:/IPS_app/firmware/IPS_Mesh_Node
+# Install script for directory: D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/cmake_install.cmake")
+  include("D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -57,6 +57,6 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-  file(WRITE "E:/IPS_app/firmware/IPS_Mesh_Node/build/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

@@ -1,0 +1,10 @@
+Command: ninja all
+warning: the int symbol BRIDGE_SOFTAP_MAX_CONNECT_NUMBER (defined at D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/managed_components/espressif__iot_bridge/Kconfig:108) has a non-int default BRIDGE_CUSTOM_MAX_CONNECT_NUMBER (undefined)
+error: patch failed: src/core/ipv4/dhcp.c:779
+error: src/core/ipv4/dhcp.c: patch does not apply
+error: patch failed: components/lwip/apps/dhcpserver/dhcpserver.c:1267
+error: components/lwip/apps/dhcpserver/dhcpserver.c: patch does not apply
+error: patch failed: src/core/ipv4/ip4.c:332
+error: src/core/ipv4/ip4.c: patch does not apply
+error: patch failed: src/core/ipv4/ip4_napt.c:41
+error: src/core/ipv4/ip4_napt.c: patch does not apply

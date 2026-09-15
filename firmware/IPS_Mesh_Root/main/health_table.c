@@ -26,15 +26,13 @@ static int find_free_slot(void) {
     return -1;
 }
 
+
 void ips_health_table_update(const uint8_t node_id[IPS_NODE_ID_LEN],
                               uint8_t hop_count) {
     int idx = find_entry_index(node_id);
     if (idx < 0) {
         idx = find_free_slot();
         if (idx < 0) {
-            // الجدول امتلأ (أكتر من IPS_HEALTH_TABLE_MAX_NODES node) -
-            // TODO: نزود الحجم أو نعمل eviction لأقدم entry لو حصل ده
-            // فعليًا في الميدان.
             return;
         }
         memcpy(s_table[idx].node_id, node_id, IPS_NODE_ID_LEN);
@@ -43,6 +41,17 @@ void ips_health_table_update(const uint8_t node_id[IPS_NODE_ID_LEN],
 
     s_table[idx].hop_count = hop_count;
     s_table[idx].last_seen_us = esp_timer_get_time();
+}
+
+void ips_health_table_purge_expired(int64_t max_age_us) {
+    int64_t now_us = esp_timer_get_time();
+    for (int i = 0; i < IPS_HEALTH_TABLE_MAX_NODES; i++) {
+        if (s_table[i].in_use) {
+            if ((now_us - s_table[i].last_seen_us) > max_age_us) {
+                s_table[i].in_use = false;
+            }
+        }
+    }
 }
 
 size_t ips_health_table_count(void) {

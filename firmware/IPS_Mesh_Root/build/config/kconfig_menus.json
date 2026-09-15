@@ -37136,7 +37136,10 @@
                                                 "help": null,
                                                 "id": "MESH_LITE_MAXIMUM_NODE_NUMBER",
                                                 "name": "MESH_LITE_MAXIMUM_NODE_NUMBER",
-                                                "range": null,
+                                                "range": [
+                                                    1,
+                                                    200
+                                                ],
                                                 "title": "The maximum node number",
                                                 "type": "int"
                                             }

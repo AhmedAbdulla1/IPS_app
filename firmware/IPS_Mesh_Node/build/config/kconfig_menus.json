@@ -37241,10 +37241,7 @@
                                         "help": "Setting a smaller default OTA_DATA_LEN size can save some RAM,\nbut the time spent by OTA will increase.",
                                         "id": "OTA_DATA_LEN",
                                         "name": "OTA_DATA_LEN",
-                                        "range": [
-                                            512,
-                                            1376
-                                        ],
+                                        "range": null,
                                         "title": "Transmission data length of each packet",
                                         "type": "int"
                                     },
@@ -37254,10 +37251,7 @@
                                         "help": "Must be a multiple of OTA_data_Len",
                                         "id": "OTA_WND_DEFAULT",
                                         "name": "OTA_WND_DEFAULT",
-                                        "range": [
-                                            1376,
-                                            8256
-                                        ],
+                                        "range": null,
                                         "title": "Default receive window size",
                                         "type": "int"
                                     },

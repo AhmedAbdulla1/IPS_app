@@ -15,8 +15,17 @@
 // صورة محدثة، والـtimeout الفعلي بيتحسب PC-side).
 #define IPS_HEALTH_REPORT_INTERVAL_MS 2000
 
+// مهلة التوقف ومارسبن القفزات لحساب حالة النود اونلاين/اوفلاين
+#define IPS_BASE_TIMEOUT_MS 3000
+#define IPS_PER_HOP_MARGIN_MS 800
+
 // طول node_id بالبايت (= esp32_uuid، 16 بايت زي فيرموير الـpositioning).
 #define IPS_NODE_ID_LEN 16
+
+// قناة WiFi الثابتة اللي الـmesh الداخلي (SoftAP) بيشتغل عليها - لازم
+// تتطابق حرفيًا بين Root وNode، وإلا الأجهزة ممكن متلاقيش بعض حتى
+// لو كل حاجة تانية مظبوطة صح (منقول من mesh_lite/examples/no_router الرسمي).
+#define IPS_MESH_CHANNEL 11
 
 // --- بروتوكول heartbeat شبكة health monitoring (MESH_DESIGN.md §5) ---
 // msg_id للرسائل الخام (raw) اللي بتتبعت من الـnode للـroot. لازم

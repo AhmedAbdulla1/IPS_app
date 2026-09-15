@@ -1,4 +1,4 @@
-# Install script for directory: E:/.espressif/v5.5.5/esp-idf/components/mbedtls/mbedtls/3rdparty
+# Install script for directory: D:/.espressif/.espressif/v5.5.5/esp-idf/components/mbedtls/mbedtls/3rdparty
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,8 +39,8 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("E:/IPS_app/firmware/IPS_Mesh_Root/build/esp-idf/mbedtls/mbedtls/3rdparty/everest/cmake_install.cmake")
-  include("E:/IPS_app/firmware/IPS_Mesh_Root/build/esp-idf/mbedtls/mbedtls/3rdparty/p256-m/cmake_install.cmake")
+  include("D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/esp-idf/mbedtls/mbedtls/3rdparty/everest/cmake_install.cmake")
+  include("D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/esp-idf/mbedtls/mbedtls/3rdparty/p256-m/cmake_install.cmake")
 
 endif()
 

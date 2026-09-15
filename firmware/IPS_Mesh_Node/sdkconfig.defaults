@@ -11,9 +11,14 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 # iot_bridge موجودين هنا كمان) - stack overflow في "Tmr Svc" task.
 CONFIG_FREERTOS_TIMER_TASK_STACK_DEPTH=4096
 
-# منع النود من الاتصال تلقائيًا بأي راوتر خارجي - جزء أساسي من
-# تصميمنا (الشبكة معزولة تمامًا عن الإنترنت).
-# CONFIG_BRIDGE_EXTERNAL_NETIF_STATION is not set
+# STA interface ضرورية عشان mesh_lite يقدر يعمل WiFi scan ويلاقي
+# الـparent node. من غيرها، الـwifi بيشتغل AP-only ومش بيقدر يسكان.
+# مفيش خطر اتصال بروتر خارجي لأن مفيش credentials محفوظة +
+# CONFIG_BRIDGE_STATION_CANCEL_AUTO_CONNECT_WHEN_DISCONNECTED مفعّل.
+CONFIG_BRIDGE_EXTERNAL_NETIF_STATION=y
+
+CONFIG_JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO=y
+CONFIG_JOIN_MESH_IGNORE_ROUTER_STATUS=y
 
 # --- BLE stack: NimBLE بدل Bluedroid (أخف وأنسب لـadvertising بسيط) ---
 CONFIG_BT_ENABLED=y
@@ -26,3 +31,45 @@ CONFIG_BT_BLUEDROID_ENABLED=n
 # مكوّني bt وesp_wifi في نفس البناء - مفيش داعي لإضافة config يدوي هنا.
 # لسه محتاج اختبار ميداني فعلي: هل BLE advertising بيستقر لما mesh
 # traffic يزيد؟ (ده اختبار أداء، مش إعداد ناقص).
+
+# --- تشخيص مؤقت (2026-09-12): الNode مش بيقدر يلاقي/يتصل بالRoot
+# رغم تطابق الconfig كاملاً - فعّلنا لوج mesh_lite التفصيلي عشان
+# نشوف مرحلة الفشل بالظبط. لازم يتشال بعد ما نحل المشكلة (مش
+# جزء من الإعداد النهائي).
+# NODE_INFO_REPORT مش مفعّل - كان بيسبّب IRAM overflow (3052 بايت)
+# مع WIRELESS_DEBUG مع بعض. WIRELESS_DEBUG لوحده كافي للتشخيص الحالي.
+CONFIG_MESH_LITE_WIRELESS_DEBUG=y
+
+# تبيّن إن WIRELESS_DEBUG لوحده (مش NODE_INFO_REPORT) هو المسبّب
+# الوحيد لـIRAM overflow (نفس الـ3052 بايت رجعت تاني بعد ما شلنا
+# NODE_INFO_REPORT). بدل ما نلغي WIRELESS_DEBUG (اللي محتاجينه للتشخيص)،
+# بدّلنا التحسين (optimization) لـ "Size" (-Os) بدل "Debug" (-Og
+# الافتراضي) - بيوفر مساحة أكتر بكتير في كل المشروع، مش
+# بس الجزء الخاص بالـmesh_lite. مؤقت (تشخيص) زي باقي WIRELESS_DEBUG.
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+
+# --- قيم كانت مظبوطة قبل كده عن طريق menuconfig يدوي ومكنتش
+# مسجلة هنا - المفروض تمسح الـsdkconfig القديم بعدها (راجع
+# MESH_PROGRESS.md - نفس الدرس المستفادة من قبل): لازم تفضل هنا
+# صراحة عشان متضيعش تاني لو اتمسح الـsdkconfig المولّد. لازم تتطابق
+# حرفيًا مع نفس القيم في IPS_Mesh_Root/sdkconfig.defaults.
+#
+# ملحوظة حرجة: CONFIG_MESH_LITE_ENABLE=y كان ناقص خالص من الملف ده
+# (كان مفعّل بـmenuconfig بس)، فلما kconfgen أعاد البناء من الأول
+# من الـdefaults بس، قائمة "Mesh-Lite info configuration" الفرعية كلها
+# اختفت من شجرة الـKconfig لأنها بتظهر بس لو CONFIG_MESH_LITE_ENABLE=y -
+# عشان كده ظهرت رسائل "undeclared" مش "wrong value".
+CONFIG_MESH_LITE_ENABLE=y
+CONFIG_MESH_LITE_VENDOR_ID_0=71
+CONFIG_MESH_LITE_VENDOR_ID_1=87
+CONFIG_MESH_LITE_ID=77
+CONFIG_MESH_LITE_MAX_ROUTER_NUMBER=3
+CONFIG_MESH_LITE_MAXIMUM_LEVEL_ALLOWED=10
+CONFIG_DEVICE_CATEGORY="ESP32"
+
+# جربنا نحدد الNode كـleaf node صراحة (يعني ممكنش يبقى root/parent
+# لأي حد تاني - دايمًا child بس). المكتبة فيها إصلاح قديم لباگ اسمه
+# "leaf node اتحدد غلط كـparent" لما softap مفعّل - وهو بالظبط حالتنا
+# (الNode والRoot الاتنين شغالين softap ومفيش تفضيل صريح لمين root).
+# مش للروت - الروت لازم يفضل قادر يبقى root.
+CONFIG_LEAF_NODE=y

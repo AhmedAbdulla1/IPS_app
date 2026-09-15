@@ -1,4 +1,4 @@
-# Install script for directory: E:/.espressif/v5.5.5/esp-idf/components/bt
+# Install script for directory: D:/.espressif/.espressif/v5.5.5/esp-idf/components/bt
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,26 +39,26 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/bt/common/cmake_install.cmake")
+  include("D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/bt/common/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/bt/controller/cmake_install.cmake")
+  include("D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/bt/controller/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/bt/host/bluedroid/cmake_install.cmake")
+  include("D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/bt/host/bluedroid/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/bt/host/nimble/cmake_install.cmake")
+  include("D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/bt/host/nimble/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/bt/esp_ble_mesh/cmake_install.cmake")
+  include("D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/build/esp-idf/bt/esp_ble_mesh/cmake_install.cmake")
 endif()
 

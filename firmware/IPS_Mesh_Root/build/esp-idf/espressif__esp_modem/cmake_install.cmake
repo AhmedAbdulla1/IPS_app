@@ -1,4 +1,4 @@
-# Install script for directory: E:/IPS_app/firmware/IPS_Mesh_Root/managed_components/espressif__esp_modem
+# Install script for directory: D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/managed_components/espressif__esp_modem
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

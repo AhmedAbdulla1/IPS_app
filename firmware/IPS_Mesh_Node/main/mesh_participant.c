@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "esp_bridge.h"
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_mesh_lite.h"
@@ -14,6 +15,44 @@
 #include "node_id_store.h"
 
 static const char *TAG = "mesh_participant";
+
+// منقول من مثال mesh_lite/examples/no_router الرسمي - بيضبط STA (الاسكان
+// اللي الـnode بيستخدمه للـscan وللبحث عن Root) وAP (نفس SSID/Password/Channel
+// بتاع الـmesh الداخلي لو الـnode اتحوّل Root يوم ما - احتياطي).
+static void configure_wifi_interfaces(void) {
+    wifi_config_t sta_cfg;
+    memset(&sta_cfg, 0, sizeof(sta_cfg));
+    esp_bridge_wifi_set_config(WIFI_IF_STA, &sta_cfg);
+
+    wifi_config_t ap_cfg = {
+        .ap = {
+            .ssid = CONFIG_BRIDGE_SOFTAP_SSID,
+            .password = CONFIG_BRIDGE_SOFTAP_PASSWORD,
+            .channel = IPS_MESH_CHANNEL,
+        },
+    };
+    esp_bridge_wifi_set_config(WIFI_IF_AP, &ap_cfg);
+}
+
+// منقول من نفس المثال الرسمي - بيضبط SSID/Password الداخليين اللي
+// الـmesh بتستخدمهم عشان الأجهزة تتصل ببعض (مش أي شبكة خارجية).
+// بيدوّر الأول في NVS (لو كان متسجل قبل كده)، ولو مش لاقي بيرجع للقيم
+// الافتراضية من menuconfig (CONFIG_BRIDGE_SOFTAP_SSID/PASSWORD).
+static void app_wifi_set_softap_info(void) {
+    char softap_ssid[33] = {0};
+    char softap_psw[64] = {0};
+    size_t ssid_size = sizeof(softap_ssid);
+    size_t psw_size = sizeof(softap_psw);
+
+    if (esp_mesh_lite_get_softap_ssid_from_nvs(softap_ssid, &ssid_size) != ESP_OK) {
+        snprintf(softap_ssid, sizeof(softap_ssid), "%.32s", CONFIG_BRIDGE_SOFTAP_SSID);
+    }
+    if (esp_mesh_lite_get_softap_psw_from_nvs(softap_psw, &psw_size) != ESP_OK) {
+        strlcpy(softap_psw, CONFIG_BRIDGE_SOFTAP_PASSWORD, sizeof(softap_psw));
+    }
+
+    esp_mesh_lite_set_softap_info(softap_ssid, softap_psw);
+}
 
 void mesh_participant_setup(void) {
     ESP_LOGI(TAG, "بيهيّئ mesh_lite (non-root)...");
@@ -41,7 +80,25 @@ void mesh_participant_setup(void) {
         ESP_ERROR_CHECK(wifi_ret);
     }
 
+    // !!!حرج!!!  esp_bridge_create_all_netif() لازم تبني STA netif
+    // (CONFIG_BRIDGE_EXTERNAL_NETIF_STATION=y في sdkconfig) بجانب SoftAP.
+    // من غير STA، الـwifi بيشتغل AP-only ومش بيقدر يعمل scan →
+    // esp_mesh_lite_wifi_scan_start بترجع ESP_FAIL ولا بيلاقي الـRoot أبدًا.
+    // ده مش معناه هيتصل بالنت - ده بس بيخلّي driver الـWiFi في وضع APSTA.
+    esp_bridge_create_all_netif();
+
+    // إضافة حرجة (راجع MESH_PROGRESS.md 2026-09-13): من غيرها الأجهزة
+    // مش بتتفق على إعدادات WiFi الداخلية بتاعة الـmesh بشكل كامل.
+    configure_wifi_interfaces();
+
     esp_mesh_lite_config_t mesh_lite_config = ESP_MESH_LITE_DEFAULT_INIT();
+
+    // بنفرض القيم دي صراحة في الكود (مش بس نعتمد على menuconfig) - نفس
+    // اللي عامله مثال mesh_lite/examples/no_router الرسمي بالظبط.
+    mesh_lite_config.join_mesh_ignore_router_status = true;
+    // الـNode تحديدًا: true هنا (عكس Root) - الـNode بيحاول ينضم لـmesh
+    // حتى من غير راوتر WiFi متكوّن.
+    mesh_lite_config.join_mesh_without_configured_wifi = true;
 
     // TODO امني مهم: مفتاح وهمي لحد الدراسة - لازم يتستبدل قبل أي نشر
     // فعلي. لازم يطابق نفس المفتاح في IPS_Mesh_Root/main/mesh_bridge.c.
@@ -51,13 +108,15 @@ void mesh_participant_setup(void) {
     };
     esp_mesh_lite_aes_set_key(s_mesh_aes_key, 128);
 
-    // ملحوظة: mesh_lite مالوش حقل صريح في esp_mesh_lite_config_t لـ"النود دي Root" -
-    // الروت بيتحدد بالانتخاب الطبيعي (أول node مبيلاقي راوتر/مفيش mesh تاني، بيقرر
-    // Root لوحده) - مؤكدين منها فعليًا من لوج التشغيل الحقيقي (level=0).
-
-    // esp_mesh_lite_init/start بترجع void في النسخة دي من mesh_lite
-    // (مش esp_err_t زي ما افترضنا الأول) - من غير ESP_ERROR_CHECK.
     esp_mesh_lite_init(&mesh_lite_config);
+
+    // منقول من المثال الرسمي - لازم يتنادى بعد init وقبل start.
+    app_wifi_set_softap_info();
+
+    // منقول من المثال الرسمي - تحديد صريح إن الـNode ممنوع يبقى level 1
+    // (Root). راجع MESH_PROGRESS.md 2026-09-13 للتفاصيل.
+    esp_mesh_lite_set_disallowed_level(1);
+
     esp_mesh_lite_start();
 
     ESP_LOGI(TAG, "mesh_lite اشتغل (node). الطبقة الحالية: %d",

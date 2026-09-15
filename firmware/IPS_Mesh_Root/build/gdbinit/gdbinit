@@ -1,2 +1,2 @@
-source E:/IPS_app/firmware/IPS_Mesh_Root/build/gdbinit/symbols
-source E:/IPS_app/firmware/IPS_Mesh_Root/build/gdbinit/connect
+source D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/gdbinit/symbols
+source D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/gdbinit/connect

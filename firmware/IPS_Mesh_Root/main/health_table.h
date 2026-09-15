@@ -25,6 +25,9 @@ void ips_health_table_init(void);
 void ips_health_table_update(const uint8_t node_id[IPS_NODE_ID_LEN],
                               uint8_t hop_count);
 
+// مسح أي نود انتهت مهلتها ولم تعد ترسل heartbeats (مثلاً بعد 15 ثانية)
+void ips_health_table_purge_expired(int64_t max_age_us);
+
 // بيرجع عدد الـentries المستخدمة حاليًا في الجدول.
 size_t ips_health_table_count(void);
 

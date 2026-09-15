@@ -1,0 +1,124 @@
+Command: C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe D:\.espressif\.espressif\v5.5.5\esp-idf\tools/idf_monitor.py -p COM9 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 D:\IPS_app\IPS_app\firmware\IPS_Mesh_Node\build\ips_mesh_node.elf D:\IPS_app\IPS_app\firmware\IPS_Mesh_Node\build\bootloader\bootloader.elf --force-color -m 'C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe' 'D:\.espressif\.espressif\v5.5.5\esp-idf\tools\idf.py' '-p' 'COM9'
+ (5c:01:3b:6c�ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5-dirty 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 12 2026 16:50:02[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (34) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (38) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (45) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (52) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (65) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00200000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=270e4h (159972) map[0m
+[0;32mI (143) esp_image: segment 1: paddr=0003710c vaddr=3ffbdb60 size=05d74h ( 23924) load[0m
+[0;32mI (152) esp_image: segment 2: paddr=0003ce88 vaddr=40080000 size=03190h ( 12688) load[0m
+[0;32mI (158) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=cd0f4h (839924) map[0m
+[0;32mI (445) esp_image: segment 4: paddr=0010d11c vaddr=40083190 size=1764ch ( 95820) load[0m
+[0;32mI (483) esp_image: segment 5: paddr=00124770 vaddr=5000006c size=00020h (    32) load[0m
+[0;32mI (496) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (496) boot: Disabling RNG early entropy source...[0m
+[0;32mI (507) cpu_start: Multicore app[0m
+[0;32mI (515) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (515) cpu_start: Pro cpu start user code[0m
+[0;32mI (516) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (517) app_init: Application information:[0m
+[0;32mI (521) app_init: Project name:     ips_mesh_node[0m
+[0;32mI (526) app_init: App version:      4a28d58-dirty[0m
+[0;32mI (530) app_init: Compile time:     Sep 12 2026 19:50:14[0m
+[0;32mI (535) app_init: ELF file SHA256:  282d03447...[0m
+[0;32mI (539) app_init: ESP-IDF:          v5.5.5-dirty[0m
+[0;32mI (544) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (548) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (552) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (556) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (562) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+[0;32mI (567) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+[0;32mI (572) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+[0;32mI (577) heap_init: At 3FFC9238 len 00016DC8 (91 KiB): DRAM[0m
+[0;32mI (582) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (588) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (593) heap_init: At 4009A7DC len 00005824 (22 KiB): IRAM[0m
+[0;32mI (600) spi_flash: detected chip: generic[0m
+[0;32mI (602) spi_flash: flash io: dio[0m
+[0;32mI (606) coexist: coex firmware version: 6f3d08c[0m
+[0;32mI (610) main_task: Started on CPU0[0m
+[0;32mI (610) main_task: Calling app_main()[0m
+[0;32mI (610) ips_mesh_node: === IPS Mesh Node starting ===[0m
+[0;32mI (630) node_id_store: Loaded Node ID from NVS: 5132f81db1f5a3270157a082b6609a9c[0m
+[0;32mI (630) BTDM_INIT: BT controller compile version [e02a38e][0m
+[0;32mI (630) BTDM_INIT: Using main XTAL as clock source[0m
+[0;32mI (640) BTDM_INIT: Bluetooth MAC: 5c:01:3b:6c:0f:6a[0m
+[0;32mI (640) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (960) ble_node: NimBLE host بدأ - في انتظار sync مع الـcontroller...[0m
+[0;32mI (960) mesh_participant: بيهيّئ mesh_lite (non-root)...[0m
+[0;32mI (990) wifi:wifi driver task: 3ffd6a38, prio:23, stack:6656, core=0[0m
+[0;32mI (1000) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (1000) wifi:wifi certification version: v7.0[0m
+[0;32mI (1000) wifi:config NVS flash: enabled[0m
+[0;32mI (1000) wifi:config nano formatting: disabled[0m
+[0;32mI (1000) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1010) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1010) wifi:Init management short buffer num: 32[0m
+[0;32mI (1020) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1020) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1020) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1030) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1040) wifi_init: rx ba win: 6[0m
+[0;32mI (1040) wifi_init: accept mbox: 6[0m
+[0;32mI (1040) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1040) wifi_init: udp mbox: 6[0m
+[0;32mI (1040) wifi_init: tcp mbox: 6[0m
+[0;32mI (1050) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1050) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1050) NimBLE: GAP procedure initiated: advertise; [0m
+[0;32mI (1060) NimBLE: disc_mode=2[0m
+[0;32mI (1060) NimBLE:  adv_channel_map=0 own_addr_type=0 adv_filter_policy=0 adv_itvl_min=244 adv_itvl_max=244[0m
+[0;32mI (1070) NimBLE: [0m
+
+[0;32mI (1070) wifi_init: tcp mss: 1440[0m
+[0;32mI (1070) bridge_common: esp-iot-bridge version: 1.0.1[0m
+[0;32mI (1080) ble_node: Advertising started. Company ID: 0xFFFF[0m
+[0;32mI (1090) wifi:mode : null[0m
+[0;32mI (1090) wifi:mode : softAP (5c:01:3b:6c:0f:69)[0m
+[0;32mI (1090) wifi:Total power save buffer number: 16[0m
+[0;32mI (1100) wifi:Init max length of beacon: 752/752[0m
+[0;32mI (1100) wifi:Init max length of beacon: 752/752[0m
+Add netif ap with 4a28d58(commit id)
+[0;32mI (1110) esp_netif_lwip: DHCP server started on interface WIFI_AP_DEF with IP: 192.168.4.1[0m
+[0;32mI (1120) bridge_common: netif list add success[0m
+[0;32mI (1120) bridge_common: [WIFI_AP_DEF ][0m
+[0;32mI (1120) bridge_common: Set ip info:192.168.5.1[0m
+[0;32mI (1130) bridge_wifi: SoftAP IP network segment has changed, deauth all station[0m
+[0;32mI (1140) wifi:Disabled PMF config for SoftAP[0m
+[0;32mI (1140) wifi:Total power save buffer number: 16[0m
+[0;32mI (1140) bridge_common: DHCPS Restart, deauth all station[0m
+[0;32mI (1140) esp_netif_lwip: DHCP server started on interface WIFI_AP_DEF with IP: 192.168.5.1[0m
+[0;32mI (1160) bridge_common: [WIFI_AP_DEF ]Name Server1: 114.114.114.114[0m
+Add netif sta with 4a28d58(commit id)
+[0;32mI (1170) bridge_common: netif list add success[0m
+[0;32mI (1170) wifi:mode : sta (5c:01:3b:6c:0f:68) + softAP (5c:01:3b:6c:0f:69)[0m
+[0;32mI (1180) wifi:enable tsf[0m
+[1;31mE (1180) NVS: Failed to read IP info from NVS[0m
+[0;32mI (1180) wifi:Disabled PMF config for STA[0m
+[0;32mI (1190) Mesh-Lite: esp-mesh-lite component version: 1.0.2[0m
+[0;32mI (1190) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (1200) [vendor_ie]: Mesh-Lite commit id: 308dc1f[0m
+ 
+[0;32mI (1200) [vendor_ie]: Mesh ID: 77 [0m
+[1;31mE (1200) wifi:the vendor ie has been setted, clear it before setting again[0m
+[1;31mE (1210) wifi:the 

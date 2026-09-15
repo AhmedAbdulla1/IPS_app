@@ -2,34 +2,34 @@
 	"sources" : 
 	[
 		{
-			"file" : "E:/IPS_app/firmware/IPS_Mesh_Root/build/CMakeFiles/bootloader"
+			"file" : "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/CMakeFiles/bootloader"
 		},
 		{
-			"file" : "E:/IPS_app/firmware/IPS_Mesh_Root/build/CMakeFiles/bootloader.rule"
+			"file" : "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/CMakeFiles/bootloader.rule"
 		},
 		{
-			"file" : "E:/IPS_app/firmware/IPS_Mesh_Root/build/CMakeFiles/bootloader-complete.rule"
+			"file" : "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/CMakeFiles/bootloader-complete.rule"
 		},
 		{
-			"file" : "E:/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+			"file" : "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
 		},
 		{
-			"file" : "E:/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+			"file" : "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
 		},
 		{
-			"file" : "E:/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+			"file" : "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
 		},
 		{
-			"file" : "E:/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+			"file" : "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
 		},
 		{
-			"file" : "E:/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+			"file" : "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
 		},
 		{
-			"file" : "E:/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+			"file" : "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
 		},
 		{
-			"file" : "E:/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+			"file" : "D:/IPS_app/IPS_app/firmware/IPS_Mesh_Root/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
 		}
 	],
 	"target" : 

@@ -1,4 +1,4 @@
-# Install script for directory: E:/IPS_app/firmware/IPS_Mesh_Node/managed_components/espressif__mesh_lite
+# Install script for directory: D:/IPS_app/IPS_app/firmware/IPS_Mesh_Node/managed_components/espressif__mesh_lite
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

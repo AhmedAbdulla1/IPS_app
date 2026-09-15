@@ -161,11 +161,11 @@ $<TARGET_FILE:idf::rt>
 $<TARGET_FILE:idf::spiffs>
 $<TARGET_FILE:idf::wifi_provisioning>
 $<TARGET_FILE:__idf_json>
-$<TARGET_FILE:idf::espressif__qrcode>
 $<TARGET_FILE:idf::espressif__esp_modem>
 $<TARGET_FILE:idf::espressif__iot_bridge>
 $<TARGET_FILE:__idf_esp_eth>
 $<TARGET_FILE:__idf_espressif__esp_modem>
+$<TARGET_FILE:idf::espressif__qrcode>
 $<TARGET_FILE:idf::espressif__mesh_lite>
 $<TARGET_FILE:__idf_wifi_provisioning>
 $<TARGET_FILE:__idf_espressif__qrcode>

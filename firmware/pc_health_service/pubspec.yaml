@@ -11,10 +11,7 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  # FFI bindings لـlibserialport - بتدعم Windows/Linux/macOS.
-  # TODO: بعد أول `dart pub get` تأكد من رقم النسخة الفعلي المتاح على
-  # pub.dev وثبّته هنا (النسخة هنا افتراضية وقت الكتابة).
-  libserialport: ^0.4.0
+  flutter_libserialport: ^0.6.0
   http: ^1.2.0
 
 dev_dependencies:
