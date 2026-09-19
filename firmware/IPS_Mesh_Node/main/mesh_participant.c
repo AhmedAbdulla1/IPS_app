@@ -17,8 +17,6 @@
 
 static const char *TAG = "mesh_participant";
 
-#define IPS_LED_GPIO 2
-
 // منقول من مثال mesh_lite/examples/no_router الرسمي - بيضبط STA (الاسكان
 // اللي الـnode بيستخدمه للـscan وللبحث عن Root) وAP (نفس SSID/Password/Channel
 // بتاع الـmesh الداخلي لو الـnode اتحوّل Root يوم ما - احتياطي).
@@ -48,7 +46,14 @@ static void app_wifi_set_softap_info(void) {
     size_t psw_size = sizeof(softap_psw);
 
     if (esp_mesh_lite_get_softap_ssid_from_nvs(softap_ssid, &ssid_size) != ESP_OK) {
+#if CONFIG_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
+        uint8_t softap_mac[6] = {0};
+        esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
+        snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x",
+                 CONFIG_BRIDGE_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
+#else
         snprintf(softap_ssid, sizeof(softap_ssid), "%.32s", CONFIG_BRIDGE_SOFTAP_SSID);
+#endif
     }
     if (esp_mesh_lite_get_softap_psw_from_nvs(softap_psw, &psw_size) != ESP_OK) {
         strlcpy(softap_psw, CONFIG_BRIDGE_SOFTAP_PASSWORD, sizeof(softap_psw));

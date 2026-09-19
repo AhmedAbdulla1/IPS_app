@@ -1,0 +1,402 @@
+/* css/layout.css — Core Layout, Navigation & Panels */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(243, 111, 33, 0.08) 0%, transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(20, 20, 20, 0.9) 0%, transparent 60%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Typography Utilities ─────────────────────────────────────────────── */
+.mono {
+    font-family: var(--font-mono) !important;
+}
+
+.text-success { color: var(--status-online) !important; }
+.text-warning { color: var(--status-warning) !important; }
+.text-danger  { color: var(--status-offline) !important; }
+.text-accent  { color: var(--brand-primary) !important; }
+.text-muted   { color: var(--text-muted) !important; }
+
+/* ── Shell Container ─────────────────────────────────────────────────── */
+.dashboard-shell {
+    max-width: 1720px;
+    margin: 0 auto;
+    padding: 16px 24px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ── Top Operations Navbar ───────────────────────────────────────────── */
+.top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 14px 22px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+}
+
+.top-nav::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-brand-subtle), transparent);
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.brand-logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo-img {
+    height: 38px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px var(--brand-glow));
+}
+
+.brand-divider {
+    width: 1px;
+    height: 30px;
+    background: linear-gradient(180deg, transparent, rgba(245, 166, 35, 0.4), transparent);
+}
+
+.parliament-logo-img {
+    height: 42px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(245, 166, 35, 0.35));
+    transition: var(--transition);
+}
+
+.parliament-logo-img:hover {
+    transform: scale(1.04);
+    filter: drop-shadow(0 3px 12px rgba(245, 166, 35, 0.5));
+}
+
+.brand-text h1 {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: var(--text-main);
+    text-transform: uppercase;
+}
+
+.brand-text p {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    letter-spacing: 0.2px;
+}
+
+/* ── Indicators & Status Pills ────────────────────────────────────────── */
+.nav-indicators {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.status-pill.connected {
+    background: rgba(61, 220, 132, 0.12);
+    color: var(--status-online);
+    border: 1px solid rgba(61, 220, 132, 0.35);
+}
+
+.status-pill.disconnected {
+    background: rgba(201, 123, 110, 0.12);
+    color: var(--status-offline);
+    border: 1px solid rgba(201, 123, 110, 0.3);
+}
+
+.indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.connected .indicator-dot {
+    background: var(--status-online);
+    box-shadow: 0 0 8px var(--status-online);
+    animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.disconnected .indicator-dot {
+    background: var(--status-offline);
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 12px;
+}
+
+.pill-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.pill-val {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ── Generic Buttons ──────────────────────────────────────────────────── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: var(--transition);
+    text-decoration: none;
+    user-select: none;
+}
+
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(0.6);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
+    color: #FFFFFF;
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: var(--shadow-brand);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--brand-hover), var(--brand-primary));
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px var(--brand-glow-lg);
+}
+
+.btn-secondary {
+    background: var(--bg-panel);
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--bg-panel-hover);
+    border-color: var(--border-brand-subtle);
+    color: var(--brand-light);
+}
+
+.btn-danger {
+    background: rgba(201, 123, 110, 0.15);
+    color: var(--status-offline);
+    border-color: rgba(201, 123, 110, 0.35);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: var(--status-offline);
+    color: #FFFFFF;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+}
+
+.btn-ghost:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.btn-outline:hover:not(:disabled) {
+    border-color: var(--brand-primary);
+    color: var(--brand-light);
+    background: rgba(243, 111, 33, 0.08);
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+
+.btn-icon:hover {
+    background: var(--bg-panel-hover);
+    color: var(--brand-primary);
+    border-color: var(--border-brand);
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 11.5px;
+}
+
+.btn-xs {
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+.auth-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 6px;
+    padding-left: 10px;
+    border-left: 1px solid var(--border-color);
+}
+
+.user-badge {
+    font-size: 12px;
+    color: var(--brand-light);
+    font-weight: 500;
+}
+
+/* ── Panel Shell Primitives ───────────────────────────────────────────── */
+.panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.panel-title-group h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-desc {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 2px;
+}
+
+/* ── Grid Structures ─────────────────────────────────────────────────── */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+}
+
+.middle-grid {
+    display: grid;
+    grid-template-columns: 1fr 390px;
+    gap: 20px;
+}
+
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1440px) {
+    .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .middle-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+    .top-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .nav-actions {
+        justify-content: flex-end;
+    }
+}

@@ -48,12 +48,25 @@ def find_esp_python():
     relying on whatever "python" happens to be first in PATH.
     IDF_PYTHON_ENV_PATH is set automatically when you run ESP-IDF's
     export.bat/export.ps1, so it's the most reliable source. Falls back
-    to sys.executable if that env var isn't set."""
+    to searching common Espressif installation paths before sys.executable."""
     idf_python_env = os.environ.get("IDF_PYTHON_ENV_PATH")
     if idf_python_env:
         candidate = Path(idf_python_env) / "Scripts" / "python.exe"
         if candidate.exists():
             return str(candidate)
+
+    import glob
+    search_patterns = [
+        "C:/Espressif/tools/python/*/venv/Scripts/python.exe",
+        "C:/Espressif/python_env/*/Scripts/python.exe",
+        str(Path.home() / ".espressif/python_env/*/Scripts/python.exe"),
+    ]
+    for pattern in search_patterns:
+        matches = glob.glob(pattern)
+        if matches:
+            matches.sort(reverse=True)
+            return matches[0]
+
     return sys.executable
 
 

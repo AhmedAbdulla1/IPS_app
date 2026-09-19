@@ -43,7 +43,10 @@ class BeaconController extends GetxController {
   var fetchingBeacons = true.obs;
   var haveCurrentLocation = false.obs;
   var beaconResult = ''.obs;
-  int beaconRssiCutoff = -50;
+  int beaconRssiCutoff = -75;
+
+  // لتجنب تكرار طباعة اللوج لنفس النود في كل جزء من الثانية
+  final Map<String, DateTime> _lastLogTimePerNode = {};
 
   // ── Hysteresis ضد تذبذب RSSI ──────────────────────────────────────────
   // من غير قفل، أي اهتزاز بسيط في الإشارة (تداخل/انعكاس) بيخلي أقرب نقطة
@@ -90,7 +93,7 @@ class BeaconController extends GetxController {
   // المتغيرات الجديدة لتتبع حالة التحميل من Repository
   late NavigationRepository _navigationRepository;
   BuildingGraph? _currentGraph;
-  bool _graphLoaded = false;
+  // bool _graphLoaded = false;
   // الـ Future بتاع تحميل بيانات الخريطة — beaconInitPlatformState() بينتظرها
   // قبل ما يبدأ فعليًا، عشان مايبدأش يقارن بيكونات متلقطة مع poiList لسه
   // فاضية (سباق/race condition كان بيسبب "Timer expired" غلط حتى مع وجود
@@ -146,7 +149,7 @@ class BeaconController extends GetxController {
       _convertGraphToPoiNodes(_currentGraph!);
       _convertGraphToLocationList(_currentGraph!);
       
-      _graphLoaded = true;
+      // _graphLoaded = true;
       print('[BEACON] ✓ Navigation data loaded successfully. Nodes: ${poiList.length}, Locations: ${locationList.length}');
     } catch (e) {
       print('[BEACON] ❌ Error loading data from Supabase: $e');
@@ -353,9 +356,6 @@ class BeaconController extends GetxController {
 
         final beaconData = _parseIBeacon(device);
         if (beaconData != null) {
-          print(
-              '[BEACON] 📍 Beacon detected: UUID=${beaconData.uuid}, Major=${beaconData.major}, Minor=${beaconData.minor}, RSSI=${beaconData.rssi}');
-
           fetchingBeacons.value = false;
           cancelTimer();
           addToListAndSort(beaconData);
@@ -504,14 +504,24 @@ class BeaconController extends GetxController {
         (beacon) => beacon.nodeESP32ID.toLowerCase() == beaconData.uuid.toLowerCase());
 
     if (beaconIndexInList == -1) {
-      print('[BEACON] ❌ NO MATCH FOUND!');
-      print('[BEACON] UUID "${beaconData.uuid}" not in any loaded node');
-      print('[BEACON] ⚠️ Make sure this UUID exists in Supabase nodes table with column esp32_uuid');
-      print('[BEACON] Expected format: 00000000-0000-0000-0000-000000000005');
+      // جهاز BLE غير مسجل في خريطة المبنى (ساعة/تلفزيون/لابتوب) - نتجاهله بصمت لتنظيف اللوج
       return;
     }
-    
-    // print('[BEACON] ✅ MATCH FOUND at index $beaconIndexInList!');
+
+    final matchedNode = poiList[beaconIndexInList];
+    final now = DateTime.now();
+    final lastLog = _lastLogTimePerNode[matchedNode.nodeESP32ID];
+
+    // طباعة نظيفة مرة كل ثانيتين لكل نود
+    if (lastLog == null || now.difference(lastLog).inSeconds >= 2) {
+      _lastLogTimePerNode[matchedNode.nodeESP32ID] = now;
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('📍 تم رصد نود: [${matchedNode.name}] (Node ID: ${matchedNode.nodeID})');
+      print('   🔑 UUID: ${beaconData.uuid}');
+      print('   📐 الإحداثيات: X=${matchedNode.x}, Y=${matchedNode.y} | الدور: ${matchedNode.level}');
+      print('   📶 قوة الإشارة (RSSI): ${beaconData.rssi} dBm | 📏 المسافة: ~${beaconData.distance}m');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
     
     var beaconIndexInQueue = beaconDataPriorityQueue.indexWhere(
         (beacon) => beacon.uuid.toLowerCase() == beaconData.uuid.toLowerCase());
@@ -534,27 +544,23 @@ class BeaconController extends GetxController {
       tempString += item.name + " : " + item.rssi + '\n';
     }
     beaconResult.value = tempString;
-    // print('[BEACON] Visible beacons (${beaconDataPriorityQueue.length}): strongest=${beaconDataPriorityQueue.first.name} (RSSI=${beaconDataPriorityQueue.first.rssi})');
 
     // ========== Phase 1: استخدم Weighted Centroid بدل Strongest Signal فقط ==========
     final nearestBeacon = beaconDataPriorityQueue.first;
     final nearestRssi = int.parse(nearestBeacon.rssi);
     
     if (nearestRssi > beaconRssiCutoff) {
-      // حساب الموقع المرجح من جميع البيكونات المرئية
-      print('$beaconDataPriorityQueue');
       final weightedMatch = _calculateWeightedPosition(beaconDataPriorityQueue);
 
       if (weightedMatch != null) {
-        // قبل ما نستخدم النقطة المرشحة، نمررها على الـ hysteresis عشان مانقفزش بين
-        // نقطتين بسبب تذبذب الإشارة
         final resolvedNode = _resolveNodeWithHysteresis(
             weightedMatch.node, weightedMatch.distance, nearestRssi);
         setCurrentLocationFromNode(resolvedNode);
-        print('[BEACON] ✓ Weighted position: Node ${resolvedNode.nodeID} ${resolvedNode.nodeESP32ID} (${resolvedNode.name})');
+        // print('🎯 موقعك الحالي المحدد على الخريطة: [${resolvedNode.name}] (Node ${resolvedNode.nodeID})');
       } else {
         // Fallback: استخدم أقوي بيكون إذا فشل الحساب المرجح
         setCurrentLocationFromUuid(nearestBeacon.uuid);
+        // print('🎯 موقعك الحالي المحدد على الخريطة: [${nearestBeacon.name}]');
       }
     }
   }
@@ -601,7 +607,7 @@ class BeaconController extends GetxController {
     if (strongestNode == null) return null;
 
     final currentFloor = strongestNode.level;
-    print('[BEACON] 🏢 Detected floor: $currentFloor (from strongest beacon: ${strongestBeacon.name})');
+    // print('[BEACON] 🏢 Detected floor: $currentFloor (from strongest beacon: ${strongestBeacon.name})');
 
     double totalWeight = 0;
     double weightedX = 0;
@@ -632,7 +638,7 @@ class BeaconController extends GetxController {
     final centerX = weightedX / totalWeight;
     final centerY = weightedY / totalWeight;
 
-    print('[BEACON] 📍 Weighted center: ($centerX, $centerY) from $validBeacons beacons on floor $currentFloor');
+    // print('[BEACON] 📍 Weighted center: ($centerX, $centerY) from $validBeacons beacons on floor $currentFloor');
 
     // خطوة 3: ابحث عن أقرب node **في نفس الدور فقط**
     // هذا حل لمشكلة الإحداثيات المحلية: كل دور له نسخته الخاصة من (x,y)
@@ -640,7 +646,7 @@ class BeaconController extends GetxController {
     double minDistance = double.infinity;
 
     final nodesInCurrentFloor = poiList.where((n) => n.level == currentFloor).toList();
-    print('[BEACON] 🔍 Searching in ${nodesInCurrentFloor.length} nodes on floor $currentFloor (from ${poiList.length} total)');
+    // print('[BEACON] 🔍 Searching in ${nodesInCurrentFloor.length} nodes on floor $currentFloor (from ${poiList.length} total)');
 
     for (final node in nodesInCurrentFloor) {
       final dist = math.sqrt(
@@ -654,7 +660,7 @@ class BeaconController extends GetxController {
     }
 
     if (nearest != null) {
-      print('[BEACON] ✅ Matched to: Node ${nearest.nodeID} "${nearest.name}" (floor $currentFloor, distance: ${minDistance.toStringAsFixed(2)}m)');
+      print('[BEACON] ✅ Matched to: Node  ${nearest.nodeESP32ID} "${nearest.name}" (floor $currentFloor, distance: ${minDistance.toStringAsFixed(2)}m)');
     }
 
     return nearest == null ? null : _WeightedMatch(nearest, minDistance);

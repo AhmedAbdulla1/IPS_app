@@ -1,149 +1,211 @@
-// الاتصال بالـRoot عبر Web Serial API وقراءة أسطر health (JSON من
-// الـRoot الفعلي + HEALTH:... كصيغة قديمة/fallback). بروتوكول النقل
-// نفسه موثّق في ../../../MESH_DESIGN.md، والتنفيذ المرجعي الشغال فعليًا
-// في ../../pc_health_service/lib/health_protocol.dart.
-//
-// الوحدة دي مالهاش أي علاقة بالـDOM مباشرة - بس بتستقبل بيانات وتنادي
-// الـcallbacks اللي اتسجلت من dashboard.js. كده أي حد يقدر يستخدمها من
-// غير ما يتقيد بشكل الصفحة.
+// js/serial.js — إدارة اتصال Web Serial مع ESP32 Root
+// يدعم قراءة رسائل الصحة (health)، معلومات الـ Root، وأوامر OTA الثنائية والنصية
 
 window.SM = window.SM || {};
 
 SM.serial = (function () {
   let port = null;
   let reader = null;
-  let writer = null;
-  let keepReading = false;
-  let incomingBuffer = "";
+  let isConnected = false;
+  let portInfo = 'Web Serial';
 
-  const onHealthLine = []; // (nodeIdHex, hopCount, status, fwMajor, fwMinor) => void
-  const onRawLine = [];    // (line) => void
-  const onConnectionChange = []; // (connected: boolean) => void
+  const connectionChangeCallbacks = [];
+  const healthLineCallbacks = [];
+  const rootInfoCallbacks = [];
+  const rawLineCallbacks = [];
 
-  function fire(list, ...args) {
-    for (const cb of list) {
-      try {
-        cb(...args);
-      } catch (e) {
-        console.error("SM.serial listener error", e);
-      }
-    }
-  }
-
-  function parseLine(line) {
-    line = line.trim();
-    if (!line) return;
-
-    // الصيغة الفعلية اللي بيبعتها الـRoot دلوقتي (راجع
-    // IPS_Mesh_Root/main/serial_output.c):
-    // {"type":"health","node_id":"<hex>","status":"online|offline",
-    //  "hop_count":N,"last_seen_ms":N}
-    // لازم تتبارس الأول - نفس ترتيب الأولوية المتفق عليه في
-    // pc_health_service/lib/health_protocol.dart (المرجع الشغال فعليًا
-    // مع نفس الـRoot)، عشان الأداتين ميختلفوش في تفسير نفس البيانات.
-    if (line.startsWith("{") && line.endsWith("}")) {
-      try {
-        const data = JSON.parse(line);
-        if (data.node_id && data.hop_count !== undefined) {
-          const nodeIdHex = String(data.node_id).toLowerCase();
-          const hopCount = parseInt(data.hop_count, 10);
-          const status = data.status || "online";
-          const fwMajor = data.fw_major !== undefined ? parseInt(data.fw_major, 10) : null;
-          const fwMinor = data.fw_minor !== undefined ? parseInt(data.fw_minor, 10) : null;
-          fire(onHealthLine, nodeIdHex, hopCount, status, fwMajor, fwMinor);
-          return;
-        }
-      } catch (_) {
-        // مش JSON صالح - نكمل ونجرب الصيغة القديمة تحت
-      }
-    }
-
-    // صيغة قديمة/احتياطية HEALTH:<uid_hex>:<online|offline>:<hop_count>:<last_seen_ms>
-    if (line.startsWith("HEALTH:")) {
-      const parts = line.substring(7).split(":");
-      if (parts.length >= 3) {
-        const nodeIdHex = parts[0].toLowerCase();
-        const status = parts[1];
-        const hopCount = parseInt(parts[2], 10);
-        fire(onHealthLine, nodeIdHex, hopCount, status, null, null);
-        return;
-      }
-    }
-
-    fire(onRawLine, line);
-  }
+  const textEncoder = new TextEncoder();
+  const textDecoder = new TextDecoder();
 
   async function connect() {
-    if (!("serial" in navigator)) {
-      throw new Error(
-        "المتصفح ده مش بيدعم Web Serial. افتح الصفحة في Chrome أو Edge."
-      );
-    }
-
-    port = await navigator.serial.requestPort();
-    await port.open({ baudRate: SM.config.SERIAL_BAUD_RATE });
-
-    const textDecoder = new TextDecoderStream();
-    port.readable.pipeTo(textDecoder.writable);
-    reader = textDecoder.readable.getReader();
-
-    const textEncoder = new TextEncoderStream();
-    textEncoder.readable.pipeTo(port.writable);
-    writer = textEncoder.writable.getWriter();
-
-    keepReading = true;
-    readLoop();
-    fire(onConnectionChange, true);
-  }
-
-  async function readLoop() {
-    while (keepReading) {
-      try {
-        const { value, done } = await reader.read();
-        if (done) break;
-        if (value) {
-          incomingBuffer += value;
-          const lines = incomingBuffer.split("\n");
-          incomingBuffer = lines.pop(); // سيب السطر الناقص للمرة الجاية
-          for (const line of lines) parseLine(line);
-        }
-      } catch (e) {
-        fire(onRawLine, "خطأ قراءة Serial: " + e.message);
-        break;
+    try {
+      if (!navigator.serial) {
+        throw new Error('متصفحك لا يدعم Web Serial API. يرجى استخدام متصفح Chrome أو Edge أو Opera.');
       }
+
+      port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 115200 });
+
+      const info = port.getInfo ? port.getInfo() : {};
+      if (info.usbVendorId) {
+        portInfo = `USB (VID:${info.usbVendorId.toString(16).padStart(4, '0')})`;
+      } else {
+        portInfo = 'Serial Port';
+      }
+
+      isConnected = true;
+      console.log('[serial] ✅ متصل بـ Root على ' + portInfo);
+      
+      notifyConnectionChange(true);
+      startReading();
+
+      // طلب معلومات الـ Root فور الاتصال
+      setTimeout(() => {
+        requestRootInfo().catch(() => {});
+      }, 500);
+
+    } catch (error) {
+      console.error('[serial] ❌ خطأ الاتصال:', error);
+      throw error;
     }
   }
 
   async function disconnect() {
-    keepReading = false;
-    try {
-      if (reader) {
+    if (reader) {
+      try {
         await reader.cancel();
-        reader.releaseLock();
-      }
-      if (writer) await writer.close();
-      if (port) await port.close();
-    } catch (_) {
-      /* تجاهل أخطاء الإغلاق */
+      } catch (e) {}
+      reader = null;
     }
-    port = null;
-    reader = null;
-    writer = null;
-    fire(onConnectionChange, false);
+    if (port) {
+      try {
+        await port.close();
+      } catch (e) {}
+      port = null;
+    }
+    isConnected = false;
+    console.log('[serial] اتصال مقطوع');
+    notifyConnectionChange(false);
   }
 
-  /** بيبعت نص خام (مثلاً أوامر SET_ID) - مستخدمة كمان في التحكم اليدوي لو احتجنا. */
+  async function startReading() {
+    if (!port || !port.readable) {
+      console.error('[serial] ❌ port مش readable');
+      return;
+    }
+
+    reader = port.readable.getReader();
+    const buffer = new Uint8Array(65536);
+    let bufferIndex = 0;
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        for (let i = 0; i < value.length; i++) {
+          buffer[bufferIndex++] = value[i];
+
+          if (value[i] === 0x0A) { // '\n'
+            const line = textDecoder.decode(buffer.slice(0, bufferIndex - 1));
+            bufferIndex = 0;
+            processLine(line.trim());
+          }
+        }
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('[serial] خطأ قراءة:', error);
+        await disconnect();
+      }
+    }
+  }
+
+  function processLine(line) {
+    if (!line) return;
+
+    // 1. فحص هل هو JSON
+    if (line.startsWith('{')) {
+      try {
+        const obj = JSON.parse(line);
+        if (obj.type === 'root_info') {
+          rootInfoCallbacks.forEach(cb => cb(obj));
+          rawLineCallbacks.forEach(cb => cb(line));
+          return;
+        }
+        if (obj.type === 'health' || obj.node_id || obj.node_id_hex) {
+          const update = {
+            nodeIdHex: (obj.node_id || obj.node_id_hex || '').replace(/[^a-fA-F0-9]/g, '').toLowerCase(),
+            status: obj.status || 'online',
+            hopCount: typeof obj.hop_count === 'number' ? obj.hop_count : parseInt(obj.hop_count || 0, 10),
+            fwMajor: typeof obj.fw_major === 'number' ? obj.fw_major : (obj.fw_major !== undefined ? parseInt(obj.fw_major, 10) : null),
+            fwMinor: typeof obj.fw_minor === 'number' ? obj.fw_minor : (obj.fw_minor !== undefined ? parseInt(obj.fw_minor, 10) : null),
+            timestamp: obj.last_seen_ms || Date.now(),
+            receivedAt: Date.now(),
+          };
+          healthLineCallbacks.forEach(cb =>
+            cb(update.nodeIdHex, update.hopCount, update.status, update.fwMajor, update.fwMinor, update)
+          );
+          rawLineCallbacks.forEach(cb => cb(line));
+          return;
+        }
+      } catch (e) {}
+    }
+
+    // 2. فحص البروتوكول التقليدي HEALTH:...
+    let update = null;
+    if (SM.protocol?.parse) {
+      update = SM.protocol.parse(line);
+    }
+    if (update && update.nodeIdHex) {
+      healthLineCallbacks.forEach(cb => 
+        cb(update.nodeIdHex, update.hopCount, update.status, update.fwMajor, update.fwMinor, update)
+      );
+    }
+
+    // إرسال كافة الأسطر للسجل
+    rawLineCallbacks.forEach(cb => cb(line));
+  }
+
   async function writeText(text) {
-    if (!writer) throw new Error("مش متصل بالـSerial.");
-    await writer.write(text);
+    if (!isConnected || !port || !port.writable) {
+      throw new Error('Serial port not connected');
+    }
+
+    const writer = port.writable.getWriter();
+    await writer.write(textEncoder.encode(text));
+    writer.releaseLock();
   }
 
-  /** بيبعت بايتات خام (هيتستخدم لاحقًا لنقل ملف الفيرموير وقت OTA - راجع ota.js). */
-  async function writeRawBytes(_bytes) {
-    throw new Error(
-      "writeRawBytes لسه مش متنفذة - محتاجة TextEncoderStream بديل يقبل" +
-        " Uint8Array مباشرة (الـstream الحالي نصي بس). راجع ota.js."
-    );
+  async function writeRawBytes(bytes) {
+    if (!isConnected || !port || !port.writable) {
+      throw new Error('Serial port not connected');
+    }
+
+    const writer = port.writable.getWriter();
+    await writer.write(bytes);
+    writer.releaseLock();
+  }
+
+  async function requestRootInfo() {
+    if (isConnected) {
+      await writeText('GET_ROOT_INFO\n');
+    }
+  }
+
+  async function redistributeFirmware() {
+    if (!isConnected) {
+      throw new Error('يجب الاتصال بـ Root أولاً عبر السيريال');
+    }
+    await writeText('OTA_REDISTRIBUTE\n');
+  }
+
+  function onConnectionChange(callback) {
+    connectionChangeCallbacks.push(callback);
+  }
+
+  function onRootInfo(callback) {
+    rootInfoCallbacks.push(callback);
+  }
+
+  function onHealthLine(callback) {
+    healthLineCallbacks.push(callback);
+    return () => {
+      const idx = healthLineCallbacks.indexOf(callback);
+      if (idx !== -1) healthLineCallbacks.splice(idx, 1);
+    };
+  }
+
+  function onRawLine(callback) {
+    rawLineCallbacks.push(callback);
+    return () => {
+      const idx = rawLineCallbacks.indexOf(callback);
+      if (idx !== -1) rawLineCallbacks.splice(idx, 1);
+    };
+  }
+
+  function notifyConnectionChange(connected) {
+    connectionChangeCallbacks.forEach(cb => cb(connected));
   }
 
   return {
@@ -151,9 +213,13 @@ SM.serial = (function () {
     disconnect,
     writeText,
     writeRawBytes,
-    isConnected: () => port !== null,
-    onHealthLine: (cb) => onHealthLine.push(cb),
-    onRawLine: (cb) => onRawLine.push(cb),
-    onConnectionChange: (cb) => onConnectionChange.push(cb),
+    requestRootInfo,
+    redistributeFirmware,
+    onConnectionChange,
+    onRootInfo,
+    onHealthLine,
+    onRawLine,
+    isConnected: () => isConnected,
+    getPortInfo: () => portInfo,
   };
 })();

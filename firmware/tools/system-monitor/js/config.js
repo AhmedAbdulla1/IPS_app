@@ -1,27 +1,34 @@
-// إعدادات عامة لأداة System Monitor. مفيش أي أسرار هنا - الـanon key
-// آمن للعرض في المتصفح دايمًا (الحماية شغالة عن طريق RLS في Supabase
-// + Supabase Auth، مش عن طريق إخفاء المفتاح ده).
-//
-// ملحوظة: ده مختلف تمامًا عن ips_node_provisioning_tool.html اللي
-// بيستخدم service_role key (سري، خطر) - الأداة دي "للحكم عامة" فمينفعش
-// تستخدم نفس الأسلوب.
-//
-// ملحوظة تقنية: مفيش ES modules هنا عمدًا - عشان الأداة تفضل تشتغل لو
-// اتفتحت مباشرة (file://) من غير سيرفر محلي (الـmodules بتترفض بسبب
-// CORS في السيناريو ده). كل ملف بيضيف حاجته لنفس الـnamespace العام
-// window.SM بترتيب التحميل في index.html.
+// إعدادات Supabase والنظام
+// 
+// ملحوظة: استخدم anon key (مش service_role) للعملاء في المتصفح
+// service_role محفوظ في الـbackend بس
 
 window.SM = window.SM || {};
 
 SM.config = {
-  SUPABASE_URL: "https://dqnmxlljqiqgqmntzvcx.supabase.co",
-  SUPABASE_ANON_KEY:
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxbm14bGxqcWlxZ3FtbnR6dmN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNjQwMzIsImV4cCI6MjEwMTg0MDAzMn0.RBcHQxjlZy3Cv-57gaRwM_BISoYaFJfTfJs9kxTLT7w",
+  // Supabase - من متغيرات البيئة أو hardcoded
+  SUPABASE_URL: 'https://dqnmxlljqiqgqmntzvcx.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxbm14bGxqcWlxZ3FtbnR6dmN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNjQwMzIsImV4cCI6MjEwMTg0MDAzMn0.RBcHQxjlZy3Cv-57gaRwM_BISoYaFJfTfJs9kxTLT7w',
+  
+  // Timeouts والمهل
+  HEALTH_BASE_TIMEOUT_MS: 3000,        // Node تحتاج تبعت heartbeat كل 2s، مع مهلة 1s
+  HEALTH_PER_HOP_MARGIN_MS: 800,       // كل hop إضافي = +800ms مهلة (لتأخير الشبكة)
 
-  // حساب الـtimeout المسموح بيه لكل node حسب بعده عن الـRoot (hop count) -
-  // كل hop إضافي بياخد وقت أطول شوية عشان heartbeat يوصل، فبنضيف هامش.
-  HEALTH_BASE_TIMEOUT_MS: 3000,
-  HEALTH_PER_HOP_MARGIN_MS: 800,
+  // Admin users (emails مسموح لهم OTA + دوال أخرى) - يمكن قراءتها من Supabase
+  ADMIN_EMAILS: [
+    'admin@example.com',
+    'ahmed@example.com',
+  ],
 
-  SERIAL_BAUD_RATE: 115200,
+  // OTA settings
+  OTA: {
+    MAX_FILE_SIZE_MB: 2,           // حد أقصى لحجم الفيرموير
+    CHUNK_SIZE: 4096,              // حجم الـchunk في الـOTA protocol
+    RESPONSE_TIMEOUT_MS: 5000,     // انتظار أقصى لـرد من الـRoot
+  },
 };
+
+// استخدم .env أو window.CONFIG لـ override الـdefaults
+if (window.ENV) {
+  Object.assign(SM.config, window.ENV);
+}

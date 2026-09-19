@@ -59,3 +59,8 @@ firmware/**/flash_logs/
 # pc_health_service (Dart) - ملف .env فيه مفتاح Supabase حقيقي
 firmware/pc_health_service/.env
 firmware/pc_health_service/.dart_tool/
+
+# Android build outputs & local system monitor data
+/android/build/
+*.rar
+firmware/tools/system-monitor/data/history/*.jsonl

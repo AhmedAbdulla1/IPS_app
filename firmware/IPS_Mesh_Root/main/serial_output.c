@@ -10,6 +10,7 @@
 
 #include "config.h"
 #include "health_table.h"
+#include "ota_receiver.h"
 
 static int _tcp_client_sock = -1;
 static SemaphoreHandle_t _tcp_mutex = NULL;
@@ -96,8 +97,23 @@ static void serial_output_task(void *arg) {
     char line_buffer[384];
 
     while (1) {
+        if (ips_ota_receiver_get_session() != NULL) {
+            // جلسة OTA نشطة الآن - إيقاف طباعة الـ JSON مؤقتًا لمنع التداخل على السيريال
+            vTaskDelay(pdMS_TO_TICKS(500));
+            continue;
+        }
+
         // مسح أي نودز توقفت عن إرسال heartbeats لأكثر من 12 ثانية
         ips_health_table_purge_expired(12000000LL);
+
+        // إرسال معلومات الـ Root أولاً حتى يعرف الداشبورد إصدار الـ Root وحالته
+        snprintf(line_buffer, sizeof(line_buffer),
+                 "{\"type\":\"root_info\",\"fw_major\":%u,\"fw_minor\":%u,\"layer\":1,\"uptime_s\":%lld}\n",
+                 (unsigned)IPS_FW_VERSION_MAJOR,
+                 (unsigned)IPS_FW_VERSION_MINOR,
+                 (long long)(esp_timer_get_time() / 1000000LL));
+        printf("%s", line_buffer);
+        tcp_send_line(line_buffer);
 
         int64_t now_us = esp_timer_get_time();
         size_t count = ips_health_table_count();

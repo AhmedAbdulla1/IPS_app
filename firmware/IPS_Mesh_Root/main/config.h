@@ -36,6 +36,33 @@
 #define IPS_FW_VERSION_MAJOR 1
 #define IPS_FW_VERSION_MINOR 0
 
+// --- OTA عبر Serial (PC -> Root) + توزيع عبر mesh (Root -> Nodes) ---
+// راجع OTA_PLAN.md للبروتوكول الكامل، وtools/system-monitor/js/ota.js للطرف
+// المقابل في المتصفح. القيم دي لازم تتطابق حرفيًا مع الـJS.
+
+// رقم بورت الـUART الموصول فعليًا بالـUSB (نفس البورت اللي الـconsole/printf
+// بيخرج عليه افتراضيًا - IDF بيستخدم UART0 كـconsole افتراضي).
+#define IPS_OTA_UART_NUM 0
+
+// حجم الـchunk الواحد (بايت) اللي الـPC بيبعتها قبل ما يستنى ACK -
+// لازم يطابق OTA_CHUNK_SIZE في tools/system-monitor/js/ota.js بالظبط.
+#define IPS_OTA_CHUNK_SIZE 4096
+
+// مهلة الانتظار لأول بايت من الـchunk الجاي بعد ما الـRoot يبعت OTA_READY/
+// OTA_PROGRESS - لو الـPC وقف/اتقطع الاتصال، الـRoot يلغي الـOTA ويرجع يطبع health.
+#define IPS_OTA_RX_TIMEOUT_MS 15000
+
+// طول أقصى لسطر نصي واحد جاي من الـPC (أوامر زي OTA_START/OTA_END) -
+// أي حاجة أطول من كده مش مفروض تحصل في البروتوكول ده.
+#define IPS_SERIAL_LINE_MAX_LEN 160
+
+// مفتاح NVS لتخزين "فيه فيرموير لسه محتاج يتوزّع للـNodes" - بيتحط قبل
+// الـreboot في ota_receiver.c ويتقرا بعد الـreboot في ota_relay.c.
+#define IPS_OTA_NVS_NAMESPACE "ips_ota"
+#define IPS_OTA_NVS_KEY_PENDING "relay_pending"
+#define IPS_OTA_NVS_KEY_SIZE "relay_size"
+#define IPS_OTA_NVS_KEY_VERSION "relay_ver"
+
 #pragma pack(push, 1)
 typedef struct {
     uint8_t  node_id[IPS_NODE_ID_LEN]; // = g_nodeId (esp32_uuid) بتاعت الـchild

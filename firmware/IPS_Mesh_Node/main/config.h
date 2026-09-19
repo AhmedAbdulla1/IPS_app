@@ -21,6 +21,9 @@
 // الـRoot - MESH_DESIGN.md §4.4).
 #define IPS_MESH_MAX_LAYER 10
 
+// رقم الـ GPIO المتصل بالليد للمؤشرات الضوئية (النبض ونقل الفيرموير)
+#define IPS_LED_GPIO 2
+
 // --- BLE advertising (نفس قيم IPS_Demo_Node_v2.0.0.ino الأصلية) ---
 
 // Must match BleConstants.manufacturerCompanyId في تطبيق الـFlutter.
@@ -31,7 +34,7 @@
 #define IPS_NODE_FLOOR 0
 
 #define IPS_FW_VERSION_MAJOR 1
-#define IPS_FW_VERSION_MINOR 0
+#define IPS_FW_VERSION_MINOR 2
 
 // وحدة الإعلان = 0.625ms - نفس القيمة الأصلية (244 وحدة \u2248 152.5ms).
 #define IPS_ADV_INTERVAL_UNITS 244

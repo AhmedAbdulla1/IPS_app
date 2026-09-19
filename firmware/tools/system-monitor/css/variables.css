@@ -1,0 +1,60 @@
+/* css/variables.css — TRANEX Design System & Brand Tokens */
+
+:root {
+    /* ── TRANEX Corporate Brand Identity ──────────────────────────────── */
+    --brand-primary: #F36F21;            /* TRANEX Official Orange */
+    --brand-hover: #FA8038;
+    --brand-glow: rgba(243, 111, 33, 0.28);
+    --brand-glow-lg: rgba(243, 111, 33, 0.45);
+    --brand-amber: #F5A623;              /* Secondary Gold/Amber Accent */
+    --brand-light: #FFA040;
+    --brand-dark: #D95D12;
+
+    /* ── Executive Dark Surfaces ─────────────────────────────────────── */
+    --bg-base: #101010;                 /* Deep Canvas Black */
+    --bg-surface: #161616;              /* Navbar & Sidebars */
+    --bg-panel: #1C1C1C;                /* Container Panels & Cards */
+    --bg-panel-hover: #242424;          /* Interactive Hover States */
+    --bg-elevated: #2A2A2A;             /* Modals, Dropdowns & Chips */
+    --bg-chip: #222222;
+
+    /* ── Borders & Outlines ───────────────────────────────────────────── */
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-subtle: rgba(255, 255, 255, 0.04);
+    --border-brand: rgba(243, 111, 33, 0.4);
+    --border-brand-subtle: rgba(243, 111, 33, 0.18);
+    --border-highlight: rgba(255, 255, 255, 0.16);
+
+    /* ── Mission Critical Telemetry Status Colors ────────────────────── */
+    --status-online: #3DDC84;           /* Active / Healthy Node */
+    --status-online-glow: rgba(61, 220, 132, 0.25);
+    --status-warning: #F5A623;          /* High Hop / Marginal Latency */
+    --status-warning-glow: rgba(245, 166, 35, 0.25);
+    --status-offline: #C97B6E;          /* Node Disconnected / Timed Out */
+    --status-offline-glow: rgba(201, 123, 110, 0.25);
+    --status-neutral: #6E6E6E;          /* Unregistered / Inactive */
+
+    /* ── Typography Tokens ────────────────────────────────────────────── */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+
+    --text-main: #FFFFFF;               /* Pure White for Headings & Titles */
+    --text-secondary: #E0E0E0;          /* High Contrast Data Text */
+    --text-muted: #9E9E9E;              /* Subtitles & Descriptions */
+    --text-dim: #666666;                /* Timestamps & Inactive Indicators */
+
+    /* ── Geometric Radii & Shadows ────────────────────────────────────── */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6);
+    --shadow-brand: 0 4px 18px var(--brand-glow);
+
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}

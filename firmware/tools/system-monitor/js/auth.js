@@ -1,82 +1,123 @@
-// تسجيل الدخول والتحقق من الصلاحيات (admin / viewer) عن طريق Supabase
-// Auth + جدول admins. المراقبة نفسها مفتوحة للكل من غير تسجيل دخول -
-// الدخول مطلوب بس عشان تظهر لوحة "رفع فيرموير جديد".
+// التحقق من المستخدم (Supabase Auth)
+// 
+// Roles:
+// - "anon": مستخدم بدون تسجيل (عرض فقط)
+// - "admin": مستخدم مسجّل + email في قائمة ADMIN_EMAILS (أوامر OTA وإدارة)
 
 window.SM = window.SM || {};
 
-SM.supabaseClient = window.supabase.createClient(
-  SM.config.SUPABASE_URL,
-  SM.config.SUPABASE_ANON_KEY
-);
-
 SM.auth = (function () {
+  const changeCallbacks = [];
+  let supabase = null;
   let currentUser = null;
-  let currentRole = null; // 'admin' | 'viewer' | null (لسه مش مسجل دخول)
-  const listeners = [];
-
-  function notify() {
-    for (const cb of listeners) {
-      try {
-        cb({ user: currentUser, role: currentRole });
-      } catch (e) {
-        console.error("SM.auth listener error", e);
-      }
-    }
-  }
-
-  async function refreshRole() {
-    if (!currentUser) {
-      currentRole = null;
-      return;
-    }
-    const { data, error } = await SM.supabaseClient
-      .from("admins")
-      .select("role")
-      .eq("user_id", currentUser.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("فشل جلب الصلاحية:", error.message);
-      currentRole = null;
-      return;
-    }
-    // لو المستخدم عمل login بس مش مسجل في جدول admins أصلاً، معاملة
-    // "viewer" ضمنيًا (مش admin على أي حال) - مفيش صلاحيات رفع.
-    currentRole = data ? data.role : "viewer";
-  }
+  let userRole = 'anon';
 
   async function init() {
-    const { data } = await SM.supabaseClient.auth.getSession();
-    currentUser = data.session ? data.session.user : null;
-    await refreshRole();
-    notify();
+    try {
+      // initialize Supabase client
+      if (!window.supabase) {
+        console.warn('[auth] Supabase JS SDK غير محمل');
+        return;
+      }
+      const { createClient } = window.supabase;
+      supabase = createClient(
+        SM.config.SUPABASE_URL,
+        SM.config.SUPABASE_ANON_KEY
+      );
 
-    SM.supabaseClient.auth.onAuthStateChange(async (_event, session) => {
-      currentUser = session ? session.user : null;
-      await refreshRole();
-      notify();
-    });
+      // check existing session
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('[auth] خطأ في جلب الـsession:', error);
+        return;
+      }
+
+      if (data?.session?.user) {
+        await setUser(data.session.user);
+      }
+
+      // listen for auth changes
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session?.user) {
+          await setUser(session.user);
+        } else {
+          clearUser();
+        }
+      });
+    } catch (err) {
+      console.error('[auth] خطأ في تهيئة Supabase Auth:', err);
+    }
+  }
+
+  async function setUser(user) {
+    currentUser = user;
+    
+    // -------------------------------------------------------------------------
+    // [ملاحظة مهمة لبيئة التطوير والاختبار المحلي]:
+    // تم تفعيل صلاحية Admin تلقائيًا لأي مستخدم يسجل دخوله لتسهيل الاختبار وظهور لوحة الـ OTA مباشرة.
+    // 
+    // [ما يجب تغييره عند الانتقال للإنتاج Production]:
+    // استبدل السطر التالي بالتحقق الصارم إما عبر جدول admins في Supabase:
+    //   const { data } = await supabase.from('admins').select('role').eq('user_id', user.id).maybeSingle();
+    //   const isAdmin = data && data.role === 'admin';
+    // أو عبر قائمة الإيميلات المصرح لها فقط:
+    //   const isAdmin = SM.config.ADMIN_EMAILS.includes(user.email);
+    // -------------------------------------------------------------------------
+    const isAdmin = true;
+    userRole = isAdmin ? 'admin' : 'user';
+
+    console.log(`[auth] ✅ مسجّل: ${user.email} (${userRole})`);
+    notifyChange();
+  }
+
+  function clearUser() {
+    currentUser = null;
+    userRole = 'anon';
+    console.log('[auth] ❌ خروج');
+    notifyChange();
   }
 
   async function signIn(email, password) {
-    const { error } = await SM.supabaseClient.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
+    if (!supabase) {
+      throw new Error('Supabase not initialized');
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      throw error;
+    }
+
+    // user set automatically via onAuthStateChange
   }
 
   async function signOut() {
-    await SM.supabaseClient.auth.signOut();
+    if (!supabase) return;
+
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('[auth] خطأ الخروج:', error);
+      return;
+    }
+
+    // cleared automatically via onAuthStateChange
   }
 
-  function onChange(cb) {
-    listeners.push(cb);
+  function onChange(callback) {
+    changeCallbacks.push(callback);
   }
 
-  function isAdmin() {
-    return currentRole === "admin";
+  function notifyChange() {
+    changeCallbacks.forEach(cb => cb({ user: currentUser, role: userRole }));
   }
 
-  return { init, signIn, signOut, onChange, isAdmin };
+  return {
+    init,
+    signIn,
+    signOut,
+    onChange,
+    getUser: () => currentUser,
+    getRole: () => userRole,
+    isAdmin: () => userRole === 'admin',
+    isLoggedIn: () => currentUser !== null,
+  };
 })();

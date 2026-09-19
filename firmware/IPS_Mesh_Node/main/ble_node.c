@@ -79,7 +79,8 @@ static void start_advertising(void) {
         return;
     }
 
-    ESP_LOGI(TAG, "Advertising started. Company ID: 0x%04X", IPS_BLE_COMPANY_ID);
+    ESP_LOGI(TAG, "✅ BLE Advertising active! Company ID: 0x%04X, Payload: 24 bytes, Interval: %d units",
+             IPS_BLE_COMPANY_ID, IPS_ADV_INTERVAL_UNITS);
 }
 
 void ble_node_refresh_advertisement(void) {
@@ -90,11 +91,26 @@ void ble_node_refresh_advertisement(void) {
 // بينادى لما NimBLE host يخلص sync مع الـcontroller - أول فرصة آمنة
 // نبدأ فيها الإعلان.
 static void ble_app_on_sync(void) {
-    int rc = ble_hs_id_infer_auto(0, &s_own_addr_type);
+    int rc;
+
+    // تأكد من وجود عنوان MAC محدد للـ BLE host
+    rc = ble_hs_util_ensure_addr(0);
+    if (rc != 0) {
+        ESP_LOGE(TAG, "ble_hs_util_ensure_addr فشلت: rc=%d", rc);
+        return;
+    }
+
+    rc = ble_hs_id_infer_auto(0, &s_own_addr_type);
     if (rc != 0) {
         ESP_LOGE(TAG, "ble_hs_id_infer_auto فشلت: rc=%d", rc);
         return;
     }
+
+    uint8_t addr[6] = {0};
+    ble_hs_id_copy_addr(s_own_addr_type, addr, NULL);
+    ESP_LOGI(TAG, "BLE MAC Address: %02x:%02x:%02x:%02x:%02x:%02x (type=%d)",
+             addr[5], addr[4], addr[3], addr[2], addr[1], addr[0], s_own_addr_type);
+
     start_advertising();
 }
 

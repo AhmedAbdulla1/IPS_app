@@ -1,0 +1,238 @@
+/* css/components/table.css — Node Diagnostics Table & Toolbar */
+
+.table-panel-header {
+    flex-wrap: wrap;
+}
+
+.table-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 6px 12px;
+    min-width: 280px;
+    transition: var(--transition);
+}
+
+.search-box:focus-within {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px var(--brand-glow);
+}
+
+.search-icon {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.search-box input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-size: 12.5px;
+    font-family: var(--font-sans);
+    width: 100%;
+}
+
+.search-box input::placeholder {
+    color: var(--text-dim);
+}
+
+.table-filters-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-surface);
+    padding: 3px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.table-filter-btn {
+    padding: 5px 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.table-filter-btn:hover {
+    color: var(--text-main);
+}
+
+.table-filter-btn.active {
+    background: var(--brand-primary);
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px var(--brand-glow);
+}
+
+/* ── Scrollable Table Container ───────────────────────────────────────── */
+.table-responsive {
+    max-height: 520px;
+    overflow-y: auto;
+    overflow-x: auto;
+    position: relative;
+}
+
+/* Custom Scrollbar */
+.table-responsive::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: var(--bg-surface);
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #333333;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-primary);
+}
+
+/* ── Data Table Structure ─────────────────────────────────────────────── */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    text-align: left;
+}
+
+.data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #181818;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background 0.15s ease;
+}
+
+.data-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.data-table tbody tr.row-selected {
+    background: rgba(243, 111, 33, 0.08);
+    border-left: 3px solid var(--brand-primary);
+}
+
+.data-table tbody td {
+    padding: 11px 16px;
+    color: var(--text-secondary);
+    vertical-align: middle;
+}
+
+.table-node-name {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 13px;
+}
+
+.table-node-uuid {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+/* ── Table Badges ─────────────────────────────────────────────────────── */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-success {
+    background: rgba(61, 220, 132, 0.12);
+    color: var(--status-online);
+    border: 1px solid rgba(61, 220, 132, 0.25);
+}
+
+.badge-warning {
+    background: rgba(245, 166, 35, 0.12);
+    color: var(--status-warning);
+    border: 1px solid rgba(245, 166, 35, 0.25);
+}
+
+.badge-danger {
+    background: rgba(201, 123, 110, 0.12);
+    color: var(--status-offline);
+    border: 1px solid rgba(201, 123, 110, 0.25);
+}
+
+.badge-neutral {
+    background: rgba(110, 110, 110, 0.15);
+    color: var(--status-neutral);
+    border: 1px solid rgba(110, 110, 110, 0.25);
+}
+
+.badge-floor {
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.hop-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(243, 111, 33, 0.12);
+    color: var(--brand-primary);
+    border: 1px solid rgba(243, 111, 33, 0.25);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+    animation: dotPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes dotPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.5; }
+}
+
+.empty-state {
+    text-align: center !important;
+    padding: 40px 16px !important;
+    color: var(--text-muted);
+    font-size: 13px;
+}

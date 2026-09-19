@@ -16,6 +16,7 @@
 #include "config.h"
 #include "mesh_participant.h"
 #include "node_id_store.h"
+#include "ota_apply.h"
 #include "provisioning.h"
 
 static const char *TAG = "ips_mesh_node";
@@ -40,8 +41,17 @@ void app_main(void) {
 
     node_id_store_init();
 
-    ble_node_start();
+    // 1. تهيئة الـ WiFi والـ Mesh أولاً لضبط الـ RF PHY المشترك
     mesh_participant_setup();
+
+    // 2. تشغيل الـ BLE بعد الـ WiFi لضمان توافق الـ Coexistence الراديوي
+    ble_node_start();
+
+    // تسجيل الـcallbacks اللي بتستقبل فيرموير جديد لو الـRoot وزّعه (راجع
+    // OTA_PLAN.md) - لازم بعد mesh_participant_setup عشان mesh_lite يبقى
+    // متهيّأ.
+    ota_apply_init();
+
     provisioning_task_start();
 
     xTaskCreate(heartbeat_task, "health_heartbeat", 4096, NULL, 5, NULL);

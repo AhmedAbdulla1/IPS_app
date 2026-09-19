@@ -54,6 +54,14 @@ CONFIG_JOIN_MESH_WITHOUT_CONFIGURED_WIFI_INFO=y
 CONFIG_JOIN_MESH_IGNORE_ROUTER_STATUS=y
 CONFIG_ESP_MESH_LITE_OTA_ENABLE=y
 
+# --- إعدادات LwIP الأساسية للـ Multi-hop Routing ---
+CONFIG_LWIP_IP_FORWARD=y
+CONFIG_LWIP_IPV4_NAPT=y
+
+# إضافة الـ MAC لاسم SoftAP لمنع تصادم الـ BSSID
+CONFIG_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC=y
+
+
 # --- تشخيص مؤقت (2026-09-12): الNode مش بيقدر يلاقي/يتصل بالRoot
 # رغم تطابق الconfig كاملاً - فعّلنا لوج mesh_lite التفصيلي عشان
 # نشوف مرحلة الفشل بالظبط. لازم يتشال بعد ما نحل المشكلة.

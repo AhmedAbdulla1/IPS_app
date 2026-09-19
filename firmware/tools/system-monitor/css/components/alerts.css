@@ -1,0 +1,132 @@
+/* css/components/alerts.css — Live Alerts & Event Stream */
+
+.alerts-panel {
+    min-height: 520px;
+    height: 580px;
+}
+
+.alert-filters {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.alert-filter-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.alert-filter-btn:hover {
+    color: var(--text-main);
+    border-color: var(--border-highlight);
+}
+
+.alert-filter-btn.active {
+    background: var(--brand-primary);
+    color: #FFFFFF;
+    border-color: var(--brand-primary);
+}
+
+.alerts-stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Custom Scrollbar for Alerts */
+.alerts-stream::-webkit-scrollbar {
+    width: 5px;
+}
+
+.alerts-stream::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.alerts-stream::-webkit-scrollbar-thumb {
+    background: #2D2D2D;
+    border-radius: 4px;
+}
+
+.alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--text-muted);
+    animation: alertSlideIn 0.25s ease;
+}
+
+@keyframes alertSlideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.alert-item.critical {
+    border-left-color: var(--status-offline);
+    background: rgba(201, 123, 110, 0.08);
+}
+
+.alert-item.warning {
+    border-left-color: var(--status-warning);
+    background: rgba(245, 166, 35, 0.08);
+}
+
+.alert-item.success {
+    border-left-color: var(--status-online);
+    background: rgba(61, 220, 132, 0.08);
+}
+
+.alert-item.info {
+    border-left-color: var(--brand-primary);
+    background: rgba(243, 111, 33, 0.06);
+}
+
+.alert-icon {
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.alert-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.alert-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.alert-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.alert-time {
+    font-size: 10.5px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+}
+
+.alert-detail {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}

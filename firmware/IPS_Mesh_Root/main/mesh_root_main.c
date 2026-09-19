@@ -12,6 +12,8 @@
 
 #include "health_table.h"
 #include "mesh_bridge.h"
+#include "ota_relay.h"
+#include "serial_input.h"
 #include "serial_output.h"
 
 static const char *TAG = "ips_mesh_root";
@@ -21,6 +23,8 @@ void app_main(void) {
 
     ips_health_table_init();
     ips_mesh_bridge_init();
+    ips_ota_relay_init();
+    ips_serial_input_start();
     ips_serial_output_start();
 
     // أمان الـrollback (راجع OTA_PLAN.md ونفس الملاحظة في IPS_Mesh_Node/main/main.c).

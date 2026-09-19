@@ -33,11 +33,21 @@ static esp_err_t handle_heartbeat_raw_msg(uint8_t *data, uint32_t len,
     if (out_data) *out_data = NULL;
     if (out_len) *out_len = 0;
 
-    if (data == NULL || len < sizeof(ips_health_heartbeat_t)) {
+    if (data == NULL || len < 24) {
         ESP_LOGW(TAG, "heartbeat raw msg بحجم غلط: %u بايت", (unsigned)len);
         return ESP_ERR_INVALID_SIZE;
     }
 
+    if (len == 24) {
+        // حزمة من نود قديمة (24 بايت: node_id[16], seq[2], hop[1], reserved[1], uptime[4])
+        // نعتبر إصدارها تلقائياً v1.0 لمنع انقطاع الاتصال
+        const uint8_t *node_id = data;
+        uint8_t hop_count = data[18];
+        ips_mesh_bridge_on_heartbeat_received(node_id, hop_count, 1, 0);
+        return ESP_OK;
+    }
+
+    // حزمة من نود بالإصدار الجديد (>= 25 بايت)
     const ips_health_heartbeat_t *hb = (const ips_health_heartbeat_t *)data;
     ips_mesh_bridge_on_heartbeat_received(hb->node_id, hb->hop_count,
                                           hb->fw_major, hb->fw_minor);
@@ -95,7 +105,14 @@ static void app_wifi_set_softap_info(void) {
     size_t psw_size = sizeof(softap_psw);
 
     if (esp_mesh_lite_get_softap_ssid_from_nvs(softap_ssid, &ssid_size) != ESP_OK) {
+#if CONFIG_BRIDGE_SOFTAP_SSID_END_WITH_THE_MAC
+        uint8_t softap_mac[6] = {0};
+        esp_wifi_get_mac(WIFI_IF_AP, softap_mac);
+        snprintf(softap_ssid, sizeof(softap_ssid), "%.25s_%02x%02x%02x",
+                 CONFIG_BRIDGE_SOFTAP_SSID, softap_mac[3], softap_mac[4], softap_mac[5]);
+#else
         snprintf(softap_ssid, sizeof(softap_ssid), "%.32s", CONFIG_BRIDGE_SOFTAP_SSID);
+#endif
     }
     if (esp_mesh_lite_get_softap_psw_from_nvs(softap_psw, &psw_size) != ESP_OK) {
         strlcpy(softap_psw, CONFIG_BRIDGE_SOFTAP_PASSWORD, sizeof(softap_psw));

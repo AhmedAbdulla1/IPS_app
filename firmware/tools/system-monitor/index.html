@@ -1,173 +1,531 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أداة مراقبة شبكة IPS Mesh (System Monitor + OTA)</title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Supabase JS Client -->
+    <title>TRANEX — IPS Mesh Operations & Diagnostics Console</title>
+    <!-- Professional Engineering Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Modular Design System Stylesheet Bundle -->
+    <link rel="stylesheet" href="css/main.css">
+    
+    <!-- Supabase Client JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<div class="container">
-    <!-- Header -->
-    <header>
-        <div class="title-group">
-            <h1>📡 مراقب شبكة IPS Mesh + OTA Updater</h1>
-            <p>قراءة مباشرة من ESP32 Root عبر USB Serial + رفع فيرموير جديد</p>
-        </div>
-        <div class="header-actions">
-            <button id="connectBtn" class="btn btn-primary">🔌 اتصل بـ Root</button>
-            <button id="disconnectBtn" class="btn btn-danger" style="display: none;">قطع الاتصال</button>
-            
-            <!-- Auth Section (Hidden by default) -->
-            <div id="authSection" class="auth-section" style="display: none;">
-                <button id="adminPanelBtn" class="btn btn-secondary">⚙️ لوحة Admin</button>
-                <button id="signOutBtn" class="btn btn-secondary">تسجيل خروج</button>
+<div class="dashboard-shell">
+    <!-- 1. Top Operations Navbar -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="brand-logo-group">
+                <img src="assets/tranex_logo.png" alt="TRANEX" class="brand-logo-img">
+                <div class="brand-divider"></div>
+                <img src="assets/img.png" alt="مجلس النواب المصري - House of Representatives" class="parliament-logo-img" title="جمهورية مصر العربية - مجلس النواب">
             </div>
-            <div id="loginSection" class="login-section">
-                <button id="loginBtn" class="btn btn-secondary">تسجيل دخول (Admin)</button>
+            <div class="brand-text">
+                <h1>IPS MESH OPERATIONS</h1>
+                <p>Central Mission Control & Diagnostic Console</p>
+            </div>
+        </div>
+
+        <div class="nav-indicators">
+            <!-- Root Gateway State -->
+            <div id="headerRootBadge" class="status-pill disconnected">
+                <span class="indicator-dot"></span> Root Disconnected
+            </div>
+
+            <!-- COM / Web Serial Port -->
+            <div class="meta-pill">
+                <span class="pill-label">Port:</span>
+                <span id="headerPortName" class="pill-val">Disconnected</span>
+            </div>
+
+            <!-- Detected Root Firmware -->
+            <div class="meta-pill root-ver-pill">
+                <span class="pill-label">Root FW:</span>
+                <span id="headerRootFw" class="pill-val mono">v1.0</span>
+            </div>
+
+            <!-- Live Telemetry Clock -->
+            <div class="meta-pill clock-pill">
+                <span class="pill-label">Time:</span>
+                <span id="liveClock" class="pill-val mono">--:--:--</span>
+            </div>
+        </div>
+
+        <div class="nav-actions">
+            <button id="connectBtn" class="btn btn-primary">
+                <span>🔌</span> Connect Root
+            </button>
+            <button id="disconnectBtn" class="btn btn-danger" style="display: none;">
+                <span>✕</span> Disconnect
+            </button>
+
+            <!-- Local Telemetry Database History -->
+            <button id="openHistoryBtn" class="btn btn-secondary" title="View Local Telemetry Database & Historical Logs">
+                <span>📊</span> History
+            </button>
+
+            <!-- Toggle Live Serial Terminal Drawer -->
+            <button id="toggleLogDrawerBtn" class="btn btn-secondary" title="Toggle Live Serial Terminal Console">
+                <span>📜</span> Terminal
+            </button>
+
+            <div class="auth-box">
+                <span id="userEmail" class="user-badge"></span>
+                <button id="loginBtn" class="btn btn-ghost btn-sm">🔐 Admin Login</button>
+                <button id="logoutBtn" class="btn btn-ghost btn-sm" style="display: none;">Sign Out</button>
             </div>
         </div>
     </header>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-        <div class="stat-card total">
-            <div class="label">إجمالي النودز</div>
-            <div class="value" id="statTotal">0</div>
+    <!-- 2. Network Performance Indicators (KPI Cards) -->
+    <section class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-head">
+                <span class="kpi-title">Total Mesh Nodes</span>
+                <span class="kpi-icon total">📦</span>
+            </div>
+            <div class="kpi-body">
+                <span id="kpiTotalNodes" class="kpi-value mono">0</span>
+                <span class="kpi-sub">Registered in Supabase</span>
+            </div>
         </div>
-        <div class="stat-card online">
-            <div class="label">النودز النشطة</div>
-            <div class="value" id="statOnline">0</div>
-        </div>
-        <div class="stat-card offline">
-            <div class="label">النودز المقطوعة</div>
-            <div class="value" id="statOffline">0</div>
-        </div>
-        <div class="stat-card hops">
-            <div class="label">أقصى عمق (Max Hops)</div>
-            <div class="value" id="statHops">0</div>
-        </div>
-    </div>
 
-    <!-- Main Tabs -->
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="dashboard">📊 الداشبورد</button>
-        <button class="tab-btn" data-tab="ota" id="otaTabBtn" style="display: none;">⬆️ رفع الفيرموير</button>
-        <button class="tab-btn" data-tab="logs">📜 السجلات</button>
-    </div>
+        <div class="kpi-card">
+            <div class="kpi-head">
+                <span class="kpi-title">Active Online Nodes</span>
+                <span class="kpi-icon online">⚡</span>
+            </div>
+            <div class="kpi-body">
+                <span id="kpiOnlineNodes" class="kpi-value mono text-success">0</span>
+                <span class="kpi-sub">Broadcasting heartbeats</span>
+            </div>
+        </div>
 
-    <!-- Tab 1: Dashboard -->
-    <div id="dashboard" class="tab-content active">
-        <div class="table-card">
-            <div class="table-header">
-                <h2>📊 حالة النودز في الشبكة</h2>
-                <div id="lastUpdate" style="font-size: 12px; color: var(--muted);">آخر تحديث: لم يبدأ بعد</div>
+        <div class="kpi-card">
+            <div class="kpi-head">
+                <span class="kpi-title">Offline / Timed Out</span>
+                <span class="kpi-icon offline">⚠️</span>
+            </div>
+            <div class="kpi-body">
+                <span id="kpiOfflineNodes" class="kpi-value mono text-danger">0</span>
+                <span class="kpi-sub">Missing or interrupted</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-head">
+                <span class="kpi-title">Review Required</span>
+                <span class="kpi-icon warning">🔔</span>
+            </div>
+            <div class="kpi-body">
+                <span id="kpiWarningNodes" class="kpi-value mono text-warning">0</span>
+                <span class="kpi-sub">High hop count or marginal link</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-head">
+                <span class="kpi-title">Max Mesh Depth</span>
+                <span class="kpi-icon hops">📶</span>
+            </div>
+            <div class="kpi-body">
+                <span id="kpiMaxHop" class="kpi-value mono text-accent">—</span>
+                <span class="kpi-sub">Network relay depth</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-head">
+                <span class="kpi-title">Firmware Rollout</span>
+                <span class="kpi-icon fw">🚀</span>
+            </div>
+            <div class="kpi-body">
+                <span id="kpiFwStatus" class="kpi-value mono">—</span>
+                <span id="kpiTargetVerText" class="kpi-sub">Target: Auto-detecting...</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Middle Section: Spatial Topology Map + Live Alerts Stream -->
+    <section class="middle-grid">
+        <!-- Spatial Map Panel -->
+        <div class="panel map-panel">
+            <div class="panel-header">
+                <div class="panel-title-group">
+                    <h2>🗺️ Spatial Mesh Topology & Distribution</h2>
+                    <span class="panel-desc">Architectural 1:100 scale physical coordinates and wireless mesh links</span>
+                </div>
+                
+                <div class="map-controls-bar">
+                    <div class="zoom-controls">
+                        <button id="mapZoomIn" class="btn btn-icon" title="Zoom In">+</button>
+                        <button id="mapZoomOut" class="btn btn-icon" title="Zoom Out">−</button>
+                        <button id="mapZoomReset" class="btn btn-icon" title="Reset View">⟲</button>
+                    </div>
+                </div>
             </div>
 
-            <table>
+            <div class="map-split-container">
+                <aside class="floor-sidebar">
+                    <div class="floor-sidebar-head">
+                        <span class="floor-head-icon">🏢</span>
+                        <span>LEVELS</span>
+                    </div>
+                    <div id="floorFilterPills" class="floor-vertical-list">
+                        <!-- Injected dynamically based on Supabase levels -->
+                    </div>
+                </aside>
+
+                <div class="map-viewport-container">
+                    <svg id="topologySvg" class="topology-canvas" preserveAspectRatio="xMidYMid meet">
+                        <!-- Managed dynamically via map-view.js -->
+                    </svg>
+
+                    <div class="map-legend">
+                        <span class="legend-item"><span class="dot dot-success"></span> Online</span>
+                        <span class="legend-item"><span class="dot dot-warning"></span> Warning</span>
+                        <span class="legend-item"><span class="dot dot-danger"></span> Offline</span>
+                        <span class="legend-item"><span class="dot dot-neutral"></span> Unmapped</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Alerts Stream Panel -->
+        <div class="panel alerts-panel">
+            <div class="panel-header">
+                <div class="panel-title-group">
+                    <h2>🚨 Live Telemetry & Event Stream</h2>
+                    <span class="panel-desc">Real-time status changes and mesh events</span>
+                </div>
+
+                <div class="alert-filters">
+                    <button class="alert-filter-btn active" data-filter="ALL">All</button>
+                    <button class="alert-filter-btn" data-filter="CRITICAL">Critical</button>
+                    <button class="alert-filter-btn" data-filter="WARNING">Warnings</button>
+                </div>
+            </div>
+
+            <div id="alertsList" class="alerts-stream">
+                <!-- Injected incrementally via alerts-view.js -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Node Health & Diagnostics Table -->
+    <section class="panel table-panel">
+        <div class="panel-header table-panel-header">
+            <div class="panel-title-group">
+                <h2>📊 Node Health & Diagnostics Table</h2>
+                <span class="panel-desc">Detailed node parameters, hop depth, parent routing, and firmware status</span>
+            </div>
+
+            <div class="table-toolbar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="tableSearchInput" placeholder="Search by node name or UUID...">
+                </div>
+
+                <div class="table-filters-group">
+                    <button class="table-filter-btn active" data-filter="ALL">All Nodes</button>
+                    <button class="table-filter-btn" data-filter="ONLINE">Online Only</button>
+                    <button class="table-filter-btn" data-filter="OFFLINE">Offline</button>
+                    <button class="table-filter-btn" data-filter="OUTDATED">Outdated FW</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
                 <thead>
                     <tr>
-                        <th>الحالة</th>
-                        <th style="text-align: left;">UUID (HEX)</th>
-                        <th>الاسم (AR)</th>
-                        <th style="text-align: center;">الطبقة</th>
-                        <th style="text-align: center;">آخر ظهور</th>
-                        <th style="text-align: center;">المهلة</th>
+                        <th style="width: 140px;">Status</th>
+                        <th style="text-align: left;">Node (Name & Hardware UUID)</th>
+                        <th style="text-align: center; width: 110px;">Floor</th>
+                        <th style="text-align: center; width: 100px;">Hop</th>
+                        <th style="text-align: center; width: 150px;">Parent Gateway</th>
+                        <th style="text-align: center; width: 120px;">Firmware</th>
+                        <th style="text-align: center; width: 120px;">Last Heartbeat</th>
+                        <th style="text-align: center; width: 90px;">Action</th>
                     </tr>
                 </thead>
                 <tbody id="nodesTableBody">
                     <tr>
-                        <td colspan="6" class="empty-state">
-                            اضغط على <b>"اتصل بـ Root"</b> لبدء الاستقبال...
+                        <td colspan="8" class="empty-state">
+                            Synchronizing building infrastructure from Supabase...
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-    </div>
+    </section>
 
-    <!-- Tab 2: OTA Updater (Admin Only) -->
-    <div id="ota" class="tab-content" style="display: none;">
-        <div class="table-card">
-            <div class="table-header">
-                <h2>⬆️ رفع فيرموير جديد للـ Root</h2>
-                <p style="color: var(--muted); font-size: 12px;">ملحوظة: سيتم توزيع الفيرموير الجديد تلقائياً على كل الـ Nodes المتصلة</p>
+    <!-- 5. Bottom Grid: Readiness Overview + OTA Deployment Panel -->
+    <section class="bottom-grid">
+        <!-- Infrastructure Stability & Routing -->
+        <div class="panel perf-panel">
+            <div class="panel-header">
+                <div class="panel-title-group">
+                    <h2>📶 Infrastructure Readiness & Routing</h2>
+                    <span class="panel-desc">Network availability ratio and mesh topology hierarchy</span>
+                </div>
             </div>
 
-            <div class="ota-form">
-                <div class="form-group">
-                    <label>اختر ملف الفيرموير (.bin)</label>
-                    <input type="file" id="firmwareFileInput" accept=".bin" style="display: block; margin: 10px 0;">
-                    <div id="fileInfo" style="font-size: 12px; color: var(--muted); margin: 10px 0;">
-                        لم يتم اختيار ملف بعد
+            <div class="perf-content">
+                <div class="perf-stat-row">
+                    <span>Active Network Availability:</span>
+                    <div class="progress-track">
+                        <div id="networkHealthBar" class="progress-fill" style="width: 0%;"></div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>النسخة الجديدة (optional)</label>
-                    <input type="text" id="firmwareVersionInput" placeholder="v1.2.3" style="padding: 8px; border-radius: 6px; background: var(--card-border); border: 1px solid var(--border); color: var(--text);">
+                <div class="mesh-routing-overview">
+                    <div class="route-step">
+                        <span class="route-icon">🏢</span>
+                        <div class="route-info">
+                            <span class="route-title">Root Gateway</span>
+                            <span class="route-sub">Connected via Web Serial Host</span>
+                        </div>
+                    </div>
+                    <div class="route-divider">➔</div>
+                    <div class="route-step">
+                        <span class="route-icon">📡</span>
+                        <div class="route-info">
+                            <span class="route-title">Mesh Hop 1</span>
+                            <span class="route-sub">Direct link to Root</span>
+                        </div>
+                    </div>
+                    <div class="route-divider">➔</div>
+                    <div class="route-step">
+                        <span class="route-icon">🔁</span>
+                        <div class="route-info">
+                            <span class="route-title">Multi-Hop Relays</span>
+                            <span class="route-sub">Forwarded over mesh</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OTA Deployment Panel -->
+        <div class="panel ota-panel">
+            <div class="panel-header">
+                <div class="panel-title-group">
+                    <h2>🚀 Over-The-Air Firmware Distribution</h2>
+                    <span class="panel-desc">Broadcast new firmware binaries over mesh without wiring</span>
+                </div>
+            </div>
+
+            <div class="ota-content">
+                <div class="ota-config-row">
+                    <div class="field-group">
+                        <label>Target Node Version:</label>
+                        <div class="ver-inputs">
+                            <span>v</span>
+                            <input type="number" id="targetFwMajor" placeholder="Auto" min="0" max="255">
+                            <span>.</span>
+                            <input type="number" id="targetFwMinor" placeholder="Auto" min="0" max="255">
+                        </div>
+                    </div>
+                    <span class="ota-note">Auto-detected as highest version or manually specified.</span>
                 </div>
 
-                <button id="uploadFirmwareBtn" class="btn btn-primary" style="width: 100%; margin-top: 16px;">
-                    🚀 رفع الفيرموير (OTA)
+                <div id="otaDropZone" class="ota-dropzone">
+                    <span class="dropzone-icon">📁</span>
+                    <div class="dropzone-text">Drag & drop firmware binary (<b>ips_mesh_node.bin</b>) here or click to browse</div>
+                    <div id="otaFileName" class="selected-file-name"></div>
+                    <input type="file" id="otaFileInput" accept=".bin" style="display: none;">
+                </div>
+
+                <div class="ota-actions-row">
+                    <button id="otaUploadBtn" class="btn btn-primary" disabled>
+                        <span>⬆️</span> Broadcast Firmware
+                    </button>
+
+                    <button id="otaRedistributeBtn" class="btn btn-secondary" title="Re-broadcast firmware stored in Root Flash to lagging nodes">
+                        <span>🔄</span> Redistribute from Flash
+                    </button>
+
+                    <div id="otaStatus" class="ota-status-label"></div>
+                </div>
+
+                <div id="otaProgressWrap" class="ota-progress-container" style="display: none;">
+                    <div class="progress-track">
+                        <div id="otaProgressBar" class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <div id="otaProgressText" class="progress-text-label">0%</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- 6. Slide-over Node Details Drawer -->
+<aside id="nodeDrawer" class="node-drawer">
+    <div class="drawer-header">
+        <div>
+            <h3 id="drawerNodeName">Node Details</h3>
+            <span id="drawerNodeUuid" class="mono text-muted">f6074228...</span>
+        </div>
+        <button id="closeDrawerBtn" class="btn btn-icon">✕</button>
+    </div>
+
+    <div class="drawer-content">
+        <div class="drawer-stat-card">
+            <span class="drawer-label">Operational Status:</span>
+            <span id="drawerStatus" class="drawer-val">—</span>
+        </div>
+
+        <div class="drawer-stat-card">
+            <span class="drawer-label">Floor Assignment:</span>
+            <span id="drawerFloor" class="drawer-val">—</span>
+        </div>
+
+        <div class="drawer-stat-card">
+            <span class="drawer-label">Mesh Depth (Hop):</span>
+            <span id="drawerHop" class="drawer-val mono">—</span>
+        </div>
+
+        <div class="drawer-stat-card">
+            <span class="drawer-label">Parent Gateway:</span>
+            <span id="drawerParent" class="drawer-val mono">—</span>
+        </div>
+
+        <div class="drawer-stat-card">
+            <span class="drawer-label">Current Firmware:</span>
+            <span id="drawerFirmware" class="drawer-val mono">—</span>
+        </div>
+
+        <div class="drawer-stat-card">
+            <span class="drawer-label">Physical Coordinates:</span>
+            <span id="drawerCoords" class="drawer-val mono">—</span>
+        </div>
+    </div>
+</aside>
+
+<!-- 7. Collapsible Debug Serial Terminal Drawer -->
+<div id="serialLogDrawer" class="serial-log-drawer">
+    <div class="drawer-bar">
+        <div class="bar-title">
+            <span>📜</span> Live Serial Telemetry Terminal
+        </div>
+        <div class="bar-actions">
+            <button id="exportLogBtn" class="btn btn-xs btn-outline">💾 Export File</button>
+            <button id="pauseLogBtn" class="btn btn-xs btn-outline">⏸ Pause</button>
+            <button id="clearLogBtn" class="btn btn-xs btn-outline">Clear</button>
+            <button id="closeLogDrawerBtn" class="btn btn-icon btn-xs">✕</button>
+        </div>
+    </div>
+    <div id="logConsole" class="terminal-log-box"></div>
+</div>
+
+<!-- 8. Admin Authentication Modal -->
+<div id="loginModal" class="modal-backdrop">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>🔐 Admin Authentication</h3>
+        </div>
+        <form id="loginForm">
+            <div class="form-field">
+                <label for="loginEmail">Email Address</label>
+                <input type="email" id="loginEmail" placeholder="admin@tranex.com" required autocomplete="username">
+            </div>
+            <div class="form-field">
+                <label for="loginPass">Password</label>
+                <input type="password" id="loginPass" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <div id="loginError" class="auth-error-msg" style="display: none;"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="document.getElementById('loginModal').classList.remove('open')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Sign In</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 9. Local Database Telemetry History Modal -->
+<div id="historyModal" class="modal-backdrop">
+    <div class="modal-card modal-card-lg">
+        <div class="modal-header">
+            <div class="modal-title-group">
+                <h3>📊 Local Telemetry & Events Database</h3>
+                <span class="text-muted" style="font-size: 0.8rem;">Persisted locally in <code>data/history/</code> and IndexedDB</span>
+            </div>
+            <button id="closeHistoryModalBtn" class="btn btn-icon">✕</button>
+        </div>
+        <div class="modal-body-scroll">
+            <div class="history-controls-row">
+                <div class="history-filter-group">
+                    <label>Filter Node:</label>
+                    <select id="historyNodeFilter" class="history-select">
+                        <option value="ALL">All Nodes</option>
+                    </select>
+                </div>
+                <div class="history-filter-group">
+                    <label>Limit:</label>
+                    <select id="historyLimitFilter" class="history-select">
+                        <option value="50">Last 50 Records</option>
+                        <option value="100" selected>Last 100 Records</option>
+                        <option value="500">Last 500 Records</option>
+                    </select>
+                </div>
+                <button id="refreshHistoryBtn" class="btn btn-secondary btn-sm">
+                    <span>🔄</span> Refresh
                 </button>
-
-                <div id="otaProgress" style="margin-top: 20px; display: none;">
-                    <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
-                        <span>جاري الرفع...</span>
-                        <span id="progressPercent">0%</span>
-                    </div>
-                    <div style="background: var(--card-border); border-radius: 8px; height: 24px; overflow: hidden;">
-                        <div id="progressBar" style="background: var(--accent); height: 100%; width: 0%; transition: width 0.2s;"></div>
-                    </div>
-                </div>
-
-                <div id="otaMessage" style="margin-top: 16px; padding: 12px; border-radius: 8px; display: none;"></div>
+                <button id="exportCsvBtn" class="btn btn-outline btn-sm">
+                    <span>💾</span> Export CSV
+                </button>
             </div>
-        </div>
-    </div>
 
-    <!-- Tab 3: Logs -->
-    <div id="logs" class="tab-content" style="display: none;">
-        <div class="console-card">
-            <div class="console-header">
-                <h3>📜 سجل Serial المباشر</h3>
-                <button id="clearLogBtn" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">مسح السجل</button>
+            <div class="table-responsive history-table-wrap">
+                <table class="data-table history-data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 140px;">Timestamp</th>
+                            <th>Node</th>
+                            <th style="text-align: center; width: 90px;">Floor</th>
+                            <th style="text-align: center; width: 80px;">Hop</th>
+                            <th style="text-align: center; width: 130px;">Parent Gateway</th>
+                            <th style="text-align: center; width: 90px;">Firmware</th>
+                            <th style="text-align: center; width: 90px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="7" class="empty-state">No local telemetry records loaded yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div id="logConsole" class="log-box"></div>
         </div>
     </div>
 </div>
 
-<!-- Login Modal (Hidden by default) -->
-<div id="loginModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <h2>تسجيل دخول Admin</h2>
-        <div class="form-group">
-            <label>البريد الإلكتروني</label>
-            <input type="email" id="emailInput" placeholder="admin@example.com">
-        </div>
-        <div class="form-group">
-            <label>كلمة المرور</label>
-            <input type="password" id="passwordInput" placeholder="••••••••">
-        </div>
-        <div style="display: flex; gap: 12px; justify-content: flex-end;">
-            <button id="cancelLoginBtn" class="btn btn-secondary">إلغاء</button>
-            <button id="doLoginBtn" class="btn btn-primary">دخول</button>
-        </div>
-        <div id="loginError" style="color: var(--bad); margin-top: 12px; display: none;"></div>
-    </div>
-</div>
-
-<!-- Scripts (Order Matters!) -->
+<!-- Scripts in Modular Dependency Order -->
 <script src="js/config.js"></script>
+<script src="js/protocol.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/serial.js"></script>
 <script src="js/nodes-repo.js"></script>
 <script src="js/ota.js"></script>
+
+<!-- Local Storage & Telemetry Database -->
+<script src="js/storage/local-db.js"></script>
+
+<!-- UI View Modules -->
+<script src="js/ui/kpi-view.js"></script>
+<script src="js/ui/map-view.js"></script>
+<script src="js/ui/table-view.js"></script>
+<script src="js/ui/alerts-view.js"></script>
+<script src="js/ui/drawer-view.js"></script>
+
+<!-- Central Controller -->
 <script src="js/dashboard.js"></script>
 
 </body>
