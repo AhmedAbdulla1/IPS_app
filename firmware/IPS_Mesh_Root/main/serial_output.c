@@ -11,6 +11,7 @@
 #include "config.h"
 #include "health_table.h"
 #include "ota_receiver.h"
+#include "ota_relay.h"
 
 static int _tcp_client_sock = -1;
 static SemaphoreHandle_t _tcp_mutex = NULL;
@@ -144,6 +145,9 @@ static void serial_output_task(void *arg) {
             tcp_send_line(line_buffer);
         }
         fflush(stdout);
+
+        // فحص دوري لنقل الفيرموير وإعادة بث الإعلان للنودز غير المحدثة
+        ips_ota_relay_tick();
 
         vTaskDelay(pdMS_TO_TICKS(IPS_HEALTH_REPORT_INTERVAL_MS));
     }

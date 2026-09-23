@@ -1,29 +1,34 @@
 #include "ota_relay.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "esp_log.h"
 #include "esp_mesh_lite.h"
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
+#include "esp_timer.h"
 #include "nvs.h"
 
 #include "config.h"
+#include "health_table.h"
 
 static const char *TAG = "ota_relay";
 
-// بتتنادى من مكتبة mesh_lite لما تحتاج تبعت "جزء" من ملف الفيرموير
-// لأي Node طالبها. بنقرا من الـpartition اللي الـRoot شغال منها دلوقتي
-// (يعني نفس النسخة الجديدة اللي هو نفسه اتفلش بيها - راجع ota_receiver.c).
-// نفس الـpattern الموثّق في esp_mesh_lite_core.h (تعليق
-// esp_mesh_lite_ota_register_file_transfer_cb).
+static uint32_t s_target_size = 0;
+static uint8_t s_target_major = 0;
+static uint8_t s_target_minor = 0;
+static char s_target_version[16] = {0};
+static bool s_relay_active = false;
+
+// بتتنادى من مكتبة mesh_lite لما نود تطلب قطعة من ملف الفيرموير
 static esp_err_t provide_file_cb(esp_mesh_lite_lan_ota_file_transfer_param_t *param) {
-    // نقرأ من الـpartition التي كُتب فيها فيرموير الـNode (الـpartition غير الفعالة على الـRoot)
     const esp_partition_t *node_part = esp_ota_get_next_update_partition(NULL);
     if (!node_part) {
         ESP_LOGE(TAG, "provide_file_cb: مفيش partition لفيرموير الـNode؟!");
         return ESP_FAIL;
     }
+
     esp_err_t ret = esp_partition_read(node_part, param->offset, param->data, param->data_size);
     if (ret == ESP_OK) {
         int pct = param->filesize > 0 ? (param->offset * 100) / param->filesize : 0;
@@ -42,31 +47,49 @@ static void clear_relay_pending(void) {
     nvs_close(h);
 }
 
+static esp_err_t ips_ota_relay_broadcast_announce(void) {
+    if (s_target_size == 0) return ESP_ERR_INVALID_STATE;
+
+    ips_ota_announce_t ann = {
+        .size = s_target_size,
+        .fw_major = s_target_major,
+        .fw_minor = s_target_minor,
+    };
+    strlcpy(ann.version, s_target_version, sizeof(ann.version));
+
+    esp_mesh_lite_msg_config_t conf = {0};
+    conf.raw_msg.msg_id = IPS_MSG_ID_OTA_ANNOUNCE;
+    conf.raw_msg.expect_resp_msg_id = 0;
+    conf.raw_msg.max_retry = 0;
+    conf.raw_msg.data = (const uint8_t *)&ann;
+    conf.raw_msg.size = sizeof(ann);
+    conf.raw_msg.raw_resend = esp_mesh_lite_send_broadcast_raw_msg_to_child;
+
+    esp_err_t err = esp_mesh_lite_send_msg(ESP_MESH_LITE_RAW_MSG, &conf);
+    ESP_LOGI(TAG, "📢 [Mesh-OTA] بث إعلان الفيرموير v%d.%d (حجم: %u بايت) للنودز: %s",
+             s_target_major, s_target_minor, (unsigned)s_target_size, esp_err_to_name(err));
+    return err;
+}
+
 esp_err_t ips_ota_relay_start(uint32_t size, const char *version) {
     ESP_LOGI(TAG, "🚀 بدء توزيع فيرموير الـNodes عبر الـMesh (الحجم: %u بايت، الإصدار: %s)...",
              (unsigned)size, version ? version : "new");
 
-    static esp_mesh_lite_lan_ota_file_transfer_cb_t s_cb = {
-        .provide_file_cb = provide_file_cb,
-        .get_file_cb = NULL,
-        .get_file_done = NULL,
-    };
-    esp_mesh_lite_ota_register_file_transfer_cb(&s_cb);
-
-    esp_mesh_lite_file_transmit_config_t transmit_config = {
-        .type = ESP_MESH_LITE_OTA_TRANSMIT_FIRMWARE,
-        .size = size,
-        .extern_url_ota_cb = NULL,
-    };
-    strlcpy(transmit_config.fw_version, version ? version : "new", sizeof(transmit_config.fw_version));
-
-    esp_err_t start_err = esp_mesh_lite_transmit_file_start(&transmit_config);
-    if (start_err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_mesh_lite_transmit_file_start فشل: %s", esp_err_to_name(start_err));
-        return start_err;
+    int maj = 1, min = 0;
+    if (version) {
+        sscanf(version, "%d.%d", &maj, &min);
     }
+    s_target_major = (uint8_t)maj;
+    s_target_minor = (uint8_t)min;
+    s_target_size = size;
+    strlcpy(s_target_version, version ? version : "1.0", sizeof(s_target_version));
+    s_relay_active = true;
 
-    ESP_LOGI(TAG, "✅ تم إطلاق توزيع الـOTA عبر الميش بنجاح!");
+    // تسجيل إصدار الفيرموير في مكتبة mesh-lite حتى تقبل طلبات النودز لهذا الإصدار
+    esp_mesh_lite_lan_ota_set_file_name(s_target_version);
+
+    // بث الإعلان فوراً
+    ips_ota_relay_broadcast_announce();
     return ESP_OK;
 }
 
@@ -96,7 +119,50 @@ esp_err_t ips_ota_relay_redistribute(void) {
     return ips_ota_relay_start(size, fw_version);
 }
 
+void ips_ota_relay_tick(void) {
+    if (!s_relay_active) return;
+
+    size_t total = ips_health_table_count();
+    size_t up_to_date = 0;
+    size_t active_nodes = 0;
+
+    int64_t now_us = esp_timer_get_time();
+    int64_t timeout_us = 10000000LL; // 10 ثواني كحد أقصى لاعتبار النود نشطة
+
+    for (size_t i = 0; i < total; i++) {
+        const ips_health_entry_t *e = ips_health_table_get(i);
+        if (e && e->in_use && (now_us - e->last_seen_us < timeout_us)) {
+            active_nodes++;
+            if (e->fw_minor >= s_target_minor && e->fw_major >= s_target_major) {
+                up_to_date++;
+            }
+        }
+    }
+
+    if (active_nodes > 0 && up_to_date == active_nodes) {
+        ESP_LOGI(TAG, "🎉 [Mesh-OTA] اكتمل تحديث جميع النودز المتصلة (%u/%u) إلى الإصدار v%d.%d بنجاح!",
+                 (unsigned)up_to_date, (unsigned)active_nodes, s_target_major, s_target_minor);
+        s_relay_active = false;
+        clear_relay_pending();
+        return;
+    }
+
+    // إعادة بث الإعلان للنودز كل دورة فحص (~4 ثواني)
+    static int s_tick_counter = 0;
+    if (++s_tick_counter % 2 == 0) {
+        ips_ota_relay_broadcast_announce();
+    }
+}
+
 void ips_ota_relay_init(void) {
+    // تسجيل provide_file_cb دائماً عند تشغيل الـRoot حتى يكون مستعداً لخدمة النودز
+    static esp_mesh_lite_lan_ota_file_transfer_cb_t s_cb = {
+        .provide_file_cb = provide_file_cb,
+        .get_file_cb = NULL,
+        .get_file_done = NULL,
+    };
+    esp_mesh_lite_ota_register_file_transfer_cb(&s_cb);
+
     nvs_handle_t h;
     esp_err_t err = nvs_open(IPS_OTA_NVS_NAMESPACE, NVS_READONLY, &h);
     if (err != ESP_OK) {
@@ -113,9 +179,17 @@ void ips_ota_relay_init(void) {
     nvs_get_str(h, IPS_OTA_NVS_KEY_VERSION, fw_version, &ver_len);
     nvs_close(h);
 
-    if (!pending || size == 0) return;
-
-    ips_ota_relay_start(size, fw_version);
-    clear_relay_pending();
+    if (size > 0) {
+        int maj = 1, min = 0;
+        sscanf(fw_version, "%d.%d", &maj, &min);
+        s_target_major = (uint8_t)maj;
+        s_target_minor = (uint8_t)min;
+        s_target_size = size;
+        strlcpy(s_target_version, fw_version, sizeof(s_target_version));
+        esp_mesh_lite_lan_ota_set_file_name(s_target_version);
+        if (pending) {
+            s_relay_active = true;
+            ips_ota_relay_broadcast_announce();
+        }
+    }
 }
-

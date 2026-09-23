@@ -26,3 +26,8 @@ esp_err_t ips_ota_relay_start(uint32_t size, const char *version);
  * @brief إعادة توزيع الفيرموير المحفوظ في الفلاش دون الحاجة لإعادة رفعه عبر السيريال
  */
 esp_err_t ips_ota_relay_redistribute(void);
+
+/**
+ * @brief فحص دوري لإعادة بث الإعلان للنودز حتى تكتمل ترقية جميع النودز المتصلة
+ */
+void ips_ota_relay_tick(void);

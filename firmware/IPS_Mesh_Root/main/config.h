@@ -31,6 +31,7 @@
 // msg_id للرسائل الخام (raw) اللي بتتبعت من الـnode للـroot. لازم
 // يتطابق مع نفس القيمة بالظبط في IPS_Mesh_Node/main/config.h.
 #define IPS_MSG_ID_HEARTBEAT 0x1001
+#define IPS_MSG_ID_OTA_ANNOUNCE 0x1002
 
 // رقم إصدار فيرموير الـRoot (للتوثيق والمقارنة فقط)
 #define IPS_FW_VERSION_MAJOR 1
@@ -72,5 +73,12 @@ typedef struct {
     uint8_t  fw_minor;                  // إصدار فيرموير الـNode (minor)
     uint32_t uptime_ms;                 // وقت تشغيل الـnode
 } ips_health_heartbeat_t;
+
+typedef struct {
+    uint32_t size;                      // الحجم بالبايت
+    uint8_t  fw_major;                  // الإصدار المعلن (major)
+    uint8_t  fw_minor;                  // الإصدار المعلن (minor)
+    char     version[16];               // نص الإصدار مثل "1.4"
+} ips_ota_announce_t;
 #pragma pack(pop)
 

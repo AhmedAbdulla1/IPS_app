@@ -44,6 +44,7 @@
 // esp_mesh_lite_send_msg(ESP_MESH_LITE_RAW_MSG, ...). لازم يتطابق مع
 // نفس القيمة بالظبط في IPS_Mesh_Root/main/config.h.
 #define IPS_MSG_ID_HEARTBEAT 0x1001
+#define IPS_MSG_ID_OTA_ANNOUNCE 0x1002
 
 #pragma pack(push, 1)
 typedef struct {
@@ -54,4 +55,11 @@ typedef struct {
     uint8_t  fw_minor;                  // = IPS_FW_VERSION_MINOR
     uint32_t uptime_ms;                 // esp_timer_get_time() / 1000
 } ips_health_heartbeat_t;
+
+typedef struct {
+    uint32_t size;                      // الحجم بالبايت
+    uint8_t  fw_major;                  // الإصدار المعلن (major)
+    uint8_t  fw_minor;                  // الإصدار المعلن (minor)
+    char     version[16];               // نص الإصدار مثل "1.4"
+} ips_ota_announce_t;
 #pragma pack(pop)
