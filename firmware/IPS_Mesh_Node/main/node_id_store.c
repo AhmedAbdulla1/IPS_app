@@ -20,13 +20,24 @@ static void log_node_id(const char *prefix, const uint8_t *id) {
     ESP_LOGI(TAG, "%s%s", prefix, hex);
 }
 
+#include "esp_mac.h"
+
+static void set_default_mac_node_id(void) {
+    memset(g_nodeId, 0, IPS_NODE_ID_LEN);
+    uint8_t mac[6] = {0};
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    // نضع الـ MAC الفريد في آخر 6 بايتات لضمان هوية فريدة لكل بوردة تلقائياً
+    memcpy(&g_nodeId[10], mac, 6);
+}
+
 void node_id_store_init(void) {
     nvs_handle_t handle;
     esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
     if (err != ESP_OK) {
-        memset(g_nodeId, 0, IPS_NODE_ID_LEN);
-        ESP_LOGW(TAG, "\xE2\x9A\xA0 NOT PROVISIONED - no NVS namespace, using default (all zeros).");
-        ESP_LOGW(TAG, "Send 'SET_ID:<hex>' over Serial to provision this node.");
+        set_default_mac_node_id();
+        ESP_LOGW(TAG, "⚠️ NOT PROVISIONED in NVS - Auto-generated unique ID from STA MAC:");
+        log_node_id("Auto Node ID: ", g_nodeId);
+        ESP_LOGW(TAG, "Send 'SET_ID:<hex>' over Serial to override this node ID if desired.");
         return;
     }
 
@@ -37,9 +48,10 @@ void node_id_store_init(void) {
     if (err == ESP_OK && required_size == IPS_NODE_ID_LEN) {
         log_node_id("Loaded Node ID from NVS: ", g_nodeId);
     } else {
-        memset(g_nodeId, 0, IPS_NODE_ID_LEN);
-        ESP_LOGW(TAG, "\xE2\x9A\xA0 NOT PROVISIONED - no Node ID in NVS, using default (all zeros).");
-        ESP_LOGW(TAG, "Send 'SET_ID:<hex>' over Serial to provision this node.");
+        set_default_mac_node_id();
+        ESP_LOGW(TAG, "⚠️ NOT PROVISIONED in NVS - Auto-generated unique ID from STA MAC:");
+        log_node_id("Auto Node ID: ", g_nodeId);
+        ESP_LOGW(TAG, "Send 'SET_ID:<hex>' over Serial to override this node ID if desired.");
     }
 }
 

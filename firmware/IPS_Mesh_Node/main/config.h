@@ -17,9 +17,8 @@
 // كل قد إيه (بالمللي ثانية) الـnode يبعت heartbeat لأقرب parent/root.
 #define IPS_HEARTBEAT_INTERVAL_MS 2000
 
-// سقف طبقات الـmesh (لازم يتطابق مع القيمة في menuconfig وفي فيرموير
-// الـRoot - MESH_DESIGN.md §4.4).
-#define IPS_MESH_MAX_LAYER 10
+// سقف طبقات الـmesh (يدعم حتى 15 طبقة للـMulti-Root والـFailover الأفقي الطويل)
+#define IPS_MESH_MAX_LAYER 15
 
 // رقم الـ GPIO المتصل بالليد للمؤشرات الضوئية (النبض ونقل الفيرموير)
 #define IPS_LED_GPIO 2
