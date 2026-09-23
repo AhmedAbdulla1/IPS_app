@@ -147,6 +147,23 @@ body {
     border: 1px solid rgba(201, 123, 110, 0.3);
 }
 
+.status-pill.warning {
+    background: rgba(245, 166, 35, 0.15);
+    color: var(--status-warning, #F5A623);
+    border: 1px solid rgba(245, 166, 35, 0.4);
+}
+
+.status-pill.clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.status-pill.clickable:hover {
+    filter: brightness(1.2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(245, 166, 35, 0.3);
+}
+
 .indicator-dot {
     width: 8px;
     height: 8px;

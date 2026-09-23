@@ -38,6 +38,11 @@
                 <span class="indicator-dot"></span> Root Disconnected
             </div>
 
+            <!-- Outdated Firmware Warning Badge -->
+            <div id="headerFwWarningBadge" class="status-pill warning clickable" style="display: none;" title="Click to view outdated nodes in table">
+                <span class="indicator-dot"></span> ⚠️ <span id="headerOutdatedCount">0</span> Outdated FW
+            </div>
+
             <!-- COM / Web Serial Port -->
             <div class="meta-pill">
                 <span class="pill-label">Port:</span>
@@ -118,14 +123,14 @@
             </div>
         </div>
 
-        <div class="kpi-card">
+        <div class="kpi-card clickable" id="kpiWarningCard" title="Click to filter outdated & warning nodes in table">
             <div class="kpi-head">
-                <span class="kpi-title">Review Required</span>
+                <span class="kpi-title">Review Required / Warnings</span>
                 <span class="kpi-icon warning">🔔</span>
             </div>
             <div class="kpi-body">
                 <span id="kpiWarningNodes" class="kpi-value mono text-warning">0</span>
-                <span class="kpi-sub">High hop count or marginal link</span>
+                <span id="kpiWarningSub" class="kpi-sub">All systems normal</span>
             </div>
         </div>
 

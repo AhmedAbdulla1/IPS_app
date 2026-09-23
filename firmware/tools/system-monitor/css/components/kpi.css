@@ -31,6 +31,15 @@
     box-shadow: var(--shadow-md);
 }
 
+.kpi-card.clickable {
+    cursor: pointer;
+}
+
+.kpi-card.clickable:hover {
+    border-color: var(--status-warning, #F5A623);
+    box-shadow: 0 4px 16px rgba(245, 166, 35, 0.15);
+}
+
 .kpi-card:hover::before {
     background: linear-gradient(90deg, var(--brand-dark), var(--brand-primary), var(--brand-amber));
 }

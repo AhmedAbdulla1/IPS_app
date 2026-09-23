@@ -120,10 +120,10 @@ esp_err_t ips_ota_relay_redistribute(void) {
 }
 
 void ips_ota_relay_tick(void) {
-    if (!s_relay_active) return;
+    if (s_target_size == 0) return;
 
     size_t total = ips_health_table_count();
-    size_t up_to_date = 0;
+    size_t outdated_nodes = 0;
     size_t active_nodes = 0;
 
     int64_t now_us = esp_timer_get_time();
@@ -133,24 +133,29 @@ void ips_ota_relay_tick(void) {
         const ips_health_entry_t *e = ips_health_table_get(i);
         if (e && e->in_use && (now_us - e->last_seen_us < timeout_us)) {
             active_nodes++;
-            if (e->fw_minor >= s_target_minor && e->fw_major >= s_target_major) {
-                up_to_date++;
+            if (e->fw_major < s_target_major || (e->fw_major == s_target_major && e->fw_minor < s_target_minor)) {
+                outdated_nodes++;
             }
         }
     }
 
-    if (active_nodes > 0 && up_to_date == active_nodes) {
-        ESP_LOGI(TAG, "🎉 [Mesh-OTA] اكتمل تحديث جميع النودز المتصلة (%u/%u) إلى الإصدار v%d.%d بنجاح!",
-                 (unsigned)up_to_date, (unsigned)active_nodes, s_target_major, s_target_minor);
+    if (outdated_nodes > 0) {
+        // نود متصلة تحتاج تحديث (سواء انضمت متأخراً بعد الرفع أو لم تكتمل ترقيتها بعد)
+        s_relay_active = true;
+        esp_mesh_lite_lan_ota_set_file_name(s_target_version);
+
+        static int s_tick_counter = 0;
+        if (++s_tick_counter % 2 == 0) {
+            ESP_LOGI(TAG, "📢 [Mesh-OTA] تم رصد %u نود بإصدار قديم - جاري بث إعلان v%s...",
+                     (unsigned)outdated_nodes, s_target_version);
+            ips_ota_relay_broadcast_announce();
+        }
+    } else if (s_relay_active && active_nodes > 0) {
+        // كل النودز النشطة حالياً محدثة لأحدث إصدار
+        ESP_LOGI(TAG, "🎉 [Mesh-OTA] جميع النودز النشطة (%u) محدثة إلى الإصدار v%d.%d بنجاح!",
+                 (unsigned)active_nodes, s_target_major, s_target_minor);
         s_relay_active = false;
         clear_relay_pending();
-        return;
-    }
-
-    // إعادة بث الإعلان للنودز كل دورة فحص (~4 ثواني)
-    static int s_tick_counter = 0;
-    if (++s_tick_counter % 2 == 0) {
-        ips_ota_relay_broadcast_announce();
     }
 }
 

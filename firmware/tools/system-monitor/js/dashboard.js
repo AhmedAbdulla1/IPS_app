@@ -293,9 +293,16 @@ SM.dashboard = (function () {
 
     const effectiveTarget = getEffectiveTargetVersion();
     if (node.fwMajor !== null && effectiveTarget.major !== null) {
-      if (!isFwUpToDate(node.fwMajor, node.fwMinor) && !node._outdatedAlertSent) {
-        node._outdatedAlertSent = true;
-        SM.ui.alertsView.addAlert('warning', 'Firmware Outdated', `${node.nameEn} runs ${fmtVersion(node.fwMajor, node.fwMinor)}, target is ${fmtVersion(effectiveTarget.major, effectiveTarget.minor)}`, key);
+      if (!isFwUpToDate(node.fwMajor, node.fwMinor)) {
+        if (!node._outdatedAlertSent) {
+          node._outdatedAlertSent = true;
+          SM.ui.alertsView.addAlert('warning', 'Firmware Outdated', `${node.nameEn} runs ${fmtVersion(node.fwMajor, node.fwMinor)}, target is ${fmtVersion(effectiveTarget.major, effectiveTarget.minor)}`, key);
+        }
+      } else {
+        if (node._outdatedAlertSent) {
+          node._outdatedAlertSent = false;
+          SM.ui.alertsView.addAlert('success', 'Firmware Updated', `${node.nameEn} successfully updated to ${fmtVersion(node.fwMajor, node.fwMinor)}`, key);
+        }
       }
     }
 
@@ -394,19 +401,52 @@ SM.dashboard = (function () {
     if (disconnectBtn) disconnectBtn.style.display = isConn ? 'inline-flex' : 'none';
   }
 
+  function resolveNode(identifier) {
+    if (!identifier) return null;
+    let node = state.nodes.get(identifier);
+    if (node) return node;
+
+    const clean = normalizeUuid(identifier);
+    node = state.nodes.get(clean);
+    if (node) return node;
+
+    for (const n of state.nodes.values()) {
+      if (n.uuid === identifier || n.cleanUuid === clean || n.cleanUuid === identifier) return n;
+      if (n.displayUuid && n.displayUuid === identifier) return n;
+      if (n.nodeId && String(n.nodeId) === String(identifier)) return n;
+      if (n.nameEn && n.nameEn.toLowerCase() === identifier.toLowerCase()) return n;
+      if (clean && n.cleanUuid && (n.cleanUuid.includes(clean) || clean.includes(n.cleanUuid))) return n;
+    }
+    return null;
+  }
+
+  function findNodeByText(text) {
+    if (!text || typeof text !== 'string') return null;
+    for (const [key, n] of state.nodes.entries()) {
+      if (n.cleanUuid && text.includes(n.cleanUuid)) return key;
+      if (n.uuid && text.includes(n.uuid)) return key;
+      if (n.nameEn && text.includes(n.nameEn)) return key;
+      if (n.nameAr && text.includes(n.nameAr)) return key;
+      if (n.displayUuid && text.includes(n.displayUuid)) return key;
+    }
+    return null;
+  }
+
   // ── Selection & Deselection ──────────────────────────────────────────────
-  function selectNode(uuid) {
-    if (!uuid) {
+  function selectNode(identifier) {
+    if (!identifier) {
       deselectNode();
       return;
     }
 
-    state.selectedNodeUuid = uuid;
-    const node = state.nodes.get(uuid);
+    const node = resolveNode(identifier);
     if (!node) return;
 
-    SM.ui.mapView.selectNode(uuid);
-    SM.ui.tableView.selectRow(uuid);
+    const actualKey = node.cleanUuid || node.uuid;
+    state.selectedNodeUuid = actualKey;
+
+    SM.ui.mapView.selectNode(actualKey);
+    SM.ui.tableView.selectRow(actualKey);
     SM.ui.drawerView.openNode(node, state.levels);
   }
 
@@ -834,7 +874,9 @@ SM.dashboard = (function () {
     if (SM.localDb) {
       SM.localDb.init();
     }
-    SM.ui.kpiView; // Verified loaded
+    if (SM.ui.kpiView && typeof SM.ui.kpiView.init === 'function') {
+      SM.ui.kpiView.init();
+    }
     SM.ui.alertsView.init();
     SM.ui.drawerView.init({ onClose: deselectNode });
     SM.ui.mapView.init({ onNodeSelect: selectNode });
@@ -883,6 +925,8 @@ SM.dashboard = (function () {
     init,
     selectNode,
     deselectNode,
+    resolveNode,
+    findNodeByText,
   };
 })();
 

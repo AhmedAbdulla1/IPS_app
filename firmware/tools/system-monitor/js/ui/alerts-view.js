@@ -51,7 +51,24 @@ SM.ui.alertsView = (function () {
     const item = document.createElement('div');
     item.className = `alert-item ${type}`;
     item.setAttribute('data-severity', type);
-    if (nodeUuid) item.setAttribute('data-node-uuid', nodeUuid);
+
+    // Resolve target node if explicitly passed or extractable from text
+    let targetNodeId = nodeUuid;
+    if (!targetNodeId && SM.dashboard && typeof SM.dashboard.findNodeByText === 'function') {
+      targetNodeId = SM.dashboard.findNodeByText(`${title} ${detail}`);
+    }
+
+    if (targetNodeId) {
+      item.setAttribute('data-node-uuid', targetNodeId);
+      item.classList.add('clickable');
+      item.title = 'Click to inspect full node details & parameters';
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (SM.dashboard && typeof SM.dashboard.selectNode === 'function') {
+          SM.dashboard.selectNode(targetNodeId);
+        }
+      });
+    }
 
     const isVisible = currentFilter === 'ALL' ||
       (currentFilter === 'CRITICAL' && type === 'critical') ||
@@ -67,6 +84,11 @@ SM.ui.alertsView = (function () {
           <span class="alert-time">${timeStr}</span>
         </div>
         <div class="alert-detail">${detail}</div>
+        ${targetNodeId ? `
+          <div class="alert-action-badge">
+            <span>🔎</span> View Node Details
+          </div>
+        ` : ''}
       </div>
     `;
 
