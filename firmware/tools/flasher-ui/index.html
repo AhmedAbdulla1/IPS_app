@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPS Mesh Multi-Flasher | أداة الحرق المتزامن</title>
+  <title>IPS Mesh Multi-Flasher | أداة الحرق المتزامن ومراقبة السيريال</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -19,10 +19,8 @@
       --cyan: #00F2FE;
       --blue: #3B82F6;
       --green: #10B981;
-      --green-glow: rgba(16, 185, 129, 0.2);
       --amber: #F59E0B;
       --rose: #F43F5E;
-      --rose-glow: rgba(244, 63, 94, 0.2);
       --font-main: 'Cairo', system-ui, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
@@ -251,7 +249,7 @@
 
     .ports-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
       gap: 1rem;
       margin-top: 1rem;
     }
@@ -264,7 +262,6 @@
       display: flex;
       align-items: flex-start;
       gap: 0.85rem;
-      cursor: pointer;
       transition: all 0.2s;
       position: relative;
     }
@@ -281,7 +278,7 @@
     }
 
     .port-checkbox {
-      margin-top: 0.25rem;
+      margin-top: 0.35rem;
       width: 18px;
       height: 18px;
       accent-color: var(--cyan);
@@ -293,7 +290,7 @@
     }
 
     .port-name {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 800;
       font-family: var(--font-mono);
       color: #fff;
@@ -306,7 +303,15 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 200px;
+      max-width: 220px;
+    }
+
+    .port-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.6rem;
+      gap: 0.5rem;
     }
 
     .port-badge {
@@ -315,7 +320,6 @@
       border-radius: 4px;
       font-weight: 700;
       display: inline-block;
-      margin-top: 0.35rem;
     }
 
     .badge-esp {
@@ -327,6 +331,27 @@
     .badge-generic {
       background: rgba(156, 163, 175, 0.15);
       color: var(--text-muted);
+    }
+
+    .btn-term-small {
+      background: rgba(0, 242, 254, 0.12);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      color: var(--cyan);
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s;
+    }
+
+    .btn-term-small:hover {
+      background: rgba(0, 242, 254, 0.25);
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
     }
 
     /* Action Bar */
@@ -581,6 +606,13 @@
       font-weight: 600;
     }
 
+    .card-footer-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.3rem;
+    }
+
     .log-toggle-btn {
       background: transparent;
       border: none;
@@ -589,8 +621,6 @@
       cursor: pointer;
       font-family: inherit;
       text-decoration: underline;
-      align-self: flex-start;
-      margin-top: 0.2rem;
     }
 
     .port-log-box {
@@ -624,6 +654,178 @@
       background: rgba(244, 63, 94, 0.12);
       border-color: rgba(244, 63, 94, 0.35);
     }
+
+    /* Modal / Drawer for Interactive Serial Terminal */
+    .terminal-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .terminal-modal-overlay.active {
+      display: flex;
+    }
+
+    .terminal-window {
+      background: #0B0F19;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 900px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 254, 0.15);
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      background: #111827;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .term-title-box {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .term-port-badge {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      color: var(--cyan);
+      font-size: 1.1rem;
+    }
+
+    .terminal-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .term-baud-select {
+      background: #0A0E17;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      outline: none;
+    }
+
+    .btn-term-tool {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s;
+    }
+
+    .btn-term-tool:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-term-close {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: var(--rose);
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-term-close:hover {
+      background: rgba(244, 63, 94, 0.3);
+    }
+
+    .terminal-body {
+      flex: 1;
+      background: #050811;
+      padding: 1rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #38BDF8;
+      overflow-y: auto;
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+
+    .term-line-ts {
+      color: #475569;
+      font-size: 0.75rem;
+      margin-right: 0.5rem;
+      user-select: none;
+    }
+
+    .terminal-footer {
+      background: #111827;
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: #050811;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.55rem 0.85rem;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      outline: none;
+      direction: ltr;
+    }
+
+    .terminal-input:focus {
+      border-color: var(--cyan);
+    }
+
+    .btn-term-send {
+      background: var(--cyan);
+      color: #050811;
+      border: none;
+      padding: 0.55rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.2s;
+    }
+
+    .btn-term-send:hover {
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
@@ -633,8 +835,8 @@
     <div class="brand">
       <div class="brand-icon">⚡</div>
       <div>
-        <div class="brand-title">IPS Mesh Multi-Flasher</div>
-        <div class="brand-sub">أداة الحرق المتزامن لعقد شبكة الميش</div>
+        <div class="brand-title">IPS Mesh Multi-Flasher & Terminal</div>
+        <div class="brand-sub">أداة الحرق المتزامن ومراقبة شاشات السيريال</div>
       </div>
     </div>
     <div class="server-status">
@@ -688,7 +890,7 @@
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
           <div class="form-group">
-            <label class="form-label">سرعة الحرق (Baud Rate)</label>
+            <label class="form-label">سرعة الحرق (Flash Baud)</label>
             <select id="baudSelect" class="form-select">
               <option value="460800" selected>460,800 (سريع ومستقر - موصى به)</option>
               <option value="921600">921,600 (فائق السرعة)</option>
@@ -706,7 +908,7 @@
         </div>
 
         <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
-          ℹ️ سيتم حرق الـ Bootloader وتقسيم الذاكرة وملف الـ Bin لجميع البوردات المحددة بالتوازي في نفس اللحظة.
+          ℹ️ يمكنك فتح شاشة سيريال تفاعلية (Terminal) لأي بوردة بشكل مستقل لمراقبة إقلاعها وإرسال الأوامر.
         </div>
       </div>
 
@@ -720,7 +922,7 @@
           <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);" id="portsCountText">(0 مكتشفة)</span>
         </div>
         <div class="ports-header-actions">
-          <button class="btn-secondary" id="btnSelectAll">تحديد الكل</button>
+          <button class="btn-secondary" id="btnSelectAll">تحديد الكل للحرق</button>
           <button class="btn-secondary" id="btnClearAll">إلغاء التحديد</button>
           <button class="btn-secondary" id="btnRefreshPorts" title="تحديث المنافذ">🔄 فحص جديد</button>
         </div>
@@ -823,6 +1025,43 @@
 
   </main>
 
+  <!-- Interactive Serial Terminal Modal -->
+  <div class="terminal-modal-overlay" id="terminalModal">
+    <div class="terminal-window">
+      <div class="terminal-header">
+        <div class="term-title-box">
+          <span>🖥️</span>
+          <span style="font-weight: 700;">شاشة السيريال (Serial Terminal)</span>
+          <span class="term-port-badge" id="termCurrentPort">COM--</span>
+          <span class="status-pill pill-success" id="termStatusPill">متصل</span>
+        </div>
+
+        <div class="terminal-toolbar">
+          <label style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">السرعة:</label>
+          <select id="termBaudSelect" class="term-baud-select">
+            <option value="115200" selected>115200 (ESP-IDF / Node)</option>
+            <option value="74880">74880 (Bootloader ROM)</option>
+            <option value="9600">9600</option>
+            <option value="230400">230400</option>
+            <option value="460800">460800</option>
+          </select>
+          <button class="btn-term-tool" id="btnTermReset" title="إرسال نبضة ريست للبوردة">🔄 ريستارت ESP</button>
+          <button class="btn-term-tool" id="btnTermClear" title="مسح محتوى الشاشة">🧹 مسح</button>
+          <button class="btn-term-close" id="btnTermClose" title="إغلاق شاشة السيريال">✕ إغلاق</button>
+        </div>
+      </div>
+
+      <div class="terminal-body" id="termOutput">
+        <!-- Live serial log stream -->
+      </div>
+
+      <div class="terminal-footer">
+        <input type="text" id="termInput" class="terminal-input" placeholder="اكتب أمراً هنا (مثلاً: SET_ID:e86b... أو مساعدة) واضغط Enter">
+        <button class="btn-term-send" id="btnTermSend">إرسال ↵</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // State
     let availablePorts = [];
@@ -830,6 +1069,12 @@
     let targetsData = [];
     let isFlashing = false;
     let pollInterval = null;
+
+    // Terminal State
+    let activeTerminalPort = null;
+    let terminalPollInterval = null;
+    let terminalLastId = 0;
+    let termAutoScroll = true;
 
     // Elements
     const targetSelect = document.getElementById('targetSelect');
@@ -860,6 +1105,18 @@
     const summaryIcon = document.getElementById('summaryIcon');
     const summaryTitle = document.getElementById('summaryTitle');
     const summarySub = document.getElementById('summarySub');
+
+    // Terminal Modal Elements
+    const terminalModal = document.getElementById('terminalModal');
+    const termCurrentPort = document.getElementById('termCurrentPort');
+    const termStatusPill = document.getElementById('termStatusPill');
+    const termBaudSelect = document.getElementById('termBaudSelect');
+    const btnTermReset = document.getElementById('btnTermReset');
+    const btnTermClear = document.getElementById('btnTermClear');
+    const btnTermClose = document.getElementById('btnTermClose');
+    const termOutput = document.getElementById('termOutput');
+    const termInput = document.getElementById('termInput');
+    const btnTermSend = document.getElementById('btnTermSend');
 
     // Load Targets
     async function loadTargets() {
@@ -931,18 +1188,25 @@
           <div class="port-info">
             <div class="port-name">${p.port}</div>
             <div class="port-desc" title="${p.description}">${p.description}</div>
-            <span class="port-badge ${p.is_esp ? 'badge-esp' : 'badge-generic'}">
-              ${p.is_esp ? '✨ ESP32 Board' : 'Serial Port'}
-            </span>
+            <div class="port-actions-row">
+              <span class="port-badge ${p.is_esp ? 'badge-esp' : 'badge-generic'}">
+                ${p.is_esp ? '✨ ESP32 Board' : 'Serial Port'}
+              </span>
+              <button class="btn-term-small" onclick="event.stopPropagation(); openTerminal('${p.port}')">
+                <span>🖥️</span> Terminal
+              </button>
+            </div>
           </div>
         `;
 
         item.addEventListener('click', (e) => {
-          if (e.target.type !== 'checkbox') {
+          if (e.target.type !== 'checkbox' && !e.target.closest('.btn-term-small')) {
             const chk = item.querySelector('.port-checkbox');
             chk.checked = !chk.checked;
+            togglePortSelection(p.port);
+          } else if (e.target.type === 'checkbox') {
+            togglePortSelection(p.port);
           }
-          togglePortSelection(p.port);
         });
 
         portsGrid.appendChild(item);
@@ -999,12 +1263,16 @@
 
       if (!confirm(confirmMsg)) return;
 
+      // Close open terminal if it is on one of the target ports
+      if (activeTerminalPort && ports.includes(activeTerminalPort)) {
+        closeTerminal();
+      }
+
       isFlashing = true;
       btnStartFlash.disabled = true;
       btnAbort.style.display = 'flex';
       summaryBanner.style.display = 'none';
 
-      // Create live cards
       createLiveCards(ports);
 
       try {
@@ -1064,7 +1332,12 @@
             <span id="pct-${p}">0%</span>
           </div>
 
-          <button class="log-toggle-btn" onclick="toggleLog('${p}')">عرض سجل المنفذ (Terminal Log)</button>
+          <div class="card-footer-actions">
+            <button class="log-toggle-btn" onclick="toggleLog('${p}')">عرض سجل الحرق</button>
+            <button class="btn-term-small" onclick="openTerminal('${p}')">
+              <span>🖥️</span> مراقبة السيريال
+            </button>
+          </div>
           <div class="port-log-box" id="log-${p}"></div>
         `;
         livePortCardsGrid.appendChild(card);
@@ -1103,14 +1376,12 @@
     }
 
     function updateDashboard(data) {
-      // Update KPIs
       kpiTotal.textContent = data.total_ports || 0;
       kpiRunning.textContent = data.in_progress || 0;
       kpiSuccess.textContent = data.succeeded || 0;
       kpiFailed.textContent = data.failed || 0;
       kpiElapsed.textContent = `${data.elapsed_time}s`;
 
-      // Overall Progress
       let totalPct = 0;
       const ports = data.ports || {};
       const portKeys = Object.keys(ports);
@@ -1121,7 +1392,6 @@
       overallPctText.textContent = `${totalPct}%`;
       overallProgressBar.style.width = `${totalPct}%`;
 
-      // Update Individual Cards
       for (const [p, d] of Object.entries(ports)) {
         const card = document.getElementById(`card-${p}`);
         const pill = document.getElementById(`pill-${p}`);
@@ -1132,10 +1402,8 @@
 
         if (!card) continue;
 
-        // Card classes
         card.className = `live-port-card status-${d.status}`;
 
-        // Pill text and styling
         if (d.status === 'connecting') {
           pill.className = 'status-pill pill-connecting';
           pill.textContent = 'جاري الاتصال...';
@@ -1154,12 +1422,10 @@
           fill.className = 'live-port-progress-fill fill-failed';
         }
 
-        // Fill width
         fill.style.width = `${d.progress}%`;
         pct.textContent = `${d.progress}%`;
         stage.textContent = d.stage || '';
 
-        // Logs
         if (logBox && d.log) {
           logBox.textContent = d.log.join('\n');
           logBox.scrollTop = logBox.scrollHeight;
@@ -1173,7 +1439,7 @@
         summaryBanner.className = 'summary-banner';
         summaryIcon.textContent = '🎉';
         summaryTitle.textContent = `اكتمل الحرق بنجاح تام لجميع البوردات (${data.succeeded} بوردة)!`;
-        summarySub.textContent = `استغرقت العملية بالكامل ${data.elapsed_time} ثانية عبر الحرق المتوازي.`;
+        summarySub.textContent = `استغرقت العملية بالكامل ${data.elapsed_time} ثانية عبر الحرق المتوازي. يمكنك فتح شاشة الـ Terminal الآن لمراقبة إقلاع أي بوردة.`;
       } else {
         summaryBanner.className = 'summary-banner error';
         summaryIcon.textContent = '⚠️';
@@ -1182,13 +1448,174 @@
       }
     }
 
+    // ==========================================
+    // Interactive Serial Terminal Implementation
+    // ==========================================
+    window.openTerminal = async function(port) {
+      activeTerminalPort = port;
+      terminalLastId = 0;
+      termCurrentPort.textContent = port;
+      termOutput.innerHTML = '';
+      termStatusPill.className = 'status-pill pill-connecting';
+      termStatusPill.textContent = 'جاري الفتح...';
+      terminalModal.classList.add('active');
+
+      const baud = parseInt(termBaudSelect.value);
+      try {
+        const res = await fetch('/api/terminal/open', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ port, baud })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          termStatusPill.className = 'status-pill pill-success';
+          termStatusPill.textContent = `متصل (${baud})`;
+          appendTerminalLine(`=== تم فتح منفذ ${port} بنجاح بسرعة ${baud} baud ===`, '#10B981');
+          startTerminalPoll();
+        } else {
+          termStatusPill.className = 'status-pill pill-failed';
+          termStatusPill.textContent = 'فشل الاتصال';
+          appendTerminalLine(`⚠️ خطأ في فتح المنفذ: ${data.message || 'Busy / Permission Error'}`, '#F43F5E');
+        }
+      } catch (err) {
+        termStatusPill.className = 'status-pill pill-failed';
+        termStatusPill.textContent = 'خطأ شبكة';
+        appendTerminalLine(`⚠️ خطأ في الاتصال بالسيرفر: ${err}`, '#F43F5E');
+      }
+
+      termInput.focus();
+    };
+
+    function startTerminalPoll() {
+      if (terminalPollInterval) clearInterval(terminalPollInterval);
+      terminalPollInterval = setInterval(async () => {
+        if (!activeTerminalPort) return;
+        try {
+          const res = await fetch(`/api/terminal/poll?port=${activeTerminalPort}&since=${terminalLastId}`);
+          const data = await res.json();
+          if (data.lines && data.lines.length > 0) {
+            data.lines.forEach(item => {
+              appendTerminalLine(item.text);
+            });
+            terminalLastId = data.last_id;
+          }
+          if (!data.connected && termStatusPill.textContent.includes('متصل')) {
+            termStatusPill.className = 'status-pill pill-failed';
+            termStatusPill.textContent = 'انقطع الاتصال';
+            appendTerminalLine(`[انقطع اتصال المنفذ أو تم إغلاقه]`, '#F59E0B');
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }, 90);
+    }
+
+    function appendTerminalLine(text, customColor = null) {
+      const lineDiv = document.createElement('div');
+      if (customColor) {
+        lineDiv.style.color = customColor;
+      }
+      
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}.${String(Math.floor(now.getMilliseconds()/100))}`;
+      
+      lineDiv.innerHTML = `<span class="term-line-ts">[${timeStr}]</span>${escapeHtml(text)}`;
+      termOutput.appendChild(lineDiv);
+
+      if (termAutoScroll) {
+        termOutput.scrollTop = termOutput.scrollHeight;
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    async function closeTerminal() {
+      if (!activeTerminalPort) return;
+      if (terminalPollInterval) clearInterval(terminalPollInterval);
+      const port = activeTerminalPort;
+      activeTerminalPort = null;
+      terminalModal.classList.remove('active');
+
+      try {
+        await fetch('/api/terminal/close', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ port })
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    btnTermClose.addEventListener('click', closeTerminal);
+    terminalModal.addEventListener('click', (e) => {
+      if (e.target === terminalModal) {
+        closeTerminal();
+      }
+    });
+
+    btnTermClear.addEventListener('click', () => {
+      termOutput.innerHTML = '';
+    });
+
+    // Reset ESP button
+    btnTermReset.addEventListener('click', async () => {
+      if (!activeTerminalPort) return;
+      appendTerminalLine(`[إرسال إشارة Reset DTR/RTS لإعادة تشغيل البوردة...]`, '#F59E0B');
+      try {
+        await fetch('/api/terminal/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ port: activeTerminalPort })
+        });
+      } catch (err) {
+        appendTerminalLine(`⚠️ خطأ في إرسال الريست: ${err}`, '#F43F5E');
+      }
+    });
+
+    // Change Baud rate in Terminal
+    termBaudSelect.addEventListener('change', () => {
+      if (activeTerminalPort) {
+        openTerminal(activeTerminalPort);
+      }
+    });
+
+    // Send Command
+    async function sendCommand() {
+      const text = termInput.value.trim();
+      if (!text || !activeTerminalPort) return;
+
+      appendTerminalLine(`> ${text}`, '#00F2FE');
+      termInput.value = '';
+
+      try {
+        await fetch('/api/terminal/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ port: activeTerminalPort, text })
+        });
+      } catch (err) {
+        appendTerminalLine(`⚠️ فشل إرسال الأمر: ${err}`, '#F43F5E');
+      }
+    }
+
+    btnTermSend.addEventListener('click', sendCommand);
+    termInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendCommand();
+      }
+    });
+
     // Init
     loadTargets();
     loadPorts();
 
     // Auto-refresh ports every 5 seconds when idle
     setInterval(() => {
-      if (!isFlashing) {
+      if (!isFlashing && !activeTerminalPort) {
         loadPorts();
       }
     }, 4000);

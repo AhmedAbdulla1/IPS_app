@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 flasher_web_server.py - High-Performance Web UI Server for Parallel ESP32 Flashing
-Provides a sleek, responsive browser interface to control batch flashing of ESP-IDF
-builds across multiple COM ports simultaneously with real-time percentage progress.
+with Interactive Serial Terminal for Each Port.
 
 Pure Python standard library implementation: Zero extra pip dependencies required!
 """
@@ -21,9 +20,11 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
 try:
+    import serial
     import serial.tools.list_ports as list_ports
 except ImportError:
-    print("WARNING: pyserial not installed. Port auto-detection will be limited.")
+    print("WARNING: pyserial not installed. Serial communication will be limited.")
+    serial = None
     list_ports = None
 
 # Base directories
@@ -34,7 +35,6 @@ UI_DIR = SCRIPT_DIR / "flasher-ui"
 
 # Find ESP-IDF Python and esptool
 def find_esp_tools():
-    # 1. Check known active v5.5.5 path
     direct_candidates = [
         "C:/Espressif/tools/python/v5.5.5/venv/Scripts/python.exe",
         "C:/Espressif/tools/python/v5.5.5/venv/Scripts/esptool.exe",
@@ -48,7 +48,6 @@ def find_esp_tools():
     if Path(direct_candidates[1]).exists():
         esptool_exe = direct_candidates[1]
 
-    # Check IDF_PYTHON_ENV_PATH
     idf_env = os.environ.get("IDF_PYTHON_ENV_PATH")
     if idf_env:
         p = Path(idf_env) / "Scripts" / "python.exe"
@@ -67,7 +66,136 @@ ESP_PORT_HINTS = (
     "silicon labs", "usb2.0-serial", "uart", "espressif", "jtag"
 )
 
-# Global Job State Manager
+# Serial Terminal Manager for Interactive Per-Port Consoles
+class SerialTerminalManager:
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.sessions = {}  # port -> {ser, baud, running, buffer, next_id}
+
+    def open_port(self, port, baud=115200):
+        if not serial:
+            return False, "pyserial library is not installed"
+        self.close_port(port)
+        with self.lock:
+            try:
+                ser = serial.Serial()
+                ser.port = port
+                ser.baudrate = baud
+                ser.dtr = False
+                ser.rts = False
+                ser.timeout = 0.1
+                ser.open()
+            except Exception as e:
+                return False, str(e)
+
+            session = {
+                "serial": ser,
+                "baud": baud,
+                "running": True,
+                "buffer": [],  # list of (id, text)
+                "next_id": 1,
+            }
+            self.sessions[port] = session
+
+            t = threading.Thread(
+                target=self._reader_thread,
+                args=(port, session),
+                daemon=True
+            )
+            session["thread"] = t
+            t.start()
+            return True, "Connected"
+
+    def _reader_thread(self, port, session):
+        ser = session["serial"]
+        line_buf = ""
+        while session["running"]:
+            try:
+                data = ser.read(ser.in_waiting or 1)
+                if data:
+                    text = data.decode("utf-8", errors="replace")
+                    with self.lock:
+                        for ch in text:
+                            if ch == "\n":
+                                session["buffer"].append((session["next_id"], line_buf.strip("\r")))
+                                session["next_id"] += 1
+                                if len(session["buffer"]) > 500:
+                                    session["buffer"].pop(0)
+                                line_buf = ""
+                            else:
+                                line_buf += ch
+                else:
+                    time.sleep(0.015)
+            except Exception:
+                break
+        session["running"] = False
+
+    def poll_lines(self, port, since_id=0):
+        with self.lock:
+            session = self.sessions.get(port)
+            if not session:
+                return {"connected": False, "lines": [], "last_id": since_id}
+            
+            new_lines = [
+                {"id": item[0], "text": item[1]}
+                for item in session["buffer"]
+                if item[0] > since_id
+            ]
+            last_id = session["buffer"][-1][0] if session["buffer"] else since_id
+            return {
+                "connected": session["running"],
+                "lines": new_lines,
+                "last_id": last_id,
+                "baud": session["baud"]
+            }
+
+    def write_line(self, port, text):
+        with self.lock:
+            session = self.sessions.get(port)
+            if not session or not session["running"]:
+                return False, "Port is not open"
+            try:
+                if not text.endswith("\n"):
+                    text += "\n"
+                session["serial"].write(text.encode("utf-8"))
+                return True, "Sent"
+            except Exception as e:
+                return False, str(e)
+
+    def reset_esp(self, port):
+        with self.lock:
+            session = self.sessions.get(port)
+            if not session or not session["running"]:
+                return False, "Port is not open"
+            try:
+                ser = session["serial"]
+                ser.dtr = False
+                ser.rts = True
+                time.sleep(0.1)
+                ser.dtr = True
+                ser.rts = False
+                time.sleep(0.1)
+                ser.dtr = False
+                ser.rts = False
+                return True, "Reset pulse sent"
+            except Exception as e:
+                return False, str(e)
+
+    def close_port(self, port):
+        with self.lock:
+            session = self.sessions.pop(port, None)
+            if session:
+                session["running"] = False
+                try:
+                    session["serial"].close()
+                except Exception:
+                    pass
+                return True
+            return False
+
+terminal_manager = SerialTerminalManager()
+
+# Global Flash Job State Manager
 class FlashJobManager:
     def __init__(self):
         self.lock = threading.Lock()
@@ -101,7 +229,6 @@ class FlashJobManager:
             if port in self.ports_data:
                 for k, v in kwargs.items():
                     if k == "log_append":
-                        # Keep last 150 lines
                         self.ports_data[port]["log"].append(v)
                         if len(self.ports_data[port]["log"]) > 150:
                             self.ports_data[port]["log"].pop(0)
@@ -131,7 +258,6 @@ class FlashJobManager:
             failed = sum(1 for p, d in self.ports_data.items() if d["status"] == "failed")
             in_progress = sum(1 for p, d in self.ports_data.items() if d["status"] in ("pending", "connecting", "erasing", "writing"))
 
-            # Check if all completed
             if self.status == "running" and in_progress == 0 and len(self.ports_data) > 0:
                 self.status = "finished"
                 self.end_time = now
@@ -156,13 +282,14 @@ def get_connected_ports():
     for p in list_ports.comports():
         haystack = f"{p.description or ''} {p.manufacturer or ''} {p.hwid or ''}".lower()
         is_esp = any(hint in haystack for hint in ESP_PORT_HINTS)
+        is_open_in_term = p.device in terminal_manager.sessions
         ports.append({
             "port": p.device,
             "description": p.description or "Serial Port",
             "manufacturer": p.manufacturer or "",
-            "is_esp": is_esp
+            "is_esp": is_esp,
+            "terminal_open": is_open_in_term
         })
-    # Sort with ESP ports first, then port number
     return sorted(ports, key=lambda x: (not x["is_esp"], x["port"]))
 
 def get_available_targets():
@@ -203,6 +330,10 @@ def get_available_targets():
 
 def execute_flash_worker(port, project_dir, baud, erase_only):
     start_t = time.time()
+    
+    # Crucial: Disconnect any active terminal session on this port before flashing!
+    terminal_manager.close_port(port)
+
     job_manager.update_port(port, status="connecting", stage="Connecting to ESP32...")
 
     # Load args
@@ -239,7 +370,6 @@ def execute_flash_worker(port, project_dir, baud, erase_only):
             "erase_flash"
         ]
 
-    # Run subprocess with real-time output parsing
     try:
         proc = subprocess.Popen(
             cmd,
@@ -251,7 +381,6 @@ def execute_flash_worker(port, project_dir, baud, erase_only):
         with job_manager.lock:
             job_manager.active_processes[port] = proc
 
-        # Read line by line (or char by char to catch \r)
         pct_regex = re.compile(r"\((\d+)\s*%\)")
         curr_progress = 0
         buf = ""
@@ -272,7 +401,6 @@ def execute_flash_worker(port, project_dir, baud, erase_only):
 
                 job_manager.update_port(port, log_append=line)
 
-                # Check states
                 if "Connecting" in line:
                     job_manager.update_port(port, status="connecting", stage="Connecting...")
                 elif "Erasing flash" in line:
@@ -345,23 +473,30 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
         elif path == "/api/progress":
             snapshot = job_manager.get_snapshot()
             self._send_json(snapshot)
+        elif path == "/api/terminal/poll":
+            qs = parse_qs(parsed.query)
+            port = qs.get("port", [""])[0]
+            since = int(qs.get("since", [0])[0])
+            res = terminal_manager.poll_lines(port, since_id=since)
+            self._send_json(res)
+        elif path == "/favicon.ico":
+            self.send_response(204)
+            self.end_headers()
         else:
-            # Fallback to serving static UI files
             super().do_GET()
 
     def do_POST(self):
         parsed = urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/flash":
-            length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(length).decode("utf-8")
-            try:
-                data = json.loads(body)
-            except Exception:
-                self._send_json({"error": "Invalid JSON"}, status=400)
-                return
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
+        try:
+            data = json.loads(body)
+        except Exception:
+            data = {}
 
+        if path == "/api/flash":
             project_name = data.get("project", "IPS_Mesh_Node")
             ports = data.get("ports", [])
             baud = data.get("baud", 460800)
@@ -378,7 +513,6 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
             project_dir = FIRMWARE_DIR / project_name
             job_manager.reset(project_name, ports)
 
-            # Spawn threads
             for p in ports:
                 t = threading.Thread(
                     target=execute_flash_worker,
@@ -392,6 +526,29 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
         elif path == "/api/stop":
             job_manager.stop_all()
             self._send_json({"status": "stopped"})
+
+        elif path == "/api/terminal/open":
+            port = data.get("port", "")
+            baud = int(data.get("baud", 115200))
+            ok, msg = terminal_manager.open_port(port, baud)
+            self._send_json({"ok": ok, "message": msg}, status=200 if ok else 400)
+
+        elif path == "/api/terminal/send":
+            port = data.get("port", "")
+            text = data.get("text", "")
+            ok, msg = terminal_manager.write_line(port, text)
+            self._send_json({"ok": ok, "message": msg}, status=200 if ok else 400)
+
+        elif path == "/api/terminal/reset":
+            port = data.get("port", "")
+            ok, msg = terminal_manager.reset_esp(port)
+            self._send_json({"ok": ok, "message": msg}, status=200 if ok else 400)
+
+        elif path == "/api/terminal/close":
+            port = data.get("port", "")
+            terminal_manager.close_port(port)
+            self._send_json({"ok": True, "message": "Closed"})
+
         else:
             self._send_json({"error": "Not found"}, status=404)
 
@@ -405,8 +562,7 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def log_message(self, format, *args):
-        # Silence routine poll requests from cluttering terminal
-        if "/api/progress" in args[0] or "/api/ports" in args[0]:
+        if args and isinstance(args[0], str) and ("/api/progress" in args[0] or "/api/ports" in args[0] or "/api/terminal" in args[0]):
             return
         super().log_message(format, *args)
 
@@ -415,7 +571,6 @@ def run_server(port=8585, open_browser=True):
     UI_DIR.mkdir(parents=True, exist_ok=True)
     server_address = ("127.0.0.1", port)
     
-    # Try preferred port, or fall back
     try:
         httpd = HTTPServer(server_address, FlasherHTTPRequestHandler)
     except OSError:
@@ -425,7 +580,7 @@ def run_server(port=8585, open_browser=True):
 
     url = f"http://localhost:{port}"
     print(f"\n=======================================================")
-    print(f"  ⚡ ESP32 Parallel Multi-Flasher Web UI is RUNNING")
+    print(f"  ⚡ ESP32 Parallel Multi-Flasher Web UI with Terminal")
     print(f"  🌐 URL: {url}")
     print(f"  🔌 Python: {PYTHON_EXE}")
     print(f"  Press Ctrl+C to stop the server")
