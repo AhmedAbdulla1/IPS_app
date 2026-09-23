@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/navigation_destination.dart';
@@ -8,7 +9,6 @@ import '../../../core/localization/locale_controller.dart';
 import '../domain/entities/building_graph.dart';
 import '../domain/entities/nav_edge.dart' as VerticalDirection show VerticalDirection  ;
 import '../domain/entities/nav_node.dart';
-import '../domain/entities/destination.dart';
 import '../domain/entities/path_step.dart';
 import '../domain/repositories/navigation_repository.dart';
 import '../domain/usecases/find_path_usecase.dart';
@@ -108,6 +108,7 @@ class NavigationScreenController extends GetxController {
   // "الخطوة اللي المستخدم المفروض يوصلها بعد كده" (0 = نقطة البداية نفسها).
   List<PathStep> _currentPath = [];
   int _currentStepIndex = 0;
+  int _consecutiveOffPathReadings = 0;
 
   // ------- الوجهات (اختصارات ثابتة + نقاط حقيقية من خريطة المبنى) -------
   final RxList<BuildingDestination> _allDestinations =
@@ -141,6 +142,11 @@ class NavigationScreenController extends GetxController {
       if (isNavigating.value) _advanceOrReplan();
     });
     ever(beaconController.haveCurrentLocation, (_) => _syncIdleState());
+
+    // تزامن مستمر مع الإحداثيات المترية للوصول للأبواب الافتراضية
+    ever(beaconController.currentCoordinates, (_) {
+      if (isNavigating.value) _checkMetricArrivalOrProgress();
+    });
 
     // لو المستخدم بدّل اللغة والتطبيق شغال، حدّث كل النصوص المعروضة فورًا
     // (localizedName بيتحسب وقت العرض، بس النصوص الوصفية زي "أنت الآن في"
@@ -317,6 +323,37 @@ class NavigationScreenController extends GetxController {
     return direction;
   }
 
+  String _resolveDirectionWithDeadband(double angle, String prev) {
+    const deadband = 10.0;
+
+    if (prev == 'straight') {
+      if (angle > (45 + deadband) && angle <= 135) return 'right';
+      if (angle > 135 && angle <= 225) return 'uturn';
+      if (angle > 225 && angle < (315 - deadband)) return 'left';
+      return 'straight';
+    } else if (prev == 'right') {
+      if (angle <= (45 - deadband) || angle > 315) return 'straight';
+      if (angle > (135 + deadband) && angle <= 225) return 'uturn';
+      if (angle > 225 && angle <= 315) return 'left';
+      return 'right';
+    } else if (prev == 'uturn') {
+      if (angle <= 45 || angle > 315) return 'straight';
+      if (angle <= (135 - deadband) && angle > 45) return 'right';
+      if (angle > (225 + deadband) && angle <= 315) return 'left';
+      return 'uturn';
+    } else if (prev == 'left') {
+      if (angle >= (315 + deadband) || angle <= 45) return 'straight';
+      if (angle > 45 && angle <= 135) return 'right';
+      if (angle <= (225 - deadband) && angle > 135) return 'uturn';
+      return 'left';
+    }
+
+    if (angle > 315 || angle <= 45) return 'straight';
+    if (angle > 45 && angle <= 135) return 'right';
+    if (angle > 135 && angle <= 225) return 'uturn';
+    return 'left';
+  }
+
   /// بيحدّث سهم الاتجاه/التعليمات/شريط التقدّم من _currentPath الحقيقي
   /// (ناتج FindPathUseCase) وزاوية البوصلة.
   void _refreshActiveNavState() {
@@ -350,18 +387,23 @@ class NavigationScreenController extends GetxController {
           isArabic ? 'خُد المصعد أو السلم لأسفل' : 'Take the elevator or stairs down';
     } else {
       final angle = _relativeAngle(step.heading);
-      if (angle > 315 || angle <= 45) {
-        currentDirection.value = 'straight';
-        directionInstruction.value = isArabic ? 'استمر مستقيم' : 'Go straight';
-      } else if (angle > 45 && angle <= 135) {
-        currentDirection.value = 'right';
-        directionInstruction.value = isArabic ? 'انعطف يمين' : 'Turn right';
-      } else if (angle > 135 && angle <= 225) {
-        currentDirection.value = 'uturn';
-        directionInstruction.value = isArabic ? 'استدر للخلف' : 'Turn around';
-      } else {
-        currentDirection.value = 'left';
-        directionInstruction.value = isArabic ? 'انعطف يسار' : 'Turn left';
+      final newDir = _resolveDirectionWithDeadband(angle, currentDirection.value);
+      currentDirection.value = newDir;
+
+      switch (newDir) {
+        case 'straight':
+          directionInstruction.value = isArabic ? 'استمر مستقيم' : 'Go straight';
+          break;
+        case 'right':
+          directionInstruction.value = isArabic ? 'انعطف يمين' : 'Turn right';
+          break;
+        case 'uturn':
+          directionInstruction.value = isArabic ? 'استدر للخلف' : 'Turn around';
+          break;
+        case 'left':
+        default:
+          directionInstruction.value = isArabic ? 'انعطف يسار' : 'Turn left';
+          break;
       }
       directionSubInstruction.value =
           isArabic ? 'استمر في هذا الاتجاه' : 'Continue in this direction';
@@ -373,12 +415,33 @@ class NavigationScreenController extends GetxController {
     currentRouteStep.value =
         (_currentStepIndex - 1).clamp(0, totalRouteSteps.value);
 
-    final remainingMeters = _currentPath
+    double remainingMeters = _currentPath
         .sublist(_currentStepIndex)
         .fold<double>(0, (sum, s) => sum + s.legDistanceMeters);
+
+    // إذا كان المستخدم في الخطوة الأخيرة، نحسب المسافة الحقيقية بدقة من الإحداثيات المستمرة
+    if (_currentStepIndex == _currentPath.length - 1 && beaconController.currentCoordinates.value != null) {
+      final userCoords = beaconController.currentCoordinates.value!;
+      final destNode = _navigationRepository.cachedGraph?.nodeById(_currentPath.last.nodeId);
+      if (destNode != null && destNode.x != null && destNode.y != null) {
+        final dx = userCoords.x - destNode.x!;
+        final dy = userCoords.y - destNode.y!;
+        final realDist = math.sqrt(dx * dx + dy * dy);
+        if (realDist < remainingMeters + 2.0) {
+          remainingMeters = realDist;
+        }
+      }
+    }
+
     remainingDistanceLabel.value = isArabic
         ? '${remainingMeters.round()} م متبقي'
         : '${remainingMeters.round()} m remaining';
+
+    if (_currentStepIndex == _currentPath.length - 1 && remainingMeters <= 3.5) {
+      directionSubInstruction.value = isArabic
+          ? 'وجهتك قريبة جداً (تأكد من الباب على يمينك أو يسارك)'
+          : 'Destination is right beside you';
+    }
 
     final graph = _navigationRepository.cachedGraph;
     final node = graph?.nodeById(step.nodeId);
@@ -386,73 +449,120 @@ class NavigationScreenController extends GetxController {
     targetFloor.value = level ?? beaconController.currentLocation.value.level;
   }
 
-  /// بيتنفذ كل ما موقع البيكون يتغيّر أثناء التوجيه: لو المستخدم وصل
-  /// للخطوة المتوقعة يقدّم المؤشر، ولو اتحرك لنقطة برة المسار المتوقع
-  /// يعيد حساب المسار بالكامل من موقعه الجديد (dynamic replanning).
-  /// 
-  /// Phase 2: محسّن ضد التذبذب + إعادة الحساب الخاطئة:
-  /// - تقدم للخطوة الثالية لو قفزت الحالية (في ممرات طويلة)
-  /// - تتحقق من تاريخ الحركة قبل إعادة الحساب (ما تعيد لمجرد noise)
-  /// - تسمح بالوقوف في نفس الخطوة بدون panic
+  /// فحص الوصول المتري للوجهة (أبواب المكاتب بدون بيكون) عبر الإحداثيات المستمرة
+  void _checkMetricArrivalOrProgress() {
+    if (!isNavigating.value || _currentPath.isEmpty) return;
+    if (_currentStepIndex >= _currentPath.length) return;
+
+    final userCoords = beaconController.currentCoordinates.value;
+    if (userCoords == null) return;
+
+    final graph = _navigationRepository.cachedGraph;
+    if (graph == null) return;
+
+    final currentFloor = beaconController.currentLocation.value.level;
+
+    // 1. فحص الوصول إلى الهدف النهائي (سواء كان له بيكون أو نود افتراضي لباب مكتب)
+    final destNodeId = _currentPath.last.nodeId;
+    final destNode = graph.nodeById(destNodeId);
+    if (destNode != null && destNode.x != null && destNode.y != null) {
+      final destFloor = graph.levelsById[destNode.levelId]?.order ?? 0;
+      if (destFloor == currentFloor) {
+        final dx = userCoords.x - destNode.x!;
+        final dy = userCoords.y - destNode.y!;
+        final dist = math.sqrt(dx * dx + dy * dy);
+
+        // إذا اقترب المستخدم لمسافة 1.8 متر أو أقل من الباب
+        if (dist <= 1.8) {
+          print('[Navigation] 🎯 تم الوصول إلى باب الوجهة بالمسافة المترية (${dist.toStringAsFixed(2)}m)');
+          _currentStepIndex = _currentPath.length; // يؤدي إلى تفعيل شاشة الوصول
+          _refreshActiveNavState();
+          return;
+        }
+      }
+    }
+
+    // 2. فحص النود الحالي في المسار لو كان نود افتراضي (بدون بيكون)
+    final currentStep = _currentPath[_currentStepIndex];
+    final stepNode = graph.nodeById(currentStep.nodeId);
+    if (stepNode != null && stepNode.esp32Uuid == null && stepNode.x != null && stepNode.y != null) {
+      final stepFloor = graph.levelsById[stepNode.levelId]?.order ?? 0;
+      if (stepFloor == currentFloor) {
+        final dx = userCoords.x - stepNode.x!;
+        final dy = userCoords.y - stepNode.y!;
+        final dist = math.sqrt(dx * dx + dy * dy);
+
+        if (dist <= 1.8) {
+          print('[Navigation] 🚶 تجاوز نود افتراضي على المسار (${dist.toStringAsFixed(2)}m)');
+          _currentStepIndex = (_currentStepIndex + 1).clamp(0, _currentPath.length);
+          _refreshActiveNavState();
+          return;
+        }
+      }
+    }
+  }
+
+  /// بيتنفذ كل ما موقع البيكون يتغيّر أثناء التوجيه:
+  /// 1. يفحص المسار المتبقي للأمام بالكامل (لتخطي العقد المعطلة أو الاختصارات)
+  /// 2. يفحص العقد السابقة القريبة لتجنب الهلع من إشارات عابرة
+  /// 3. في حالة الانحراف الحقيقي، يشترط تكرار القراءة (Debounce) لـ 3 مرات
+  ///    قبل إعادة حساب المسار ديناميكياً (dynamic replanning).
   Future<void> _advanceOrReplan() async {
     if (_currentPath.isEmpty) return;
     final currentNodeId = beaconController.currentLocation.value.nodeID;
 
-    final expectingNode = _currentStepIndex < _currentPath.length
-        ? _currentPath[_currentStepIndex].nodeId
-        : null;
-    
-    final previousNode = _currentStepIndex > 0
-        ? _currentPath[_currentStepIndex - 1].nodeId
-        : _currentPath.first.nodeId;
+    // ✅ الحالة 1: هل النود الحالية موجودة في أي خطوة لاحقة على المسار المتبقي؟
+    // يغطي:
+    // - الوصول للخطوة المتوقعة الحالية
+    // - تخطي خطوة أو أكثر (إذا كانت نود معطلة أو أخذ النائب اختصاراً ووصل لنود تالية على نفس المسار)
+    final futureIndex = _currentPath.indexWhere(
+      (step) => step.nodeId == currentNodeId,
+      _currentStepIndex,
+    );
 
-    // ✅ Case 1: وصلت للخطوة المتوقعة — تقدم للتالية
-    if (expectingNode == currentNodeId) {
-      _currentStepIndex++;
-      _refreshActiveNavState();
-      return;
-    }
-    
-    // ✅ Case 2: أنت بتقترب من الخطوة التالية (قفزت الحالية في ممر طويل)
-    // هذا شائع جداً في الممرات الطويلة حيث عندك 10+ nodes متتالية
-    if (_currentStepIndex + 1 < _currentPath.length) {
-      final nextStepNode = _currentPath[_currentStepIndex + 1].nodeId;
-      if (currentNodeId == nextStepNode) {
-        // تخطيت الخطوة الحالية بنجاح — تقدم بخطوة واحدة
-        _currentStepIndex++;
-        _refreshActiveNavState();
-        return;
-      }
-    }
-    
-    // ✅ Case 3: لسه واقف على نقطة معروفة من المسار (السابقة أو الحالية)
-    // هذا طبيعي جداً — مفيش حاجة تقلق منها
-    if (currentNodeId == previousNode || currentNodeId == expectingNode) {
+    if (futureIndex != -1) {
+      _consecutiveOffPathReadings = 0;
+      _currentStepIndex = (futureIndex + 1).clamp(0, _currentPath.length);
       _refreshActiveNavState();
       return;
     }
 
-    // ⚠️ Case 4: انحراف غير متوقع — قد يكون:
-    // - noise/تذبذب في تحديد الموقع
-    // - المستخدم فعلاً مشى بعيد عن المسار
-    // نتحقق قبل إعادة الحساب: لو كان آخر موقع معروف قريب، مفيش حاجة تعمل
-    
+    // ✅ الحالة 2: هل النود الحالية هي إحدى النقاط السابقة القريبة (آخر خطوتين مثلاً)؟
+    // قد يحدث بسبب تذبذب بسيط في التقاط إشارة بيكون النود السابقة
+    final pastStartIndex = (_currentStepIndex - 2).clamp(0, _currentPath.length);
+    final isRecentPast = _currentPath
+        .sublist(pastStartIndex, _currentStepIndex)
+        .any((step) => step.nodeId == currentNodeId);
+
+    if (isRecentPast) {
+      _consecutiveOffPathReadings = 0;
+      _refreshActiveNavState();
+      return;
+    }
+
+    // ⚠️ الحالة 3: قراءة لنود خارج المسار بالكامل:
+    // نستخدم عداد تثبت (Debounce) لضمان عدم إعادة الحساب بسبب تشويش لحظي
+    _consecutiveOffPathReadings++;
+    if (_consecutiveOffPathReadings < 3) {
+      print('[Navigation] ⏳ قراءة خارج المسار (نود $currentNodeId). جاري التأكد ($_consecutiveOffPathReadings/3)...');
+      return;
+    }
+
+    // تأكد الانحراف بعد 3 قراءات متتالية: إعادة حساب المسار من النقطة الحالية
+    _consecutiveOffPathReadings = 0;
     final destinationNodeId = _currentPath.last.nodeId;
     final graph =
         _navigationRepository.cachedGraph ?? await _safeLoadGraph();
     if (graph == null) {
-      // مفيش جراف نقدر نعيد الحساب بيه دلوقتي (مفيش نت ومفيش كاش) —
-      // سيب آخر مسار معروف بدل ما تقطع التوجيه، الرسالة اتعرضت بالفعل.
       _refreshActiveNavState();
       return;
     }
-    
+
     try {
       _currentPath = _findPath(graph, currentNodeId, destinationNodeId);
       _currentStepIndex = _currentPath.length > 1 ? 1 : 0;
-      print('[Navigation] 🔄 Dynamic replan: من node $currentNodeId للوجهة');
+      print('[Navigation] 🔄 Dynamic replan: تم إعادة التوجيه بنجاح من node $currentNodeId');
     } on PathNotFoundException {
-      // مفيش مسار جديد من هنا — سيب آخر مسار معروف بدل ما تقطع التوجيه.
       print('[Navigation] ⚠️ No path from current position ($currentNodeId)');
     }
 
@@ -651,6 +761,7 @@ class NavigationScreenController extends GetxController {
     print('[path] ccurrentpath: $_currentPath');
 
     _currentStepIndex = _currentPath.length > 1 ? 1 : 0;
+    _consecutiveOffPathReadings = 0;
     beaconController.setDestination(destination.nodeID!);
     _refreshActiveNavState();
     isNavigating.value = true;
@@ -660,6 +771,7 @@ class NavigationScreenController extends GetxController {
   void endNavigation() {
     _currentPath = [];
     _currentStepIndex = 0;
+    _consecutiveOffPathReadings = 0;
     isNavigating.value = false;
     clearSelection();
   }

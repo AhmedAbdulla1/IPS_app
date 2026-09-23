@@ -148,12 +148,20 @@ class _InfoBlock extends StatelessWidget {
               Icon(trailingIcon, size: 14, color: palette.textSecondary),
               const SizedBox(width: 2),
             ],
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: palette.textPrimary,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
+              child: Text(
+                value,
+                key: ValueKey<String>(value),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: palette.textPrimary,
+                ),
               ),
             ),
           ],

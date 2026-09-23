@@ -68,7 +68,7 @@ static esp_err_t get_file_done_cb(void) {
 }
 
 void ota_apply_init(void) {
-    esp_mesh_lite_lan_ota_file_transfer_cb_t cb = {
+    static esp_mesh_lite_lan_ota_file_transfer_cb_t cb = {
         // الـNode عندنا مستقبل بس دلوقتي - مش بيوزّع لنودز تانية بعده
         // (relay متعدد القفزات لسه مش مدعوم - راجع OTA_PLAN.md).
         .provide_file_cb = NULL,

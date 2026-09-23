@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>أداة تجهيز نقاط الـIPS (Node Provisioning)</title>
+<style>
+  :root {
+    --bg: #0f1220;
+    --card: #1a1e33;
+    --accent: #4f8cff;
+    --accent2: #34c77b;
+    --text: #e8eaf6;
+    --muted: #9aa0c3;
+    --danger: #ff5c5c;
+    --border: #2a2f4a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    max-width: 760px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 16px 0;
+    color: var(--accent);
+  }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; align-items: flex-end; }
+  .field { flex: 1; min-width: 140px; }
+  .field.required label::after { content: " *"; color: var(--danger); }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #12162a;
+    color: var(--text);
+    font-size: 14px;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+  button {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-success { background: var(--accent2); color: white; }
+  .btn-secondary { background: #2a2f4a; color: var(--text); }
+  .btn-small { padding: 8px 12px; font-size: 13px; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .status {
+    margin-top: 10px;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #12162a;
+    border: 1px solid var(--border);
+    white-space: pre-wrap;
+    max-height: 160px;
+    overflow-y: auto;
+    direction: ltr;
+    text-align: left;
+    font-family: Consolas, monospace;
+  }
+  .status.ok { border-color: var(--accent2); }
+  .status.err { border-color: var(--danger); }
+  .status-line { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; }
+  .status-icon { font-size: 15px; }
+  .uid-display {
+    font-family: Consolas, monospace;
+    font-size: 16px;
+    background: #12162a;
+    border: 1px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-top: 12px;
+    direction: ltr;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    text-align: center;
+  }
+  th { background: #12162a; color: var(--muted); }
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: var(--accent2);
+    color: white;
+  }
+  .pill.warn { background: #cc8a2a; }
+  .top-actions { display: flex; gap: 10px; margin-top: 14px; align-items: center; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+  .hint.warn { color: #e0a952; }
+  .inline-add { display: flex; gap: 8px; margin-top: 8px; }
+  .inline-add input { flex: 1; }
+  .config-warning {
+    background: #3a2a12;
+    border: 1px solid #cc8a2a;
+    color: #ffd699;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    max-width: 760px;
+  }
+</style>
+</head>
+<body>
+
+<h1>🛰️ أداة تجهيز نقاط الـIPS</h1>
+<div class="subtitle">
+  توليد Node ID لكل جهاز، إرساله عبر USB، وإنشاء صف جديد في جدول <code>nodes</code> على Supabase مباشرة.
+  تعمل على Edge أو Chrome فقط (Web Serial API). للاستخدام المحلي الشخصي بس - متشاركش الملف ده مع حد.
+</div>
+
+<div id="configWarning" class="config-warning" style="display:none;">
+  ⚠️ محتاج تحط الـ<b>service_role key</b> بتاعك تحت (Project Settings → API → service_role secret)
+  عشان الأداة تقدر تكتب في Supabase. المفتاح ده سري جدًا - الملف ده لازم يفضل عندك بس على جهازك.
+</div>
+
+<!-- إعدادات Supabase -->
+<div class="card">
+  <h2>0. إعدادات الاتصال بـSupabase</h2>
+  <div class="row">
+    <div class="field required">
+      <label>Supabase URL</label>
+      <input id="sbUrl" type="text" value="https://dqnmxlljqiqgqmntzvcx.supabase.co">
+    </div>
+    <div class="field required">
+      <label>service_role key</label>
+      <input id="sbKey" type="password" placeholder="الصقه هنا (مرة واحدة، بيتحفظ محليًا في المتصفح بعدها)">
+    </div>
+    <button id="saveConfigBtn" class="btn-secondary">💾 احفظ</button>
+  </div>
+  <div class="hint">
+    المفتاح بيتحفظ في localStorage بتاع المتصفح ده بس (مش بيتبعت لأي مكان غير Supabase نفسها).
+    امسحه من الإعدادات لو هتستخدم الجهاز ده لحاجة تانية.
+  </div>
+</div>
+
+<!-- الخطوة 1: الاتصال -->
+<div class="card">
+  <h2>1. الاتصال بالجهاز</h2>
+  <div class="row">
+    <button id="connectBtn" class="btn-primary">🔌 اتصل بالجهاز</button>
+    <button id="disconnectBtn" class="btn-secondary" disabled>قطع الاتصال</button>
+  </div>
+  <div id="connStatus" class="status">مش متصل لسه. دوس "اتصل بالجهاز" واختار المنفذ من نافذة المتصفح.</div>
+</div>
+
+<!-- الخطوة 2: بيانات النود -->
+<div class="card">
+  <h2>2. بيانات النود</h2>
+  <div class="row">
+    <div class="field required">
+      <label>node_id (رقم، فريد، يدوي حسب نظام الترقيم بتاعك)</label>
+      <input id="nodeIdNum" type="number" placeholder="مثال: 305">
+    </div>
+    <div class="field required">
+      <label>الدور (level)</label>
+      <select id="nodeLevel"></select>
+    </div>
+  </div>
+  <div class="inline-add">
+    <input id="newLevelId" type="text" placeholder="كود دور جديد مثلاً GF أو F1">
+    <input id="newLevelNameAr" type="text" placeholder="اسم الدور بالعربي">
+    <input id="newLevelOrder" type="number" placeholder="ترتيب (0,1,2..)" style="max-width:110px;">
+    <button id="addLevelBtn" class="btn-secondary btn-small">+ ضيف دور</button>
+  </div>
+  <div class="row" style="margin-top:14px;">
+    <div class="field required">
+      <label>X (سم)</label>
+      <input id="nodeX" type="number" placeholder="مثال: 1000">
+    </div>
+    <div class="field required">
+      <label>Y (سم)</label>
+      <input id="nodeY" type="number" placeholder="مثال: 600">
+    </div>
+    <div class="field">
+      <label>النوع</label>
+      <select id="nodeType">
+        <option value="poi" selected>poi (نقطة عادية)</option>
+        <option value="intersection">intersection (تقاطع مسار)</option>
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label>اسم بالعربي (اختياري - هيتحط اسم افتراضي لو فاضي)</label>
+      <input id="nodeNameAr" type="text" placeholder="مثال: ممر دائري - بجوار السلم الشرقي">
+    </div>
+    <div class="field">
+      <label>اسم بالإنجليزي (اختياري)</label>
+      <input id="nodeNameEn" type="text" placeholder="Optional">
+    </div>
+  </div>
+</div>
+
+<!-- الخطوة 3: التوليد والإرسال -->
+<div class="card">
+  <h2>3. توليد الـUID، إرساله للجهاز، وتسجيله في Supabase</h2>
+  <button id="generateBtn" class="btn-success" disabled>⚡ ولّد UID وابعته وسجّله</button>
+  <div id="uidDisplay" class="uid-display" style="display:none;"></div>
+
+  <div id="serialStatusLine" class="status-line" style="display:none;">
+    <span class="status-icon" id="serialIcon">⏳</span>
+    <span>Serial (SET_ID):</span>
+    <span id="serialText">-</span>
+  </div>
+  <div id="sendStatus" class="status" style="display:none;"></div>
+
+  <div id="dbStatusLine" class="status-line" style="display:none;">
+    <span class="status-icon" id="dbIcon">⏳</span>
+    <span>Supabase (INSERT):</span>
+    <span id="dbText">-</span>
+  </div>
+  <div id="dbStatus" class="status" style="display:none;"></div>
+
+  <div class="hint">
+    الجهاز هيعمل إعادة تشغيل (reboot) تلقائيًا بعد ما يحفظ الـID - ده طبيعي.
+  </div>
+</div>
+
+<!-- الخطوة 4: السجل والتصدير -->
+<div class="card">
+  <h2>4. سجل النودز المُجهّزة (هذه الجلسة)</h2>
+  <div class="top-actions">
+    <button id="exportBtn" class="btn-primary" disabled>⬇️ تصدير CSV</button>
+    <span id="countPill" class="pill">0 نود</span>
+  </div>
+  <table id="recordsTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>node_id</th>
+        <th>Node UUID</th>
+        <th>الدور</th>
+        <th>X</th>
+        <th>Y</th>
+        <th>Serial</th>
+        <th>Supabase</th>
+        <th>الوقت</th>
+      </tr>
+    </thead>
+    <tbody id="recordsBody"></tbody>
+  </table>
+  <div class="hint">
+    السجل ده محلي للجلسة الحالية بس (بيتمسح لو قفلت الصفحة) - ده احتياطي إضافي بس، البيانات
+    الحقيقية اتسجلت في Supabase مباشرة لو ظهرت ✅ جنب كل صف.
+  </div>
+</div>
+
+<script>
+let port = null;
+let reader = null;
+let writer = null;
+let keepReading = false;
+const records = [];
+let levelsCache = [];
+
+const connectBtn = document.getElementById('connectBtn');
+const disconnectBtn = document.getElementById('disconnectBtn');
+const connStatus = document.getElementById('connStatus');
+const generateBtn = document.getElementById('generateBtn');
+const uidDisplay = document.getElementById('uidDisplay');
+const sendStatus = document.getElementById('sendStatus');
+const dbStatus = document.getElementById('dbStatus');
+const exportBtn = document.getElementById('exportBtn');
+const recordsBody = document.getElementById('recordsBody');
+const countPill = document.getElementById('countPill');
+const nodeLevelSelect = document.getElementById('nodeLevel');
+const configWarning = document.getElementById('configWarning');
+
+function setStatus(el, text, kind) {
+  el.textContent = text;
+  el.style.display = 'block';
+  el.classList.remove('ok', 'err');
+  if (kind) el.classList.add(kind);
+}
+
+function setStatusLine(iconId, textId, lineId, ok, text) {
+  document.getElementById(lineId).style.display = 'flex';
+  document.getElementById(iconId).textContent = ok === null ? '⏳' : (ok ? '✅' : '❌');
+  document.getElementById(textId).textContent = text;
+}
+
+function randomNodeIdHex() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ---------------- إعدادات Supabase ----------------
+
+function loadConfig() {
+  const savedUrl = localStorage.getItem('ips_prov_sb_url');
+  const savedKey = localStorage.getItem('ips_prov_sb_key');
+  if (savedUrl) document.getElementById('sbUrl').value = savedUrl;
+  if (savedKey) document.getElementById('sbKey').value = savedKey;
+  checkConfig();
+}
+
+function checkConfig() {
+  const key = document.getElementById('sbKey').value.trim();
+  configWarning.style.display = key ? 'none' : 'block';
+}
+
+document.getElementById('saveConfigBtn').addEventListener('click', () => {
+  localStorage.setItem('ips_prov_sb_url', document.getElementById('sbUrl').value.trim());
+  localStorage.setItem('ips_prov_sb_key', document.getElementById('sbKey').value.trim());
+  checkConfig();
+  alert('اتحفظ محليًا في المتصفح.');
+});
+
+function sbHeaders(extra) {
+  const key = document.getElementById('sbKey').value.trim();
+  return Object.assign({
+    'apikey': key,
+    'Authorization': 'Bearer ' + key,
+    'Content-Type': 'application/json',
+  }, extra || {});
+}
+
+function sbUrl() {
+  return document.getElementById('sbUrl').value.trim().replace(/\/+$/, '');
+}
+
+// ---------------- الأدوار (levels) ----------------
+
+async function loadLevels() {
+  try {
+    const res = await fetch(`${sbUrl()}/rest/v1/levels?select=level_id,name_ar,level_order&order=level_order`, {
+      headers: sbHeaders(),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    levelsCache = await res.json();
+    renderLevelOptions();
+  } catch (err) {
+    nodeLevelSelect.innerHTML = '<option value="">فشل تحميل الأدوار - راجع الإعدادات</option>';
+  }
+}
+
+function renderLevelOptions() {
+  if (levelsCache.length === 0) {
+    nodeLevelSelect.innerHTML = '<option value="">مفيش أدوار لسه - ضيف واحد تحت</option>';
+    return;
+  }
+  nodeLevelSelect.innerHTML = levelsCache
+    .map(l => `<option value="${l.level_id}">${l.level_id} - ${l.name_ar}</option>`)
+    .join('');
+}
+
+document.getElementById('addLevelBtn').addEventListener('click', async () => {
+  const level_id = document.getElementById('newLevelId').value.trim();
+  const name_ar = document.getElementById('newLevelNameAr').value.trim();
+  const level_order = document.getElementById('newLevelOrder').value;
+
+  if (!level_id || !name_ar || level_order === '') {
+    alert('املأ كود الدور، الاسم، والترتيب.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${sbUrl()}/rest/v1/levels`, {
+      method: 'POST',
+      headers: sbHeaders({ 'Prefer': 'return=representation' }),
+      body: JSON.stringify([{ level_id, name_ar, level_order: Number(level_order) }]),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText);
+    }
+    document.getElementById('newLevelId').value = '';
+    document.getElementById('newLevelNameAr').value = '';
+    document.getElementById('newLevelOrder').value = '';
+    await loadLevels();
+    nodeLevelSelect.value = level_id;
+  } catch (err) {
+    alert('فشل إضافة الدور: ' + err.message);
+  }
+});
+
+// ---------------- Serial ----------------
+
+async function connect() {
+  if (!('serial' in navigator)) {
+    setStatus(connStatus, 'المتصفح ده مش بيدعم Web Serial. افتح الصفحة في Edge أو Chrome.', 'err');
+    return;
+  }
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 115200 });
+
+    const textDecoder = new TextDecoderStream();
+    port.readable.pipeTo(textDecoder.writable);
+    reader = textDecoder.readable.getReader();
+
+    const textEncoder = new TextEncoderStream();
+    textEncoder.readable.pipeTo(port.writable);
+    writer = textEncoder.writable.getWriter();
+
+    keepReading = true;
+    readLoop();
+
+    setStatus(connStatus, '✅ متصل بالجهاز. جاهز نبعت أوامر.', 'ok');
+    connectBtn.disabled = true;
+    disconnectBtn.disabled = false;
+    generateBtn.disabled = false;
+  } catch (err) {
+    setStatus(connStatus, 'فشل الاتصال: ' + err.message, 'err');
+  }
+}
+
+let incomingBuffer = '';
+async function readLoop() {
+  while (keepReading) {
+    try {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (value) {
+        incomingBuffer += value;
+        if (sendStatus.style.display !== 'none') {
+          sendStatus.textContent = incomingBuffer.slice(-2000);
+        }
+      }
+    } catch (err) {
+      break;
+    }
+  }
+}
+
+async function disconnect() {
+  keepReading = false;
+  try {
+    if (reader) { await reader.cancel(); reader.releaseLock(); }
+    if (writer) { await writer.close(); }
+    if (port) { await port.close(); }
+  } catch (err) { /* تجاهل أخطاء الإغلاق */ }
+  port = null; reader = null; writer = null;
+  setStatus(connStatus, 'اتقطع الاتصال.', null);
+  connectBtn.disabled = false;
+  disconnectBtn.disabled = true;
+  generateBtn.disabled = true;
+}
+
+// ---------------- التوليد + الإرسال + الكتابة في Supabase ----------------
+
+async function sendSetId(uidHex) {
+  incomingBuffer = '';
+  setStatus(sendStatus, 'بيبعت SET_ID:' + uidHex + ' ...', null);
+  setStatusLine('serialIcon', 'serialText', 'serialStatusLine', null, 'بيبعت...');
+
+  try {
+    await writer.write('SET_ID:' + uidHex + '\n');
+  } catch (err) {
+    setStatus(sendStatus, 'فشل الإرسال: ' + err.message, 'err');
+    setStatusLine('serialIcon', 'serialText', 'serialStatusLine', false, 'فشل الإرسال: ' + err.message);
+    return false;
+  }
+
+  await new Promise(r => setTimeout(r, 2500));
+
+  const success = incomingBuffer.includes('saved to NVS');
+  setStatus(sendStatus, incomingBuffer.slice(-2000) || 'مفيش رد وصل.', success ? 'ok' : 'err');
+  setStatusLine('serialIcon', 'serialText', 'serialStatusLine', success,
+    success ? 'اتحفظ على الجهاز بنجاح' : 'مفيش تأكيد وصل من الجهاز');
+  return success;
+}
+
+async function insertNodeToSupabase(payload) {
+  setStatusLine('dbIcon', 'dbText', 'dbStatusLine', null, 'بيكتب...');
+  try {
+    const res = await fetch(`${sbUrl()}/rest/v1/nodes`, {
+      method: 'POST',
+      headers: sbHeaders({ 'Prefer': 'return=representation' }),
+      body: JSON.stringify([payload]),
+    });
+    const bodyText = await res.text();
+    if (!res.ok) {
+      setStatus(dbStatus, 'فشل: HTTP ' + res.status + '\n' + bodyText, 'err');
+      setStatusLine('dbIcon', 'dbText', 'dbStatusLine', false, 'فشل الكتابة - شوف التفاصيل تحت');
+      return false;
+    }
+    setStatus(dbStatus, bodyText, 'ok');
+    setStatusLine('dbIcon', 'dbText', 'dbStatusLine', true, 'اتسجل بنجاح في جدول nodes');
+    return true;
+  } catch (err) {
+    setStatus(dbStatus, 'استثناء: ' + err.message, 'err');
+    setStatusLine('dbIcon', 'dbText', 'dbStatusLine', false, 'استثناء أثناء الاتصال');
+    return false;
+  }
+}
+
+async function generateSendAndSave() {
+  const node_id = document.getElementById('nodeIdNum').value;
+  const level_id = nodeLevelSelect.value;
+  const x = document.getElementById('nodeX').value;
+  const y = document.getElementById('nodeY').value;
+  const type = document.getElementById('nodeType').value;
+  let name_ar = document.getElementById('nodeNameAr').value.trim();
+  const name_en = document.getElementById('nodeNameEn').value.trim();
+
+  if (node_id === '' || !level_id || x === '' || y === '') {
+    alert('املأ node_id و الدور و X و Y الأول (كلهم إجباريين).');
+    return;
+  }
+  if (!name_ar) name_ar = `نقطة غير مسمّاة #${node_id}`;
+
+  const uidHex = randomNodeIdHex();
+  uidDisplay.textContent = uidHex;
+  uidDisplay.style.display = 'block';
+
+  generateBtn.disabled = true;
+  const serialOk = await sendSetId(uidHex);
+
+  const payload = {
+    node_id: Number(node_id),
+    level_id,
+    name_ar,
+    name_en: name_en || null,
+    type,
+    x: Number(x),
+    y: Number(y),
+    esp32_uuid: uidHex,
+  };
+  const dbOk = await insertNodeToSupabase(payload);
+
+  records.push({
+    node_id, uid: uidHex, level_id, x, y,
+    serialOk, dbOk,
+    time: new Date().toLocaleString('ar-EG'),
+  });
+  renderRecords();
+  generateBtn.disabled = false;
+}
+
+function renderRecords() {
+  recordsBody.innerHTML = '';
+  records.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${r.node_id}</td>
+      <td style="direction:ltr; font-size:11px;">${r.uid}</td>
+      <td>${r.level_id}</td>
+      <td>${r.x}</td>
+      <td>${r.y}</td>
+      <td>${r.serialOk ? '✅' : '❌'}</td>
+      <td>${r.dbOk ? '✅' : '❌'}</td>
+      <td>${r.time}</td>
+    `;
+    recordsBody.appendChild(tr);
+  });
+  countPill.textContent = records.length + ' نود';
+  exportBtn.disabled = records.length === 0;
+}
+
+function exportCsv() {
+  const header = 'node_id,esp32_uuid,level_id,x,y,serial_ok,supabase_ok,provisioned_at\n';
+  const rows = records.map(r =>
+    `${r.node_id},${r.uid},${r.level_id},${r.x},${r.y},${r.serialOk},${r.dbOk},"${r.time}"`
+  ).join('\n');
+  const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ips_nodes_provisioned_' + Date.now() + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+connectBtn.addEventListener('click', connect);
+disconnectBtn.addEventListener('click', disconnect);
+generateBtn.addEventListener('click', generateSendAndSave);
+exportBtn.addEventListener('click', exportCsv);
+document.getElementById('sbKey').addEventListener('change', checkConfig);
+
+loadConfig();
+loadLevels();
+</script>
+
+</body>
+</html>

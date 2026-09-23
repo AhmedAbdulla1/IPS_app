@@ -48,21 +48,29 @@ class DirectionHero extends StatelessWidget {
       children: [
         _buildIcon(),
         const SizedBox(height: 16),
-        Text(
-          instruction.tr,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: palette.textPrimary,
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: Text(
+            instruction.tr,
+            key: ValueKey<String>(instruction),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: palette.textPrimary,
+            ),
           ),
         ),
         const SizedBox(height: 6),
-        Text(
-          subInstruction.tr,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: palette.textSecondary,
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: Text(
+            subInstruction.tr,
+            key: ValueKey<String>(subInstruction),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: palette.textSecondary,
+            ),
           ),
         ),
       ],
@@ -122,8 +130,16 @@ class DirectionHero extends StatelessWidget {
       case DirectionType.right:
       case DirectionType.straight:
       case DirectionType.uTurn:
-        return Transform.rotate(
-          angle: _angle,
+        return TweenAnimationBuilder<double>(
+          tween: Tween<double>(end: _angle),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          builder: (context, angle, child) {
+            return Transform.rotate(
+              angle: angle,
+              child: child,
+            );
+          },
           child: Icon(Icons.navigation_rounded, size: 110, color: palette.gold),
         );
     }

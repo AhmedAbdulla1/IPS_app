@@ -5,6 +5,8 @@ class EdgeModel {
   final int nodeIdA;
   final int nodeIdB;
   final double? distanceMeters;
+  final String kind;
+  final String? connectorName;
 
   /// قيمة تقريبية مؤقتة تُستخدم لو `distance_meters` لسه null (زي ما
   /// موضّح في ملاحظة رقم 7 في `map_data_template.json` — لحد ما تتحط
@@ -15,6 +17,8 @@ class EdgeModel {
     required this.nodeIdA,
     required this.nodeIdB,
     this.distanceMeters,
+    this.kind = 'walk',
+    this.connectorName,
   });
 
   factory EdgeModel.fromMap(Map<String, dynamic> map) {
@@ -22,6 +26,8 @@ class EdgeModel {
       nodeIdA: map['node_id_a'] as int,
       nodeIdB: map['node_id_b'] as int,
       distanceMeters: (map['distance_meters'] as num?)?.toDouble(),
+      kind: (map['kind'] as String?) ?? 'walk',
+      connectorName: map['connector_name'] as String?,
     );
   }
 

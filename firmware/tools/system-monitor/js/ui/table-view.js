@@ -35,7 +35,9 @@ SM.ui.tableView = (function () {
   }
 
   function getStatusBadgeHtml(status) {
-    if (status === 'online') {
+    if (status === 'virtual') {
+      return '<span class="badge badge-info" style="background: rgba(0, 168, 255, 0.2); color: #00A8FF; border: 1px solid rgba(0, 168, 255, 0.4);">VIRTUAL POI</span>';
+    } else if (status === 'online') {
       return '<span class="badge badge-success"><span class="pulse-dot"></span> ONLINE</span>';
     } else if (status === 'warning') {
       return '<span class="badge badge-warning">HIGH HOP</span>';
@@ -55,9 +57,9 @@ SM.ui.tableView = (function () {
     if (state.filter === 'ONLINE') {
       if (node.status !== 'online' && node.status !== 'warning') return false;
     } else if (state.filter === 'OFFLINE') {
-      if (node.status !== 'offline' && node.status !== 'unknown') return false;
+      if (node.isVirtual || (node.status !== 'offline' && node.status !== 'unknown')) return false;
     } else if (state.filter === 'OUTDATED') {
-      if (isFwUpToDate(node, effectiveTarget)) return false;
+      if (node.isVirtual || isFwUpToDate(node, effectiveTarget)) return false;
     }
 
     // 3. Search Query

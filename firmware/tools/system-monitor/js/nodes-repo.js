@@ -82,7 +82,7 @@ SM.nodesRepo = (function () {
       // 3. جلب مسارات وممرات الطوابق (Edges)
       const { data: edgesData, error: edgesErr } = await client
         .from('edges')
-        .select('edge_id, node_id_a, node_id_b, distance_meters');
+        .select('edge_id, node_id_a, node_id_b, distance_meters, kind, connector_name');
 
       if (!edgesErr && edgesData) {
         edgesCache = edgesData;

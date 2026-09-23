@@ -45,8 +45,19 @@ class NavigationRepositoryImpl implements NavigationRepository {
 
     _dataSource.resetCacheFlag();
 
-    // بنبدأ كل الطلبات مع بعض (من غير await فوري) عشان تتنفذ بالتوازي،
-    // وبعدين نستنى كل واحدة على حدة فنحتفظ بالنوع (type) بتاعها.
+    // المحاولة 1: استدعاء دالة RPC واحدة سريعة جداً للحصول على كامل الخريطة
+    try {
+      final rpcData = await _dataSource.fetchBuildingGraphRpc();
+      if (rpcData != null) {
+        final graph = _buildGraphFromRpcData(rpcData);
+        _cachedGraph = graph;
+        return graph;
+      }
+    } catch (e) {
+      print('[NavigationRepository] ⚠️ RPC failed, falling back to individual tables: $e');
+    }
+
+    // المحاولة 2 (Fallback): جلب الجداول بالتوازي بالطريقة القديمة
     final levelsFuture = _dataSource.fetchLevels();
     final nodesFuture = _dataSource.fetchNodes();
     final edgesFuture = _dataSource.fetchEdges();
@@ -73,8 +84,6 @@ class NavigationRepositoryImpl implements NavigationRepository {
       for (final m in nodeModels) m.nodeId: m.toEntity(),
     };
 
-    // --- الأسماء البديلة اتشالت (node_aliases اتستبدل بـ destinations) ---
-
     // --- الحواف: كل حافة عادية بتتحط في الاتجاهين ---
     final adjacency = <int, List<NavEdge>>{};
     void addDirectedEdge(NavEdge edge) {
@@ -82,19 +91,49 @@ class NavigationRepositoryImpl implements NavigationRepository {
     }
 
     for (final edge in edgeModels) {
+      final fromNode = nodesById[edge.nodeIdA];
+      final toNode = nodesById[edge.nodeIdB];
+      final fromOrder = fromNode != null ? (levelsById[fromNode.levelId]?.order ?? 0) : 0;
+      final toOrder = toNode != null ? (levelsById[toNode.levelId]?.order ?? 0) : 0;
+
+      NavEdgeKind kind = NavEdgeKind.walk;
+      if (edge.kind == 'elevator') {
+        kind = NavEdgeKind.elevator;
+      } else if (edge.kind == 'stairs') {
+        kind = NavEdgeKind.stairs;
+      }
+
+      VerticalDirection? dirAtoB;
+      VerticalDirection? dirBtoA;
+      if (kind != NavEdgeKind.walk) {
+        if (toOrder > fromOrder) {
+          dirAtoB = VerticalDirection.up;
+          dirBtoA = VerticalDirection.down;
+        } else if (toOrder < fromOrder) {
+          dirAtoB = VerticalDirection.down;
+          dirBtoA = VerticalDirection.up;
+        }
+      }
+
       addDirectedEdge(NavEdge(
         fromNodeId: edge.nodeIdA,
         toNodeId: edge.nodeIdB,
-        distanceMeters: edge.effectiveDistance,
+        distanceMeters: kind == NavEdgeKind.walk ? edge.effectiveDistance : _verticalTraversalCost,
+        kind: kind,
+        verticalDirection: dirAtoB,
+        connectorNameAr: edge.connectorName,
       ));
       addDirectedEdge(NavEdge(
         fromNodeId: edge.nodeIdB,
         toNodeId: edge.nodeIdA,
-        distanceMeters: edge.effectiveDistance,
+        distanceMeters: kind == NavEdgeKind.walk ? edge.effectiveDistance : _verticalTraversalCost,
+        kind: kind,
+        verticalDirection: dirBtoA,
+        connectorNameAr: edge.connectorName,
       ));
     }
 
-    // --- الاتصال الرأسي: كل زوج محطات لنفس الموصل بيتوصلوا ببعض مباشرة ---
+    // --- الاتصال الرأسي: لو لسه مفيش حواف رأسية في جدول edges ---
     final connectorById = <int, VerticalConnectorModel>{
       for (final c in connectorModels) c.connectorId: c,
     };
@@ -120,7 +159,11 @@ class NavigationRepositoryImpl implements NavigationRepository {
 
           final fromOrder = levelsById[fromNode.levelId]?.order ?? 0;
           final toOrder = levelsById[toNode.levelId]?.order ?? 0;
-          if (fromOrder == toOrder) continue; // نفس الدور، مش حافة رأسية
+          if (fromOrder == toOrder) continue;
+
+          // تجنب تكرار الحافة لو كانت موجودة بالفعل من جدول edges
+          final alreadyExists = (adjacency[fromNode.id] ?? []).any((e) => e.toNodeId == toNode.id);
+          if (alreadyExists) continue;
 
           addDirectedEdge(NavEdge(
             fromNodeId: fromNode.id,
@@ -136,7 +179,7 @@ class NavigationRepositoryImpl implements NavigationRepository {
       }
     }
 
-    // --- الوجهات (destinations): تجميع كل وجهة مع عقدها وaliases بتاعتها ---
+    // --- الوجهات (destinations) ---
     final nodeIdsByDestination = <int, List<int>>{};
     for (final dn in destinationNodeModels) {
       nodeIdsByDestination.putIfAbsent(dn.destinationId, () => []).add(dn.nodeId);
@@ -171,5 +214,121 @@ class NavigationRepositoryImpl implements NavigationRepository {
 
     _cachedGraph = graph;
     return graph;
+  }
+
+  /// بناء BuildingGraph مباشرة من كائن JSON الناتج عن RPC get_building_graph
+  BuildingGraph _buildGraphFromRpcData(Map<String, dynamic> rpc) {
+    final levelsRaw = (rpc['levels'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final nodesRaw = (rpc['nodes'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final edgesRaw = (rpc['edges'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final destinationsRaw = (rpc['destinations'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+
+    final levelsById = <String, NavLevel>{
+      for (final l in levelsRaw)
+        (l['level_id'] as String): NavLevel(
+          id: l['level_id'] as String,
+          nameAr: l['name_ar'] as String,
+          nameEn: l['name_en'] as String?,
+          order: (l['level_order'] as num?)?.toInt() ?? 0,
+        ),
+    };
+
+    final nodesById = <int, NavNode>{
+      for (final n in nodesRaw)
+        (n['node_id'] as int): NavNode(
+          id: n['node_id'] as int,
+          levelId: n['level_id'] as String,
+          nameAr: n['name_ar'] as String,
+          nameEn: n['name_en'] as String?,
+          type: (n['type'] == 'intersection')
+              ? NavNodeType.intersection
+              : NavNodeType.poi,
+          facilityType: n['facility_type'] as String?,
+          esp32Uuid: n['esp32_uuid'] as String?,
+          x: (n['x'] as num?)?.toDouble(),
+          y: (n['y'] as num?)?.toDouble(),
+        ),
+    };
+
+    final adjacency = <int, List<NavEdge>>{};
+    void addDirectedEdge(NavEdge edge) {
+      adjacency.putIfAbsent(edge.fromNodeId, () => []).add(edge);
+    }
+
+    for (final e in edgesRaw) {
+      final idA = e['node_id_a'] as int;
+      final idB = e['node_id_b'] as int;
+      final fromNode = nodesById[idA];
+      final toNode = nodesById[idB];
+      if (fromNode == null || toNode == null) continue;
+
+      final dist = (e['distance_meters'] as num?)?.toDouble() ?? 5.0;
+      final kindStr = (e['kind'] as String?) ?? 'walk';
+      final connectorName = e['connector_name'] as String?;
+
+      NavEdgeKind kind = NavEdgeKind.walk;
+      if (kindStr == 'elevator') {
+        kind = NavEdgeKind.elevator;
+      } else if (kindStr == 'stairs') {
+        kind = NavEdgeKind.stairs;
+      }
+
+      final fromOrder = levelsById[fromNode.levelId]?.order ?? 0;
+      final toOrder = levelsById[toNode.levelId]?.order ?? 0;
+
+      VerticalDirection? dirAtoB;
+      VerticalDirection? dirBtoA;
+      if (kind != NavEdgeKind.walk) {
+        if (toOrder > fromOrder) {
+          dirAtoB = VerticalDirection.up;
+          dirBtoA = VerticalDirection.down;
+        } else if (toOrder < fromOrder) {
+          dirAtoB = VerticalDirection.down;
+          dirBtoA = VerticalDirection.up;
+        }
+      }
+
+      addDirectedEdge(NavEdge(
+        fromNodeId: idA,
+        toNodeId: idB,
+        distanceMeters: kind == NavEdgeKind.walk ? dist : _verticalTraversalCost,
+        kind: kind,
+        verticalDirection: dirAtoB,
+        connectorNameAr: connectorName,
+      ));
+
+      addDirectedEdge(NavEdge(
+        fromNodeId: idB,
+        toNodeId: idA,
+        distanceMeters: kind == NavEdgeKind.walk ? dist : _verticalTraversalCost,
+        kind: kind,
+        verticalDirection: dirBtoA,
+        connectorNameAr: connectorName,
+      ));
+    }
+
+    final destinations = destinationsRaw.map((d) {
+      final nodeIds = (d['node_ids'] as List?)?.map((id) => (id as num).toInt()).toList() ?? [];
+      final aliasesAr = (d['aliases_ar'] as List?)?.map((a) => a.toString()).toList() ?? [];
+      final aliasesEn = (d['aliases_en'] as List?)?.map((a) => a.toString()).toList() ?? [];
+
+      return Destination(
+        id: d['destination_id'] as int,
+        nameAr: d['name_ar'] as String,
+        nameEn: d['name_en'] as String?,
+        nodeIds: nodeIds,
+        aliasesAr: aliasesAr,
+        aliasesEn: aliasesEn,
+        shortcutType: d['shortcut_type'] as String?,
+      );
+    }).where((d) => d.nodeIds.isNotEmpty).toList();
+
+    return BuildingGraph(
+      nodesById: nodesById,
+      levelsById: levelsById,
+      adjacency: adjacency,
+      destinations: destinations,
+      isFromCache: _dataSource.usedCacheInLastFetch,
+    );
   }
 }

@@ -13,6 +13,8 @@ SM.config = {
   // Timeouts والمهل
   HEALTH_BASE_TIMEOUT_MS: 3000,        // Node تحتاج تبعت heartbeat كل 2s، مع مهلة 1s
   HEALTH_PER_HOP_MARGIN_MS: 800,       // كل hop إضافي = +800ms مهلة (لتأخير الشبكة)
+  HIGH_HOP_THRESHOLD: 9,              // عتبة تنبيه HIGH HOP (افتراضياً 9 قفزات)
+  MAX_HOP_ALLOWED: 10,                 // الحد الأقصى المتوقع للطبقات (مطابق للفيرموير)
 
   // Admin users (emails مسموح لهم OTA + دوال أخرى) - يمكن قراءتها من Supabase
   ADMIN_EMAILS: [

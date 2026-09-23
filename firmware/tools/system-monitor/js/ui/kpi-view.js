@@ -14,8 +14,10 @@ SM.ui.kpiView = (function () {
   }
 
   function update(nodesMap, effectiveTarget) {
-    const nodes = Array.from(nodesMap.values());
-    const total = nodes.length;
+    const allNodes = Array.from(nodesMap.values());
+    // حساب أجهزة الهاردوير الحقيقية فقط لمؤشرات صحة الشبكة والفيرموير
+    const physicalNodes = allNodes.filter(n => !n.isVirtual && n.hasRealUuid);
+    const total = physicalNodes.length;
 
     let online = 0;
     let offline = 0;
@@ -23,7 +25,7 @@ SM.ui.kpiView = (function () {
     let maxHop = 0;
     let updated = 0;
 
-    for (const n of nodes) {
+    for (const n of physicalNodes) {
       if (n.status === 'online') online++;
       else if (n.status === 'warning') { online++; warnings++; }
       else if (n.status === 'offline') offline++;

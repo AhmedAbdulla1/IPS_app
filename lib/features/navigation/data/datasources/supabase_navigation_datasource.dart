@@ -133,4 +133,29 @@ class SupabaseNavigationDataSource {
         table: 'destination_aliases',
         fromMap: DestinationAliasModel.fromMap,
       );
+
+  /// جلب الخريطة بالكامل عبر استدعاء دالة RPC واحدة فائقة السرعة
+  Future<Map<String, dynamic>?> fetchBuildingGraphRpc() async {
+    try {
+      final res = await _client.rpc('get_building_graph');
+      if (res != null && res is Map) {
+        final map = Map<String, dynamic>.from(res);
+        final prefs = await SharedPreferences.getInstance();
+        unawaited(prefs.setString('${_cacheKeyPrefix}rpc_graph', jsonEncode(map)));
+        unawaited(prefs.setInt(_cacheTimestampKey, DateTime.now().millisecondsSinceEpoch));
+        return map;
+      }
+      return null;
+    } catch (e) {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedRaw = prefs.getString('${_cacheKeyPrefix}rpc_graph');
+      if (cachedRaw != null) {
+        usedCacheInLastFetch = true;
+        try {
+          return Map<String, dynamic>.from(jsonDecode(cachedRaw) as Map);
+        } catch (_) {}
+      }
+      return null;
+    }
+  }
 }

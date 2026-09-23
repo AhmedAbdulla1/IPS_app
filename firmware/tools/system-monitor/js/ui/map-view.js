@@ -110,6 +110,9 @@ SM.ui.mapView = (function () {
     const edges = SM.nodesRepo ? SM.nodesRepo.getEdges() : [];
     if (edges && edges.length > 0) {
       for (const edge of edges) {
+        // الاتصال الرأسي (أسانسير/سلم) لا يُرسم كخط ممر أفقي في الدور
+        if (edge.kind === 'elevator' || edge.kind === 'stairs') continue;
+
         const nodeA = SM.nodesRepo.lookupById(edge.node_id_a);
         const nodeB = SM.nodesRepo.lookupById(edge.node_id_b);
         if (nodeA && nodeB && nodeA.x !== null && nodeA.y !== null && nodeB.x !== null && nodeB.y !== null) {
@@ -162,6 +165,7 @@ SM.ui.mapView = (function () {
   }
 
   function getStatusColor(status) {
+    if (status === 'virtual') return '#00A8FF'; // Sky Blue for Virtual Map POIs / Doors
     if (status === 'online') return '#3DDC84'; // Emerald Green
     if (status === 'warning') return '#F5A623'; // Amber
     if (status === 'offline') return '#C97B6E'; // Coral Red
@@ -210,8 +214,8 @@ SM.ui.mapView = (function () {
           <text class="node-label-text" x="0" y="-2" text-anchor="middle" fill="${isSelected ? '#F36F21' : '#FFFFFF'}" 
                 font-size="8.5" font-weight="600" font-family="'Inter', sans-serif">${node.nameEn || node.nameAr}</text>
         </g>
-        <text class="hop-text" y="15" text-anchor="middle" fill="#9E9E9E" font-size="7.5" font-family="monospace">
-          ${node.hopCount ? `Hop ${node.hopCount}` : (node.isFromDb ? 'Registered' : '')}
+        <text class="hop-text" y="15" text-anchor="middle" fill="${node.isVirtual ? '#00A8FF' : '#9E9E9E'}" font-size="7.5" font-family="monospace">
+          ${node.isVirtual ? 'Virtual POI' : (node.hopCount ? `Hop ${node.hopCount}` : (node.isFromDb ? 'Registered' : ''))}
         </text>
       `;
 
@@ -258,7 +262,8 @@ SM.ui.mapView = (function () {
 
       const hopText = existingGroup.querySelector('.hop-text');
       if (hopText) {
-        hopText.textContent = node.hopCount ? `Hop ${node.hopCount}` : (node.isFromDb ? 'Registered' : '');
+        hopText.setAttribute('fill', node.isVirtual ? '#00A8FF' : '#9E9E9E');
+        hopText.textContent = node.isVirtual ? 'Virtual POI' : (node.hopCount ? `Hop ${node.hopCount}` : (node.isFromDb ? 'Registered' : ''));
       }
     }
 
@@ -281,11 +286,12 @@ SM.ui.mapView = (function () {
     let tx = rootGW_X;
     let ty = rootGW_Y;
 
-    // Hop 3 connects to nearest online Hop 2 node if present
-    if (node.hopCount === 3 && SM.nodes) {
+    // Any node with hopCount > 1 connects to nearest online/warning node in previous layer (hopCount - 1)
+    if (node.hopCount > 1 && SM.nodes) {
+      const targetHop = node.hopCount - 1;
       let minDist = Infinity;
       for (const other of SM.nodes.values()) {
-        if (other.hopCount === 2 && (other.status === 'online' || other.status === 'warning') && other.uuid !== node.uuid) {
+        if (other.hopCount === targetHop && (other.status === 'online' || other.status === 'warning') && other.uuid !== node.uuid) {
           const oc = getNodeCoordinates(other);
           const d = Math.hypot(oc.x - coords.x, oc.y - coords.y);
           if (d < minDist) {
@@ -297,8 +303,10 @@ SM.ui.mapView = (function () {
       }
     }
 
+    const highHopThreshold = (SM.config && SM.config.HIGH_HOP_THRESHOLD) || 9;
     const isSelected = state.selectedUuid === node.uuid;
-    const strokeColor = isSelected ? '#F36F21' : (node.hopCount >= 3 ? '#F5A623' : '#3DDC84');
+    const isHighHop = node.status === 'warning' || node.hopCount >= highHopThreshold;
+    const strokeColor = isSelected ? '#F36F21' : (isHighHop ? '#F5A623' : '#3DDC84');
 
     if (!linkEl) {
       linkEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');

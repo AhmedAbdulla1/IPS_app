@@ -108,8 +108,9 @@ SM.dashboard = (function () {
       state.levels = result.levels || [];
 
       for (const node of result.nodes || []) {
+        const isVirtual = !Boolean(node.esp32_uuid);
         const cleanUuid = node.esp32_uuid ? normalizeUuid(node.esp32_uuid) : `node_${node.node_id}`;
-        const displayUuid = node.esp32_uuid ? String(node.esp32_uuid).trim() : `ID: ${node.node_id}`;
+        const displayUuid = node.esp32_uuid ? String(node.esp32_uuid).trim() : `Virtual (ID: ${node.node_id})`;
         const existing = state.nodes.get(cleanUuid);
 
         state.nodes.set(cleanUuid, {
@@ -118,6 +119,7 @@ SM.dashboard = (function () {
           cleanUuid: cleanUuid,
           displayUuid: displayUuid,
           hasRealUuid: Boolean(node.esp32_uuid),
+          isVirtual: isVirtual,
           nameEn: node.name_en || `Node ${node.node_id}`,
           nameAr: node.name_ar || `Node ${node.node_id}`,
           levelId: node.level_id || 'L1',
@@ -125,7 +127,7 @@ SM.dashboard = (function () {
           facilityType: node.facility_type,
           x: typeof node.x === 'number' ? node.x : null,
           y: typeof node.y === 'number' ? node.y : null,
-          status: existing?.status || 'unknown',
+          status: isVirtual ? 'virtual' : (existing?.status || 'unknown'),
           hopCount: existing?.hopCount || null,
           parent: existing?.parent || null,
           fwMajor: existing?.fwMajor || null,
@@ -276,7 +278,8 @@ SM.dashboard = (function () {
     }
 
     const isExplicitOffline = status === 'offline';
-    node.status = isExplicitOffline ? 'offline' : (hop >= 4 ? 'warning' : 'online');
+    const highHopThreshold = (SM.config && SM.config.HIGH_HOP_THRESHOLD) || 9;
+    node.status = isExplicitOffline ? 'offline' : (hop >= highHopThreshold ? 'warning' : 'online');
     node.hopCount = hop;
     node.parent = hop === 1 ? 'Root Gateway' : `Hop ${hop - 1} Gateway`;
     node.fwMajor = (fwMajor !== null && fwMajor !== undefined) ? fwMajor : node.fwMajor;

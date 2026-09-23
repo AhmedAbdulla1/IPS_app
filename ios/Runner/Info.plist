@@ -7,7 +7,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Pathfinder</string>
+		<string>مجلس النواب</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -67,13 +67,15 @@
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>Pathfinder uses your location to detect nearby BLE beacons for indoor navigation.</string>
+		<string>يستخدم التطبيق خدمات الموقع والبوصلة لتحديد مسار التوجيه داخل المجلس.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>Pathfinder uses your location to detect nearby BLE beacons for indoor navigation.</string>
+		<string>يستخدم التطبيق خدمات الموقع والبوصلة لتحديد مسار التوجيه داخل المجلس.</string>
 		<key>NSLocationAlwaysUsageDescription</key>
-		<string>Pathfinder uses your location to detect nearby BLE beacons for indoor navigation.</string>
+		<string>يستخدم التطبيق خدمات الموقع والبوصلة لتحديد مسار التوجيه داخل المجلس.</string>
 		<key>NSBluetoothAlwaysUsageDescription</key>
-		<string>Pathfinder uses Bluetooth to detect nearby BLE beacons for indoor navigation.</string>
+		<string>يستخدم التطبيق البلوتوث لتحديد موقعك وتوجيهك داخل مبنى مجلس النواب.</string>
+		<key>NSBluetoothPeripheralUsageDescription</key>
+		<string>يستخدم التطبيق البلوتوث للتواصل مع محطات التموضع الداخلي بالمجلس.</string>
 		<key>UIStatusBarHidden</key>
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
