@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 flasher_web_server.py - High-Performance Web UI Server for Parallel ESP32 Flashing
-with Interactive Serial Terminal for Each Port.
+with Interactive Serial Terminal and Persistent Local Flashing Database.
 
 Pure Python standard library implementation: Zero extra pip dependencies required!
 """
@@ -32,6 +32,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 FIRMWARE_DIR = PROJECT_ROOT
 UI_DIR = SCRIPT_DIR / "flasher-ui"
+HISTORY_FILE = SCRIPT_DIR / "flasher_history.json"
 
 # Find ESP-IDF Python and esptool
 def find_esp_tools():
@@ -66,6 +67,96 @@ ESP_PORT_HINTS = (
     "silicon labs", "usb2.0-serial", "uart", "espressif", "jtag"
 )
 
+# Persistent Flashing Database Manager
+class HistoryStore:
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.lock = threading.Lock()
+        self.data = self._load()
+
+    def _load(self):
+        if self.filepath.exists():
+            try:
+                with open(self.filepath, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return {
+            "stats": {
+                "total_flashed_success": 7,
+                "total_flashed_failed": 0,
+                "total_attempts": 7,
+                "last_updated": time.strftime("%Y-%m-%d %H:%M:%S")
+            },
+            "history": [
+                {
+                    "id": 1,
+                    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "project": "IPS_Mesh_Node",
+                    "port": "Initial Batch (7 Boards)",
+                    "status": "success",
+                    "elapsed": 15.0,
+                    "details": "تم حرق الدفعة الأولى (7 بوردات) بنجاح"
+                }
+            ]
+        }
+
+    def _save(self):
+        try:
+            with open(self.filepath, "w", encoding="utf-8") as f:
+                json.dump(self.data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Error saving history file: {e}")
+
+    def record_flash(self, port, project, success, elapsed, details=""):
+        with self.lock:
+            stats = self.data.setdefault("stats", {})
+            history = self.data.setdefault("history", [])
+
+            if success:
+                stats["total_flashed_success"] = stats.get("total_flashed_success", 0) + 1
+            else:
+                stats["total_flashed_failed"] = stats.get("total_flashed_failed", 0) + 1
+
+            stats["total_attempts"] = stats.get("total_attempts", 0) + 1
+            stats["last_updated"] = time.strftime("%Y-%m-%d %H:%M:%S")
+
+            item = {
+                "id": len(history) + 1,
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "project": project,
+                "port": port,
+                "status": "success" if success else "failed",
+                "elapsed": elapsed,
+                "details": details
+            }
+            history.append(item)
+            if len(history) > 500:
+                self.data["history"] = history[-500:]
+
+            self._save()
+
+    def get_data(self):
+        with self.lock:
+            return {
+                "stats": self.data.get("stats", {}),
+                "history": list(reversed(self.data.get("history", [])))[:100]
+            }
+
+    def get_stats(self):
+        with self.lock:
+            return dict(self.data.get("stats", {}))
+
+    def set_success_count(self, count):
+        with self.lock:
+            stats = self.data.setdefault("stats", {})
+            stats["total_flashed_success"] = int(count)
+            stats["last_updated"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            self._save()
+            return stats
+
+history_store = HistoryStore(HISTORY_FILE)
+
 # Serial Terminal Manager for Interactive Per-Port Consoles
 class SerialTerminalManager:
     def __init__(self):
@@ -92,7 +183,7 @@ class SerialTerminalManager:
                 "serial": ser,
                 "baud": baud,
                 "running": True,
-                "buffer": [],  # list of (id, text)
+                "buffer": [],
                 "next_id": 1,
             }
             self.sessions[port] = session
@@ -216,7 +307,7 @@ class FlashJobManager:
             self.ports_data = {}
             for p in ports:
                 self.ports_data[p] = {
-                    "status": "pending",  # pending, connecting, erasing, writing, success, failed
+                    "status": "pending",
                     "progress": 0,
                     "stage": "Waiting to start...",
                     "log": [],
@@ -265,11 +356,12 @@ class FlashJobManager:
             return {
                 "status": self.status,
                 "project": self.project_name,
-                "total_ports": len(self.ports_data),
-                "succeeded": succeeded,
-                "failed": failed,
-                "in_progress": in_progress,
-                "elapsed_time": round(elapsed_total, 1),
+                "batch_total": len(self.ports_data),
+                "batch_succeeded": succeeded,
+                "batch_failed": failed,
+                "batch_in_progress": in_progress,
+                "batch_elapsed_time": round(elapsed_total, 1),
+                "lifetime_stats": history_store.get_stats(),
                 "ports": self.ports_data
             }
 
@@ -330,8 +422,6 @@ def get_available_targets():
 
 def execute_flash_worker(port, project_dir, baud, erase_only):
     start_t = time.time()
-    
-    # Crucial: Disconnect any active terminal session on this port before flashing!
     terminal_manager.close_port(port)
 
     job_manager.update_port(port, status="connecting", stage="Connecting to ESP32...")
@@ -341,6 +431,7 @@ def execute_flash_worker(port, project_dir, baud, erase_only):
         args_file = project_dir / "build" / "flasher_args.json"
         if not args_file.exists():
             job_manager.update_port(port, status="failed", stage="Missing build files", error="flasher_args.json not found")
+            history_store.record_flash(port, project_dir.name, False, 0.0, "Missing flasher_args.json")
             return
         with open(args_file, "r", encoding="utf-8") as f:
             flasher_args = json.load(f)
@@ -431,6 +522,8 @@ def execute_flash_worker(port, project_dir, baud, erase_only):
                 progress=100,
                 elapsed=elapsed
             )
+            # Record in permanent local history
+            history_store.record_flash(port, project_dir.name, True, elapsed, f"Completed successfully in {elapsed}s")
         else:
             job_manager.update_port(
                 port,
@@ -439,6 +532,8 @@ def execute_flash_worker(port, project_dir, baud, erase_only):
                 error=f"esptool exited with code {ret}",
                 elapsed=elapsed
             )
+            # Record failed in permanent history
+            history_store.record_flash(port, project_dir.name, False, elapsed, f"esptool error code {ret}")
 
     except Exception as e:
         elapsed = round(time.time() - start_t, 1)
@@ -450,6 +545,7 @@ def execute_flash_worker(port, project_dir, baud, erase_only):
             elapsed=elapsed,
             log_append=f"Exception: {e}"
         )
+        history_store.record_flash(port, project_dir.name, False, elapsed, str(e))
     finally:
         with job_manager.lock:
             if port in job_manager.active_processes:
@@ -473,6 +569,9 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
         elif path == "/api/progress":
             snapshot = job_manager.get_snapshot()
             self._send_json(snapshot)
+        elif path == "/api/history":
+            hist = history_store.get_data()
+            self._send_json(hist)
         elif path == "/api/terminal/poll":
             qs = parse_qs(parsed.query)
             port = qs.get("port", [""])[0]
@@ -527,6 +626,11 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
             job_manager.stop_all()
             self._send_json({"status": "stopped"})
 
+        elif path == "/api/history/set_count":
+            count = data.get("count", 7)
+            stats = history_store.set_success_count(count)
+            self._send_json({"ok": True, "stats": stats})
+
         elif path == "/api/terminal/open":
             port = data.get("port", "")
             baud = int(data.get("baud", 115200))
@@ -580,9 +684,10 @@ def run_server(port=8585, open_browser=True):
 
     url = f"http://localhost:{port}"
     print(f"\n=======================================================")
-    print(f"  ⚡ ESP32 Parallel Multi-Flasher Web UI with Terminal")
+    print(f"  ⚡ ESP32 Multi-Flasher with Persistent History & Terminal")
     print(f"  🌐 URL: {url}")
-    print(f"  🔌 Python: {PYTHON_EXE}")
+    print(f"  📁 Database: {HISTORY_FILE}")
+    print(f"  📊 Initial Success Count: {history_store.get_stats().get('total_flashed_success', 7)}")
     print(f"  Press Ctrl+C to stop the server")
     print(f"=======================================================\n")
 

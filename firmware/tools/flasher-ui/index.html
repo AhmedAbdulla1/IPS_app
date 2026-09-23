@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPS Mesh Multi-Flasher | أداة الحرق المتزامن ومراقبة السيريال</title>
+  <title>IPS Mesh Multi-Flasher | أداة الحرق المتزامن وسجل العمليات الدائم</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -86,6 +86,12 @@
       color: var(--text-muted);
     }
 
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
     .server-status {
       display: flex;
       align-items: center;
@@ -125,6 +131,83 @@
       gap: 1.5rem;
     }
 
+    /* Lifetime Flashed Hero Banner */
+    .lifetime-banner {
+      background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(24, 34, 53, 0.95));
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      border-radius: 14px;
+      padding: 1.25rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      box-shadow: 0 4px 25px rgba(0, 242, 254, 0.1);
+    }
+
+    .lifetime-left {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .lifetime-trophy {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: rgba(0, 242, 254, 0.15);
+      border: 1px solid rgba(0, 242, 254, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      color: var(--cyan);
+    }
+
+    .lifetime-info h2 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .lifetime-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .lifetime-count-box {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      border-radius: 10px;
+      padding: 0.5rem 1.25rem;
+    }
+
+    .lifetime-number {
+      font-size: 2.2rem;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      color: var(--cyan);
+      line-height: 1;
+    }
+
+    .lifetime-unit {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .lifetime-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
     /* Grid Layout for Top Controls */
     .config-grid {
       display: grid;
@@ -135,6 +218,10 @@
     @media (max-width: 900px) {
       .config-grid {
         grid-template-columns: 1fr;
+      }
+      .lifetime-banner {
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
 
@@ -240,6 +327,9 @@
       cursor: pointer;
       font-family: inherit;
       font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
       transition: background 0.2s;
     }
 
@@ -429,6 +519,15 @@
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .kpi-row {
@@ -655,8 +754,8 @@
       border-color: rgba(244, 63, 94, 0.35);
     }
 
-    /* Modal / Drawer for Interactive Serial Terminal */
-    .terminal-modal-overlay {
+    /* Modal Styling (Terminal & History) */
+    .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
@@ -671,11 +770,11 @@
       padding: 1.5rem;
     }
 
-    .terminal-modal-overlay.active {
+    .modal-overlay.active {
       display: flex;
     }
 
-    .terminal-window {
+    .modal-window {
       background: #0B0F19;
       border: 1px solid var(--border);
       border-radius: 14px;
@@ -688,7 +787,7 @@
       overflow: hidden;
     }
 
-    .terminal-header {
+    .modal-header {
       background: #111827;
       padding: 0.85rem 1.25rem;
       border-bottom: 1px solid var(--border);
@@ -698,61 +797,11 @@
       gap: 1rem;
     }
 
-    .term-title-box {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-    }
-
-    .term-port-badge {
-      font-family: var(--font-mono);
-      font-weight: 800;
-      color: var(--cyan);
-      font-size: 1.1rem;
-    }
-
-    .terminal-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
-    .term-baud-select {
-      background: #0A0E17;
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      padding: 0.3rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-family: var(--font-mono);
-      outline: none;
-    }
-
-    .btn-term-tool {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: var(--text-main);
-      padding: 0.3rem 0.75rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      font-family: inherit;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      transition: all 0.2s;
-    }
-
-    .btn-term-tool:hover {
-      background: rgba(255, 255, 255, 0.18);
-    }
-
-    .btn-term-close {
+    .btn-modal-close {
       background: rgba(244, 63, 94, 0.15);
       border: 1px solid rgba(244, 63, 94, 0.4);
       color: var(--rose);
-      padding: 0.3rem 0.75rem;
+      padding: 0.35rem 0.85rem;
       border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 700;
@@ -760,10 +809,11 @@
       transition: all 0.2s;
     }
 
-    .btn-term-close:hover {
+    .btn-modal-close:hover {
       background: rgba(244, 63, 94, 0.3);
     }
 
+    /* Terminal Window Specifics */
     .terminal-body {
       flex: 1;
       background: #050811;
@@ -826,6 +876,37 @@
     .btn-term-send:hover {
       opacity: 0.9;
     }
+
+    /* History Table Modal */
+    .history-table-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: right;
+    }
+
+    .history-table th {
+      background: rgba(255, 255, 255, 0.04);
+      padding: 0.75rem 1rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+    }
+
+    .history-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .history-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
   </style>
 </head>
 <body>
@@ -836,17 +917,46 @@
       <div class="brand-icon">⚡</div>
       <div>
         <div class="brand-title">IPS Mesh Multi-Flasher & Terminal</div>
-        <div class="brand-sub">أداة الحرق المتزامن ومراقبة شاشات السيريال</div>
+        <div class="brand-sub">أداة الحرق المتزامن وسجل العمليات الدائم</div>
       </div>
     </div>
-    <div class="server-status">
-      <span class="pulse-dot"></span>
-      <span id="serverStatusText">السيرفر متصل وشغال</span>
+    <div class="navbar-right">
+      <button class="btn-secondary" id="btnOpenHistory">
+        <span>📜</span> سجل العمليات المحفوظة
+      </button>
+      <div class="server-status">
+        <span class="pulse-dot"></span>
+        <span id="serverStatusText">السيرفر متصل وشغال</span>
+      </div>
     </div>
   </header>
 
   <!-- Main Container -->
   <main class="container">
+
+    <!-- Lifetime Flashed Hero Card (الدائم الذي لا يصفر أبداً) -->
+    <section class="lifetime-banner">
+      <div class="lifetime-left">
+        <div class="lifetime-trophy">🏆</div>
+        <div class="lifetime-info">
+          <h2>
+            إجمالي البوردات التي تم حرقها بنجاح كلياً
+            <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.2); color: var(--green); padding: 0.15rem 0.5rem; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3);">
+              🔒 محفوظ محلياً على الجهاز
+            </span>
+          </h2>
+          <p>عداد تراكمي دائم مخزن في ملف <code style="font-family: var(--font-mono); color: var(--cyan);">flasher_history.json</code>، لا يصفر أبداً حتى مع إغلاق الجهاز أو السيرفر.</p>
+        </div>
+      </div>
+
+      <div class="lifetime-actions">
+        <div class="lifetime-count-box">
+          <span class="lifetime-number" id="lifetimeSuccessCount">7</span>
+          <span class="lifetime-unit">بوردة مكتملة</span>
+        </div>
+        <button class="btn-secondary" id="btnEditCount" title="تعديل الرقم يدوياً">✏️</button>
+      </div>
+    </section>
 
     <!-- Config Grid -->
     <section class="config-grid">
@@ -938,7 +1048,7 @@
     <!-- Action Bar -->
     <section class="action-bar">
       <div class="action-status-text">
-        المنافذ المحددة للحرق الآن: <strong id="selectedPortsCount">0</strong> بوردة
+        المنافذ المحددة للدفعة القادمة: <strong id="selectedPortsCount">0</strong> بوردة
       </div>
       <div style="display: flex; gap: 1rem; align-items: center;">
         <button class="btn-abort" id="btnAbort">
@@ -953,6 +1063,10 @@
     <!-- Live Progress Dashboard -->
     <section class="dashboard-section" id="dashboardSection">
 
+      <div class="section-title">
+        <span>⚡</span> إحصائيات الدفعة الجارية (Current Batch)
+      </div>
+
       <!-- Summary Banner -->
       <div class="summary-banner" id="summaryBanner">
         <div style="font-size: 2rem;" id="summaryIcon">🎉</div>
@@ -962,12 +1076,12 @@
         </div>
       </div>
 
-      <!-- KPI Row -->
+      <!-- KPI Row (Batch Stats) -->
       <div class="kpi-row">
         <div class="kpi-card">
           <div class="kpi-icon" style="background: rgba(0, 242, 254, 0.15); color: var(--cyan);">📦</div>
           <div class="kpi-data">
-            <span class="kpi-title">إجمالي البوردات</span>
+            <span class="kpi-title">بوردات الدفعة الحالية</span>
             <span class="kpi-value" id="kpiTotal">0</span>
           </div>
         </div>
@@ -983,7 +1097,7 @@
         <div class="kpi-card">
           <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--green);">✅</div>
           <div class="kpi-data">
-            <span class="kpi-title">نجحت بالكامل</span>
+            <span class="kpi-title">نجحت في هذه الدفعة</span>
             <span class="kpi-value" id="kpiSuccess" style="color: var(--green);">0</span>
           </div>
         </div>
@@ -991,7 +1105,7 @@
         <div class="kpi-card">
           <div class="kpi-icon" style="background: rgba(244, 63, 94, 0.15); color: var(--rose);">❌</div>
           <div class="kpi-data">
-            <span class="kpi-title">فشلت</span>
+            <span class="kpi-title">فشلت في هذه الدفعة</span>
             <span class="kpi-value" id="kpiFailed" style="color: var(--rose);">0</span>
           </div>
         </div>
@@ -999,7 +1113,7 @@
         <div class="kpi-card">
           <div class="kpi-icon" style="background: rgba(59, 130, 246, 0.15); color: var(--blue);">⏱️</div>
           <div class="kpi-data">
-            <span class="kpi-title">الزمن المنقضي</span>
+            <span class="kpi-title">زمن الدفعة</span>
             <span class="kpi-value" id="kpiElapsed">0.0s</span>
           </div>
         </div>
@@ -1008,7 +1122,7 @@
       <!-- Overall Progress -->
       <div class="overall-progress-card">
         <div class="overall-progress-header">
-          <span>التقدم الإجمالي لعملية الحرق</span>
+          <span>تقدم الدفعة الحالية</span>
           <span style="font-family: var(--font-mono); color: var(--cyan);" id="overallPctText">0%</span>
         </div>
         <div class="progress-bar-bg">
@@ -1026,38 +1140,68 @@
   </main>
 
   <!-- Interactive Serial Terminal Modal -->
-  <div class="terminal-modal-overlay" id="terminalModal">
-    <div class="terminal-window">
-      <div class="terminal-header">
-        <div class="term-title-box">
+  <div class="modal-overlay" id="terminalModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
           <span>🖥️</span>
           <span style="font-weight: 700;">شاشة السيريال (Serial Terminal)</span>
-          <span class="term-port-badge" id="termCurrentPort">COM--</span>
+          <span style="font-family: var(--font-mono); font-weight: 800; color: var(--cyan); font-size: 1.1rem;" id="termCurrentPort">COM--</span>
           <span class="status-pill pill-success" id="termStatusPill">متصل</span>
         </div>
 
-        <div class="terminal-toolbar">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
           <label style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">السرعة:</label>
-          <select id="termBaudSelect" class="term-baud-select">
+          <select id="termBaudSelect" class="form-select" style="width: auto; padding: 0.3rem 0.6rem; font-size: 0.8rem; font-family: var(--font-mono);">
             <option value="115200" selected>115200 (ESP-IDF / Node)</option>
             <option value="74880">74880 (Bootloader ROM)</option>
             <option value="9600">9600</option>
             <option value="230400">230400</option>
             <option value="460800">460800</option>
           </select>
-          <button class="btn-term-tool" id="btnTermReset" title="إرسال نبضة ريست للبوردة">🔄 ريستارت ESP</button>
-          <button class="btn-term-tool" id="btnTermClear" title="مسح محتوى الشاشة">🧹 مسح</button>
-          <button class="btn-term-close" id="btnTermClose" title="إغلاق شاشة السيريال">✕ إغلاق</button>
+          <button class="btn-secondary" id="btnTermReset" title="إرسال نبضة ريست للبوردة">🔄 ريستارت ESP</button>
+          <button class="btn-secondary" id="btnTermClear" title="مسح محتوى الشاشة">🧹 مسح</button>
+          <button class="btn-modal-close" id="btnTermClose" title="إغلاق شاشة السيريال">✕ إغلاق</button>
         </div>
       </div>
 
-      <div class="terminal-body" id="termOutput">
-        <!-- Live serial log stream -->
-      </div>
+      <div class="terminal-body" id="termOutput"></div>
 
       <div class="terminal-footer">
         <input type="text" id="termInput" class="terminal-input" placeholder="اكتب أمراً هنا (مثلاً: SET_ID:e86b... أو مساعدة) واضغط Enter">
         <button class="btn-term-send" id="btnTermSend">إرسال ↵</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Persistent History Modal -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span>📜</span>
+          <span style="font-weight: 700; font-size: 1.1rem; color: #fff;">سجل العمليات الدائم (Flashing History)</span>
+        </div>
+        <button class="btn-modal-close" id="btnHistoryClose">✕ إغلاق</button>
+      </div>
+
+      <div class="history-table-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>التاريخ والوقت</th>
+              <th>المنفذ / البوردة</th>
+              <th>المشروع</th>
+              <th>الحالة</th>
+              <th>الزمن</th>
+              <th>التفاصيل</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <!-- Dynamic history rows -->
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -1092,6 +1236,14 @@
     const metaSize = document.getElementById('metaSize');
     const metaDate = document.getElementById('metaDate');
 
+    // Lifetime Elements
+    const lifetimeSuccessCount = document.getElementById('lifetimeSuccessCount');
+    const btnEditCount = document.getElementById('btnEditCount');
+    const btnOpenHistory = document.getElementById('btnOpenHistory');
+    const historyModal = document.getElementById('historyModal');
+    const btnHistoryClose = document.getElementById('btnHistoryClose');
+    const historyTableBody = document.getElementById('historyTableBody');
+
     // KPI Elements
     const kpiTotal = document.getElementById('kpiTotal');
     const kpiRunning = document.getElementById('kpiRunning');
@@ -1117,6 +1269,75 @@
     const termOutput = document.getElementById('termOutput');
     const termInput = document.getElementById('termInput');
     const btnTermSend = document.getElementById('btnTermSend');
+
+    // Load History & Lifetime Stats
+    async function loadHistory() {
+      try {
+        const res = await fetch('/api/history');
+        const data = await res.json();
+        const stats = data.stats || {};
+        lifetimeSuccessCount.textContent = stats.total_flashed_success || 7;
+        renderHistoryTable(data.history || []);
+      } catch (err) {
+        console.error('Failed to load history:', err);
+      }
+    }
+
+    function renderHistoryTable(items) {
+      if (items.length === 0) {
+        historyTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">لا توجد سجلات بعد</td></tr>`;
+        return;
+      }
+      historyTableBody.innerHTML = items.map(item => `
+        <tr>
+          <td style="font-family: var(--font-mono); color: var(--text-muted);">${item.id}</td>
+          <td style="font-family: var(--font-mono);">${item.timestamp}</td>
+          <td style="font-weight: 700; color: #fff; font-family: var(--font-mono);">${item.port}</td>
+          <td>${item.project}</td>
+          <td>
+            <span class="status-pill ${item.status === 'success' ? 'pill-success' : 'pill-failed'}">
+              ${item.status === 'success' ? 'ناجح ✅' : 'فاشل ❌'}
+            </span>
+          </td>
+          <td style="font-family: var(--font-mono);">${item.elapsed}s</td>
+          <td style="color: var(--text-muted);">${item.details || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    btnOpenHistory.addEventListener('click', () => {
+      loadHistory();
+      historyModal.classList.add('active');
+    });
+
+    btnHistoryClose.addEventListener('click', () => {
+      historyModal.classList.remove('active');
+    });
+
+    historyModal.addEventListener('click', (e) => {
+      if (e.target === historyModal) historyModal.classList.remove('active');
+    });
+
+    btnEditCount.addEventListener('click', async () => {
+      const current = lifetimeSuccessCount.textContent;
+      const newVal = prompt('أدخل العدد الإجمالي التراكمي للبوردات المفلوشة بنجاح:', current);
+      if (newVal !== null && !isNaN(parseInt(newVal))) {
+        const count = parseInt(newVal);
+        try {
+          const res = await fetch('/api/history/set_count', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ count })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            lifetimeSuccessCount.textContent = count;
+          }
+        } catch (err) {
+          alert('خطأ في حفظ العدد: ' + err);
+        }
+      }
+    });
 
     // Load Targets
     async function loadTargets() {
@@ -1263,7 +1484,6 @@
 
       if (!confirm(confirmMsg)) return;
 
-      // Close open terminal if it is on one of the target ports
       if (activeTerminalPort && ports.includes(activeTerminalPort)) {
         closeTerminal();
       }
@@ -1369,6 +1589,7 @@
           btnStartFlash.disabled = false;
           btnAbort.style.display = 'none';
           showSummary(data);
+          loadHistory(); // refresh persistent history table
         }
       } catch (err) {
         console.error('Poll error:', err);
@@ -1376,11 +1597,17 @@
     }
 
     function updateDashboard(data) {
-      kpiTotal.textContent = data.total_ports || 0;
-      kpiRunning.textContent = data.in_progress || 0;
-      kpiSuccess.textContent = data.succeeded || 0;
-      kpiFailed.textContent = data.failed || 0;
-      kpiElapsed.textContent = `${data.elapsed_time}s`;
+      // Update Lifetime Stats in real-time
+      if (data.lifetime_stats && data.lifetime_stats.total_flashed_success !== undefined) {
+        lifetimeSuccessCount.textContent = data.lifetime_stats.total_flashed_success;
+      }
+
+      // Update Batch KPIs
+      kpiTotal.textContent = data.batch_total || 0;
+      kpiRunning.textContent = data.batch_in_progress || 0;
+      kpiSuccess.textContent = data.batch_succeeded || 0;
+      kpiFailed.textContent = data.batch_failed || 0;
+      kpiElapsed.textContent = `${data.batch_elapsed_time || 0}s`;
 
       let totalPct = 0;
       const ports = data.ports || {};
@@ -1435,15 +1662,15 @@
 
     function showSummary(data) {
       summaryBanner.style.display = 'flex';
-      if (data.failed === 0) {
+      if (data.batch_failed === 0) {
         summaryBanner.className = 'summary-banner';
         summaryIcon.textContent = '🎉';
-        summaryTitle.textContent = `اكتمل الحرق بنجاح تام لجميع البوردات (${data.succeeded} بوردة)!`;
-        summarySub.textContent = `استغرقت العملية بالكامل ${data.elapsed_time} ثانية عبر الحرق المتوازي. يمكنك فتح شاشة الـ Terminal الآن لمراقبة إقلاع أي بوردة.`;
+        summaryTitle.textContent = `اكتمل حرق هذه الدفعة بنجاح (${data.batch_succeeded} بوردة)!`;
+        summarySub.textContent = `استغرقت الدفعة ${data.batch_elapsed_time} ثانية وتم تسجيلها وتحديث الإجمالي المحفوظ بنجاح.`;
       } else {
         summaryBanner.className = 'summary-banner error';
         summaryIcon.textContent = '⚠️';
-        summaryTitle.textContent = `اكتملت العملية مع وجود أخطاء: نجح ${data.succeeded} وفشل ${data.failed}`;
+        summaryTitle.textContent = `اكتملت الدفعة مع وجود أخطاء: نجح ${data.batch_succeeded} وفشل ${data.batch_failed}`;
         summarySub.textContent = `يمكنك فتح سجل المنفذ (Terminal Log) لكل بوردة فشلت لمعرفة السبب بالتفصيل.`;
       }
     }
@@ -1561,7 +1788,6 @@
       termOutput.innerHTML = '';
     });
 
-    // Reset ESP button
     btnTermReset.addEventListener('click', async () => {
       if (!activeTerminalPort) return;
       appendTerminalLine(`[إرسال إشارة Reset DTR/RTS لإعادة تشغيل البوردة...]`, '#F59E0B');
@@ -1576,14 +1802,12 @@
       }
     });
 
-    // Change Baud rate in Terminal
     termBaudSelect.addEventListener('change', () => {
       if (activeTerminalPort) {
         openTerminal(activeTerminalPort);
       }
     });
 
-    // Send Command
     async function sendCommand() {
       const text = termInput.value.trim();
       if (!text || !activeTerminalPort) return;
@@ -1610,12 +1834,13 @@
     });
 
     // Init
+    loadHistory();
     loadTargets();
     loadPorts();
 
-    // Auto-refresh ports every 5 seconds when idle
+    // Auto-refresh ports every 4 seconds when idle
     setInterval(() => {
-      if (!isFlashing && !activeTerminalPort) {
+      if (!isFlashing && !activeTerminalPort && !historyModal.classList.contains('active')) {
         loadPorts();
       }
     }, 4000);
