@@ -53,11 +53,16 @@ Future<void> main() async {
       await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
       AppLogger.info('[INIT] Loading .env...');
-      await dotenv.load(fileName: '.env');
+      try {
+        await dotenv.load(fileName: '.env');
+      } catch (e) {
+        AppLogger.warn('[INIT] Could not load .env file: $e');
+      }
 
-      final sentryDsn = dotenv.env['SENTRY_DSN'];
+      final sentryDsn = dotenv.env['SENTRY_DSN'] ??
+          'https://4dc8dac85044ed98cee1457e3b18063d@o4512139271667712.ingest.de.sentry.io/4512139306729552';
 
-      if (sentryDsn != null && sentryDsn.trim().isNotEmpty) {
+      if (sentryDsn.trim().isNotEmpty) {
         AppLogger.info('[INIT] Initializing Sentry for crash reporting...');
         await SentryFlutter.init(
           (options) {
@@ -100,10 +105,15 @@ Future<void> _initAndRunApp() async {
 }
 
 Future<void> _executeApp() async {
+  final supabaseUrl = dotenv.env['SUPABASE_URL'] ??
+      'https://dqnmxlljqiqgqmntzvcx.supabase.co';
+  final supabaseKey = dotenv.env['SUPABASE_ANON_KEY'] ??
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxbm14bGxqcWlxZ3FtbnR6dmN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNjQwMzIsImV4cCI6MjEwMTg0MDAzMn0.RBcHQxjlZy3Cv-57gaRwM_BISoYaFJfTfJs9kxTLT7w';
+
   AppLogger.info('[INIT] Initializing Supabase...');
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    url: supabaseUrl,
+    anonKey: supabaseKey,
     debug: !kReleaseMode,
   );
   AppLogger.info('[INIT] ✓ Supabase initialized');
