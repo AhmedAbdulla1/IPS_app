@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:pathfinder/features/navigation/utils/arabic_search_utils.dart';
-import 'package:pathfinder/core/theme/app_colors.dart';
-import 'package:pathfinder/core/theme/app_palette.dart';
+import 'package:parliament_ips/features/navigation/utils/arabic_search_utils.dart';
+import 'package:parliament_ips/core/theme/app_colors.dart';
+import 'package:parliament_ips/core/theme/app_palette.dart';
 
 void main() {
   group('ArabicSearchUtils Tests', () {

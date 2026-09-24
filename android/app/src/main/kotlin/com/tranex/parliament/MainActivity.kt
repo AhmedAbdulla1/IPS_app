@@ -1,4 +1,4 @@
-package com.tranex.pathfinder
+package com.tranex.parliament
 
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
@@ -8,7 +8,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.tranex.pathfinder/bluetooth"
+    private val CHANNEL = "com.tranex.parliament/bluetooth"
 
     // Arbitrary but fixed request code for the "turn on Bluetooth?" system
     // dialog. Only needs to be unique among startActivityForResult calls

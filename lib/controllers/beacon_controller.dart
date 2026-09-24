@@ -3,18 +3,18 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:get/get.dart';
-import 'package:pathfinder/models/beacon_data.dart';
-import 'package:pathfinder/models/location.dart';
-import 'package:pathfinder/models/neighbour_node.dart';
-import 'package:pathfinder/models/poinode.dart';
-import 'package:pathfinder/utils/constants.dart';
+import 'package:parliament_ips/models/beacon_data.dart';
+import 'package:parliament_ips/models/location.dart';
+import 'package:parliament_ips/models/neighbour_node.dart';
+import 'package:parliament_ips/models/poinode.dart';
+import 'package:parliament_ips/utils/constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'navigation_controller.dart';
-import 'package:pathfinder/features/navigation/domain/repositories/navigation_repository.dart';
-import 'package:pathfinder/features/navigation/domain/entities/building_graph.dart';
-import 'package:pathfinder/features/navigation/domain/entities/nav_node.dart';
-import 'package:pathfinder/features/navigation/domain/entities/nav_edge.dart';
+import 'package:parliament_ips/features/navigation/domain/repositories/navigation_repository.dart';
+import 'package:parliament_ips/features/navigation/domain/entities/building_graph.dart';
+import 'package:parliament_ips/features/navigation/domain/entities/nav_node.dart';
+import 'package:parliament_ips/features/navigation/domain/entities/nav_edge.dart';
 
 /// نتيجة حساب الـ weighted position: النقطة الأقرب للمركز المرجح + المسافة
 /// الفعلية بينهم بالمتر والإحداثيات المستمرة (x,y)

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pathfinder/core/localization/locale_controller.dart';
-import 'package:pathfinder/features/navigation/models/navigation_destination.dart';
+import 'package:parliament_ips/core/localization/locale_controller.dart';
+import 'package:parliament_ips/features/navigation/models/navigation_destination.dart';
 import '../../../core/theme/app_palette.dart';
 
 /// عنوان الوجهة الحالية أثناء التوجيه: "إلى: <اسم المكان>" + الدور الحالي

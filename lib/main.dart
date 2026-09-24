@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:get/get.dart';
-import 'package:pathfinder/core/theme/app_colors.dart';
+import 'package:parliament_ips/core/theme/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'controllers/beacon_controller.dart';

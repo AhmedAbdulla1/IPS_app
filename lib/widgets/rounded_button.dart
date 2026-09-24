@@ -1,4 +1,4 @@
-import 'package:pathfinder/utils/size_config.dart';
+import 'package:parliament_ips/utils/size_config.dart';
 import 'package:flutter/material.dart';
 
 class RoundedButton extends StatelessWidget {

@@ -1,13 +1,13 @@
 import '../../core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pathfinder/core/theme/app_colors.dart';
+import 'package:parliament_ips/core/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pathfinder/core/constants/app_assets.dart';
-import 'package:pathfinder/core/localization/locale_controller.dart';
-import 'package:pathfinder/core/theme/theme_controller.dart';
-import 'package:pathfinder/features/navigation/views/main_navigation_screen.dart';
-import 'package:pathfinder/utils/size_config.dart';
+import 'package:parliament_ips/core/constants/app_assets.dart';
+import 'package:parliament_ips/core/localization/locale_controller.dart';
+import 'package:parliament_ips/core/theme/theme_controller.dart';
+import 'package:parliament_ips/features/navigation/views/main_navigation_screen.dart';
+import 'package:parliament_ips/utils/size_config.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});

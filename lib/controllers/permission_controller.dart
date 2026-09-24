@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 
-import 'package:pathfinder/utils/bluetooth_native.dart';
+import 'package:parliament_ips/utils/bluetooth_native.dart';
 
 class PermissionController extends GetxController {
   var locationPermissionGranted = false.obs;

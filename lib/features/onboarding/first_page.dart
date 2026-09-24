@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pathfinder/core/theme/app_colors.dart';
-import 'package:pathfinder/features/onboarding/onboarding_page.dart';
-import 'package:pathfinder/core/constants/app_assets.dart';
-import 'package:pathfinder/core/localization/locale_controller.dart';
-import 'package:pathfinder/core/theme/theme_controller.dart';
+import 'package:parliament_ips/core/theme/app_colors.dart';
+import 'package:parliament_ips/features/onboarding/onboarding_page.dart';
+import 'package:parliament_ips/core/constants/app_assets.dart';
+import 'package:parliament_ips/core/localization/locale_controller.dart';
+import 'package:parliament_ips/core/theme/theme_controller.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({super.key});

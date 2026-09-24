@@ -88,9 +88,9 @@
 2. انتقل إلى **Certificates, Identifiers & Profiles** -> **Identifiers**.
 3. اضغط على زر `+` واختر **App IDs**.
 4. اختر نوع **App** وضع:
-   - **Description**: `Majles Alnowab Pathfinder`
+   - **Description**: `Egyptian Parliament IPS`
    - **Bundle ID**: اختر `Explicit` واكتب:
-     `com.tranex.pathfinder`
+     `com.tranex.parliament`
    - في خانة **Capabilities**: لا تحتاج لتحديد أي صلاحيات خاصة (حيث أن الموقع والبلوتوث صلاحيات قياسية تعتمد على Info.plist).
 5. اضغط **Continue** ثم **Register**.
 
@@ -101,8 +101,8 @@
    - **Platforms**: اختر `iOS`.
    - **Name**: `مجلس النواب` (إذا كان الاسم مستخدماً يمكنك كتابة `مجلس النواب - الملاحة الداخلية` أو `مجلس النواب - IPS`).
    - **Primary Language**: `Arabic` (العربية).
-   - **Bundle ID**: اختر `com.tranex.pathfinder` من القائمة المنسدلة.
-   - **SKU**: اكتب `com-tranex-pathfinder`.
+   - **Bundle ID**: اختر `com.tranex.parliament` من القائمة المنسدلة.
+   - **SKU**: اكتب `com-tranex-parliament`.
    - **User Access**: اختر `Full Access`.
 4. اضغط **Create**.
 
@@ -135,7 +135,7 @@ chmod +x scripts/mac_release_and_deploy.sh
    - انتقل إلى تبويب **Signing & Capabilities**.
    - تأكد من تفعيل: **Automatically manage signing**.
    - في خانة **Team**: اختر حساب المطور الخاص بك (Apple Developer Team).
-   - تأكد أن Bundle Identifier هو `com.tranex.pathfinder`.
+   - تأكد أن Bundle Identifier هو `com.tranex.parliament`.
    - أغلق Xcode.
 
 3. **بناء النسخة وربطها مع Shorebird (مع أقصى تقليص للحجم)**:

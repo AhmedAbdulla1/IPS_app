@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pathfinder/features/onboarding/first_page.dart';
+import 'package:parliament_ips/features/onboarding/first_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controllers/permission_controller.dart';

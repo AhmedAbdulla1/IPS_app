@@ -1,5 +1,5 @@
 
-import 'package:pathfinder/models/neighbour_node.dart';
+import 'package:parliament_ips/models/neighbour_node.dart';
 
 import '../utils/constants.dart';
 

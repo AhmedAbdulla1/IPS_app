@@ -13,7 +13,7 @@ class BluetoothNative {
   BluetoothNative._();
 
   static const MethodChannel _channel =
-      MethodChannel('com.tranex.pathfinder/bluetooth');
+      MethodChannel('com.tranex.parliament/bluetooth');
 
   /// Shows the system "turn on Bluetooth?" dialog and suspends until the
   /// user answers it.

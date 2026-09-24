@@ -1,9 +1,9 @@
 import '../core/utils/app_logger.dart';
 import 'dart:math';
 
-import 'package:pathfinder/models/neighbour_node.dart';
-import 'package:pathfinder/models/poinode.dart';
-import 'package:pathfinder/utils/constants.dart';
+import 'package:parliament_ips/models/neighbour_node.dart';
+import 'package:parliament_ips/models/poinode.dart';
+import 'package:parliament_ips/utils/constants.dart';
 import 'package:get/get.dart';
 
 class NavigationController extends GetxController {

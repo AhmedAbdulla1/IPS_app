@@ -1,4 +1,4 @@
-import 'package:pathfinder/utils/constants.dart';
+import 'package:parliament_ips/utils/constants.dart';
 
 class NeighbourNode {
   int nodeID;
