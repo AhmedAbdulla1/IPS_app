@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,27 +19,100 @@ import 'core/theme/theme_controller.dart';
 import 'features/navigation/data/datasources/supabase_navigation_datasource.dart';
 import 'features/navigation/data/repositories/navigation_repository_impl.dart';
 import 'features/navigation/domain/repositories/navigation_repository.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+import 'core/utils/app_logger.dart';
+
 import 'features/navigation/domain/usecases/find_path_usecase.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // In Release mode, completely silence debugPrint and unhandled errors
+  if (kReleaseMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+    FlutterError.onError = (FlutterErrorDetails details) {
+      Sentry.captureException(details.exception, stackTrace: details.stack);
+    };
+  }
 
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  // Intercept and silence GetX internal route/controller logs in Release mode
+  Get.config(
+    enableLog: !kReleaseMode,
+    logWriterCallback: (String text, {bool isError = false}) {
+      if (!kReleaseMode) {
+        debugPrint(text);
+      }
+    },
+  );
 
-  print('[INIT] Loading .env...');
-  await dotenv.load(fileName: '.env');
+  // Intercept all print() calls across the app:
+  // In Release mode: 100% silenced (zero console output).
+  // In Debug mode: allowed for local developer debugging.
+  runZoned(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-  print('[INIT] Initializing Supabase...');
+      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+      AppLogger.info('[INIT] Loading .env...');
+      await dotenv.load(fileName: '.env');
+
+      final sentryDsn = dotenv.env['SENTRY_DSN'];
+
+      if (sentryDsn != null && sentryDsn.trim().isNotEmpty) {
+        AppLogger.info('[INIT] Initializing Sentry for crash reporting...');
+        await SentryFlutter.init(
+          (options) {
+            options.dsn = sentryDsn.trim();
+            options.tracesSampleRate = 1.0;
+            options.sendDefaultPii = false;
+            options.enableAutoPerformanceTracing = true;
+            options.debug = false; // SILENCE all internal Sentry SDK logs
+          },
+          appRunner: () => _initAndRunApp(),
+        );
+      } else {
+        AppLogger.info('[INIT] Sentry DSN not configured, running without crash reporting.');
+        await _initAndRunApp();
+      }
+    },
+    zoneSpecification: ZoneSpecification(
+      print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
+        if (!kReleaseMode) {
+          parent.print(zone, line);
+        }
+      },
+    ),
+  );
+}
+
+Future<void> _initAndRunApp() async {
+  if (kReleaseMode) {
+    runZoned(
+      () => _executeApp(),
+      zoneSpecification: ZoneSpecification(
+        print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
+          // Zero console in Release mode
+        },
+      ),
+    );
+  } else {
+    await _executeApp();
+  }
+}
+
+Future<void> _executeApp() async {
+  AppLogger.info('[INIT] Initializing Supabase...');
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    debug: !kReleaseMode,
   );
-  print('[INIT] ✓ Supabase initialized');
+  AppLogger.info('[INIT] ✓ Supabase initialized');
 
-  print('[INIT] Initializing services...');
+  AppLogger.info('[INIT] Initializing services...');
   await Get.putAsync(() => InitializeService().init());
-  print('[INIT] ✓ Services initialized');
-  runApp(MyApp());
+  AppLogger.info('[INIT] ✓ Services initialized');
+
+  runApp(const MyApp());
 }
 
 class InitializeService extends GetxService {
@@ -47,12 +122,14 @@ class InitializeService extends GetxService {
     // ─────────────────────────────────────────────────────────────────
 
     // 1. SupabaseClient — مسجَّل مرة واحدة فقط (singleton)
-    print('[INIT] Registering SupabaseClient...');
+    AppLogger.info('[INIT] Registering SupabaseClient...');
     Get.put(Supabase.instance.client);
 
     // 2. BLE — لا يعتمد على أي شيء
-    print('[INIT] Registering FlutterReactiveBle...');
-    Get.put(FlutterReactiveBle());
+    AppLogger.info('[INIT] Registering FlutterReactiveBle...');
+    final ble = FlutterReactiveBle();
+    ble.logLevel = kReleaseMode ? LogLevel.none : LogLevel.verbose;
+    Get.put(ble);
 
     // CRITICAL: FlutterReactiveBle must be registered exactly ONCE and
     // shared by every controller that needs it. Previously
@@ -64,51 +141,47 @@ class InitializeService extends GetxService {
 
     // 3. Navigation data layer (Supabase → DataSource → Repository)
     //    يجب أن يكون قبل BeaconController لأنه يعتمد على NavigationRepository
-    print('[INIT] Registering NavigationRepository...');
+    AppLogger.info('[INIT] Registering NavigationRepository...');
     Get.put(SupabaseNavigationDataSource(Get.find<SupabaseClient>()));
     Get.put<NavigationRepository>(
       NavigationRepositoryImpl(Get.find<SupabaseNavigationDataSource>()),
     );
-    print('[INIT] ✓ NavigationRepository registered');
+    AppLogger.info('[INIT] ✓ NavigationRepository registered');
 
-    // 3.1 محرك A* الموحّد (domain/usecases) — دلوقتي هو المحرك الفعلي اللي
-    //     NavigationScreenController بيستخدمه لحساب المسار. كان قبل كده
-    //     متعمله import بس من غير تسجيل، فمكانش بيتنفذ خالص والتنقل كان
-    //     شغال فعليًا عن طريق NavigationController القديم (تحت) — سايبينه
-    //     مسجّل برضه لأن شاشات قديمة تانية (calibration/onboarding) لسه
-    //     ممكن تعتمد عليه، بس مش هو اللي بيحسب المسار في الشاشة الرئيسية
-    //     بقى.
-    print('[INIT] Registering FindPathUseCase...');
+    // 3.1 محرك A* الموحّد (domain/usecases)
+    AppLogger.info('[INIT] Registering FindPathUseCase...');
     Get.put(FindPathUseCase());
 
     // 4. باقي الـ controllers (البترتيب)
-    print('[INIT] Registering PermissionController...');
+    AppLogger.info('[INIT] Registering PermissionController...');
     Get.put(PermissionController());
-    print('[INIT] Registering CompassController...');
+    AppLogger.info('[INIT] Registering CompassController...');
     Get.put(CompassController());
-    print('[INIT] Registering NavigationController...');
+    AppLogger.info('[INIT] Registering NavigationController...');
     Get.put(NavigationController());
 
     // 5. BeaconController — يعتمد على NavigationRepository (✓ مسجّل فوق)
-    print('[INIT] Registering BeaconController...');
+    AppLogger.info('[INIT] Registering BeaconController...');
     Get.put(BeaconController());
 
     // 6. UI-related services
-    print('[INIT] Registering ThemeController...');
+    AppLogger.info('[INIT] Registering ThemeController...');
     final themeController = Get.put(ThemeController());
     await themeController.ensureLoaded();
-    print('[INIT] Registering LocaleController...');
+    AppLogger.info('[INIT] Registering LocaleController...');
     final localeController = Get.put(LocaleController());
     await localeController.ensureLoaded();
 
-    print('[INIT] ✓ All services initialized');
+    AppLogger.info('[INIT] ✓ All services initialized');
     return this;
   }
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -117,6 +190,12 @@ class _MyAppState extends State<MyApp> {
     return GetMaterialApp(
       title: 'مجلس النواب',
       debugShowCheckedModeBanner: false,
+      enableLog: !kReleaseMode,
+      logWriterCallback: (String text, {bool isError = false}) {
+        if (!kReleaseMode) {
+          debugPrint(text);
+        }
+      },
       translations: AppTranslations(),
       locale: Get.find<LocaleController>().locale.value,
       fallbackLocale: LocaleController.arabic,
@@ -148,6 +227,9 @@ class _MyAppState extends State<MyApp> {
         ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      navigatorObservers: [
+        SentryNavigatorObserver(),
+      ],
       home: const AppRouter(),
     );
   }

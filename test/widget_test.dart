@@ -1,30 +1,52 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:pathfinder/main.dart';
+import 'package:pathfinder/features/navigation/utils/arabic_search_utils.dart';
+import 'package:pathfinder/core/theme/app_colors.dart';
+import 'package:pathfinder/core/theme/app_palette.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget( MyApp());
+  group('ArabicSearchUtils Tests', () {
+    test('normalizes Arabic alef variants correctly', () {
+      expect(ArabicSearchUtils.normalize('إسلام'), 'اسلام');
+      expect(ArabicSearchUtils.normalize('أحمد'), 'احمد');
+      expect(ArabicSearchUtils.normalize('آمال'), 'امال');
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    test('normalizes teh marbuta and alef maqsura', () {
+      expect(ArabicSearchUtils.normalize('مجلس الأمة'), 'مجلس الامه');
+      expect(ArabicSearchUtils.normalize('مبنى'), 'مبني');
+    });
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  group('UI & Theme Smoke Tests', () {
+    testWidgets('App palette and basic widgets render properly', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            appBar: AppBar(
+              title: const Text('مجلس النواب'),
+              backgroundColor: AppColors.gold,
+            ),
+            body: Center(
+              child: Text(
+                'مرحباً بك',
+                style: TextStyle(color: AppColors.textPrimary),
+              ),
+            ),
+          ),
+        ),
+      );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      expect(find.text('مجلس النواب'), findsOneWidget);
+      expect(find.text('مرحباً بك'), findsOneWidget);
+    });
+
+    test('AppPalette instantiates correctly', () {
+      final light = AppPalette.light;
+      final dark = AppPalette.dark;
+      expect(light.gold, AppColors.gold);
+      expect(dark.background, AppColorsDark.background);
+    });
   });
 }

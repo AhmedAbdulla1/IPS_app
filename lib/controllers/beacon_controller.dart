@@ -1,3 +1,4 @@
+import '../core/utils/app_logger.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -133,7 +134,7 @@ class BeaconController extends GetxController {
     if (!_isRanging) return; // مفيش سكان مفروض يكون شغال أصلاً دلوقتي
     final idleFor = DateTime.now().difference(_lastScanActivity);
     if (idleFor >= _staleThreshold) {
-      print(
+      AppLogger.debug(
         '[BEACON] ⚠️ Watchdog: no scan activity for ${idleFor.inSeconds}s رغم إن _isRanging=true — السكان مات بصمت، جاري إعادة التشغيل بالقوة',
       );
       _forceRestartScan();
@@ -151,15 +152,15 @@ class BeaconController extends GetxController {
   /// يحمّل البيانات من NavigationRepository (async)
   Future<void> _loadNavigationData() async {
     try {
-      print('[BEACON] Loading navigation data from repository...');
+      AppLogger.debug('[BEACON] Loading navigation data from repository...');
       _navigationRepository = Get.find<NavigationRepository>();
 
       // تحميل الـ graph من Repository
       _currentGraph = await _navigationRepository.loadGraph();
 
       if (_currentGraph == null) {
-        print('[BEACON] ❌ Graph is null — Supabase returned empty data');
-        print('[BEACON] Make sure tables are populated in Supabase');
+        AppLogger.debug('[BEACON] ❌ Graph is null — Supabase returned empty data');
+        AppLogger.debug('[BEACON] Make sure tables are populated in Supabase');
         return;
       }
 
@@ -168,11 +169,11 @@ class BeaconController extends GetxController {
       _convertGraphToLocationList(_currentGraph!);
 
       // _graphLoaded = true;
-      print(
+      AppLogger.debug(
         '[BEACON] ✓ Navigation data loaded successfully. Nodes: ${poiList.length}, Locations: ${locationList.length}',
       );
     } catch (e) {
-      print('[BEACON] ❌ Error loading data from Supabase: $e');
+      AppLogger.debug('[BEACON] ❌ Error loading data from Supabase: $e');
     }
   }
 
@@ -216,10 +217,10 @@ class BeaconController extends GetxController {
       poiNodes[navNode.id] = poiNode;
     }
 
-    print('[BEACON] Converted ${poiList.length} nodes from graph');
-    print('[BEACON] DEBUG: All loaded node UUIDs:');
+    AppLogger.debug('[BEACON] Converted ${poiList.length} nodes from graph');
+    AppLogger.debug('[BEACON] DEBUG: All loaded node UUIDs:');
     for (var node in poiList) {
-      print('  - Node ${node.nodeID}: ${node.nodeESP32ID}');
+      AppLogger.debug('  - Node ${node.nodeID}: ${node.nodeESP32ID}');
     }
   }
 
@@ -292,7 +293,7 @@ class BeaconController extends GetxController {
       );
     }
 
-    print('[BEACON] Converted ${locationList.length} locations from graph');
+    AppLogger.debug('[BEACON] Converted ${locationList.length} locations from graph');
   }
 
   @override
@@ -301,7 +302,7 @@ class BeaconController extends GetxController {
     // onClose() تلقائيًا (مش dispose()) لما الـ controller يتشال. كان فيه
     // دالة dispose() هنا قبل كده بس مبتتنفذش أبدًا فعليًا لإن مفيش حد
     // بينادي عليها — التنضيف الحقيقي لازم يكون هنا.
-    print('[BEACON] Disposing BeaconController');
+    AppLogger.debug('[BEACON] Disposing BeaconController');
     _timer?.cancel();
     _scanRestartTimer?.cancel();
     _watchdogTimer?.cancel();
@@ -334,7 +335,7 @@ class BeaconController extends GetxController {
         _timer = null;
         fetchingBeacons.value = false;
         haveCurrentLocation.value = false;
-        print("[BEACON] Timer expired — no beacon found");
+        AppLogger.debug("[BEACON] Timer expired — no beacon found");
       } else {
         _timerTime = _timerTime - 1;
       }
@@ -363,7 +364,7 @@ class BeaconController extends GetxController {
     await _dataLoadFuture;
 
     if (poiList.isEmpty) {
-      print(
+      AppLogger.debug(
         '[BEACON] ⚠️ خريطة المبنى لسه فاضية بعد التحميل (فشل أو Supabase رجّع صفوف فاضية) — هعيد محاولة التحميل والسكان بعد 3 ثواني',
       );
       _isRanging = false;
@@ -372,7 +373,7 @@ class BeaconController extends GetxController {
       return;
     }
 
-    print(
+    AppLogger.debug(
       '[BEACON] Starting BLE scan for ESP32 iBeacon nodes via flutter_reactive_ble',
     );
 
@@ -395,14 +396,14 @@ class BeaconController extends GetxController {
             }
           },
           onDone: () {
-            print(
+            AppLogger.debug(
               '[BEACON] Scan stream ended (onDone) — scheduling restart in 1s',
             );
             _isRanging = false;
             _scheduleRestart();
           },
           onError: (error) {
-            print(
+            AppLogger.debug(
               '[BEACON] Scan stream error: $error — scheduling restart in 3s',
             );
             _isRanging = false;
@@ -415,7 +416,7 @@ class BeaconController extends GetxController {
     _scanRestartTimer?.cancel();
     _scanRestartTimer = Timer(Duration(seconds: delaySeconds), () {
       _scanRestartTimer = null;
-      print('[BEACON] Auto-restarting BLE scan...');
+      AppLogger.debug('[BEACON] Auto-restarting BLE scan...');
       beaconInitPlatformState();
     });
   }
@@ -536,7 +537,7 @@ class BeaconController extends GetxController {
         statuses[Permission.bluetoothScan]!.isGranted) {
       await beaconInitPlatformState();
     } else {
-      print("[BEACON] Permissions not granted!");
+      AppLogger.debug("[BEACON] Permissions not granted!");
     }
   }
 
@@ -561,18 +562,18 @@ class BeaconController extends GetxController {
     // طباعة نظيفة مرة كل ثانيتين لكل نود
     if (lastLog == null || now.difference(lastLog).inSeconds >= 2) {
       _lastLogTimePerNode[matchedNode.nodeESP32ID] = now;
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print(
+      AppLogger.debug('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      AppLogger.debug(
         '📍 تم رصد نود: [${matchedNode.name}] (Node ID: ${matchedNode.nodeID})',
       );
-      print('   🔑 UUID: ${beaconData.uuid}');
-      print(
+      AppLogger.debug('   🔑 UUID: ${beaconData.uuid}');
+      AppLogger.debug(
         '   📐 الإحداثيات: X=${matchedNode.x}, Y=${matchedNode.y} | الدور: ${matchedNode.level}',
       );
-      print(
+      AppLogger.debug(
         '   📶 قوة الإشارة (RSSI): ${beaconData.rssi} dBm | 📏 المسافة: ~${beaconData.distance}m',
       );
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      AppLogger.debug('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
 
     // تنعيم الإشارة (EMA filter) لكل بيكون لمنع التذبذب والقفزات اللحظية
@@ -741,7 +742,7 @@ class BeaconController extends GetxController {
     }
 
     if (nearest != null) {
-      print(
+      AppLogger.debug(
         '[BEACON] ✅ Matched to: Node  ${nearest.nodeESP32ID} "${nearest.name}" (floor $currentFloor, distance: ${minDistance.toStringAsFixed(2)}m)',
       );
     }
@@ -784,7 +785,7 @@ class BeaconController extends GetxController {
     final strongEnough = nearestRssi >= _switchRssiThreshold;
 
     if (floorChanged || (closeEnough && strongEnough)) {
-      print(
+      AppLogger.debug(
         '[BEACON] 🔓 تبديل القفل: من Node $_lockedNodeId إلى Node ${candidate.nodeID} '
         '(floorChanged=$floorChanged, distance=${distanceToCandidate.toStringAsFixed(2)}m, rssi=$nearestRssi)',
       );
@@ -801,7 +802,7 @@ class BeaconController extends GetxController {
       return candidate;
     }
 
-    print(
+    AppLogger.debug(
       '[BEACON] 🔒 محافظ على القفل عند Node $_lockedNodeId '
       '(المرشح ${candidate.nodeID} بعيد=${distanceToCandidate.toStringAsFixed(2)}m أو إشارة ضعيفة=$nearestRssi)',
     );

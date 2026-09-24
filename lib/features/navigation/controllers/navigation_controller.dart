@@ -1,3 +1,4 @@
+import '../../../core/utils/app_logger.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -474,7 +475,7 @@ class NavigationScreenController extends GetxController {
 
         // إذا اقترب المستخدم لمسافة 1.8 متر أو أقل من الباب
         if (dist <= 1.8) {
-          print('[Navigation] 🎯 تم الوصول إلى باب الوجهة بالمسافة المترية (${dist.toStringAsFixed(2)}m)');
+          AppLogger.debug('[Navigation] 🎯 تم الوصول إلى باب الوجهة بالمسافة المترية (${dist.toStringAsFixed(2)}m)');
           _currentStepIndex = _currentPath.length; // يؤدي إلى تفعيل شاشة الوصول
           _refreshActiveNavState();
           return;
@@ -493,7 +494,7 @@ class NavigationScreenController extends GetxController {
         final dist = math.sqrt(dx * dx + dy * dy);
 
         if (dist <= 1.8) {
-          print('[Navigation] 🚶 تجاوز نود افتراضي على المسار (${dist.toStringAsFixed(2)}m)');
+          AppLogger.debug('[Navigation] 🚶 تجاوز نود افتراضي على المسار (${dist.toStringAsFixed(2)}m)');
           _currentStepIndex = (_currentStepIndex + 1).clamp(0, _currentPath.length);
           _refreshActiveNavState();
           return;
@@ -544,7 +545,7 @@ class NavigationScreenController extends GetxController {
     // نستخدم عداد تثبت (Debounce) لضمان عدم إعادة الحساب بسبب تشويش لحظي
     _consecutiveOffPathReadings++;
     if (_consecutiveOffPathReadings < 3) {
-      print('[Navigation] ⏳ قراءة خارج المسار (نود $currentNodeId). جاري التأكد ($_consecutiveOffPathReadings/3)...');
+      AppLogger.debug('[Navigation] ⏳ قراءة خارج المسار (نود $currentNodeId). جاري التأكد ($_consecutiveOffPathReadings/3)...');
       return;
     }
 
@@ -561,9 +562,9 @@ class NavigationScreenController extends GetxController {
     try {
       _currentPath = _findPath(graph, currentNodeId, destinationNodeId);
       _currentStepIndex = _currentPath.length > 1 ? 1 : 0;
-      print('[Navigation] 🔄 Dynamic replan: تم إعادة التوجيه بنجاح من node $currentNodeId');
+      AppLogger.debug('[Navigation] 🔄 Dynamic replan: تم إعادة التوجيه بنجاح من node $currentNodeId');
     } on PathNotFoundException {
-      print('[Navigation] ⚠️ No path from current position ($currentNodeId)');
+      AppLogger.debug('[Navigation] ⚠️ No path from current position ($currentNodeId)');
     }
 
     _refreshActiveNavState();
@@ -714,7 +715,7 @@ class NavigationScreenController extends GetxController {
 
   Future<void> _tryStartNavigation(BuildingDestination destination) async {
     final isArabic = _isArabic;
-    print("[Destination] ${destination.nodeID} ");
+    AppLogger.debug("[Destination] ${destination.nodeID} ");
     if (destination.nodeID == null) {
       Get.snackbar(
         isArabic ? 'غير متاح حاليًا' : 'Not available yet',
@@ -745,8 +746,8 @@ class NavigationScreenController extends GetxController {
     final startNodeId = beaconController.currentLocation.value.nodeID;
 
     try {
-      print('[Graph] ${graph.nodesById}');
-      print('[Start Node Id] $startNodeId');
+      AppLogger.debug('[Graph] ${graph.nodesById}');
+      AppLogger.debug('[Start Node Id] $startNodeId');
       _currentPath = _findPath(graph, startNodeId, destination.nodeID!);
     } on PathNotFoundException {
       Get.snackbar(
@@ -758,7 +759,7 @@ class NavigationScreenController extends GetxController {
       );
       return;
     }
-    print('[path] ccurrentpath: $_currentPath');
+    AppLogger.debug('[path] ccurrentpath: $_currentPath');
 
     _currentStepIndex = _currentPath.length > 1 ? 1 : 0;
     _consecutiveOffPathReadings = 0;

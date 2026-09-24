@@ -9,7 +9,6 @@ import '../../../controllers/beacon_controller.dart';
 import '../controllers/navigation_controller.dart';
 import 'active_navigation_screen.dart';
 import 'idle_home_screen.dart';
-import '../widgets/active_nav_app_bar.dart';
 import '../widgets/parliament_app_bar.dart';
 
 /// نقطة الدخول للشاشة الرئيسية — بتملك Scaffold واحد وخلفية واحدة موحّدة

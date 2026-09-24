@@ -1,3 +1,4 @@
+import '../core/utils/app_logger.dart';
 import 'dart:math';
 
 import 'package:pathfinder/models/neighbour_node.dart';
@@ -51,7 +52,7 @@ class NavigationController extends GetxController {
     int currentId,
     int destinationId,
   ) {
-    print("Setting Navigation Settings");
+    AppLogger.debug("Setting Navigation Settings");
     reachedDestination.value = false;
     nodesHashMap = {...hashMap};
     poiPriorityQueue = [...priorityQueue];
@@ -86,13 +87,13 @@ class NavigationController extends GetxController {
   }
 
   void printList() {
-    print("Current Node: ${currentNode.value.nodeID}");
+    AppLogger.debug("Current Node: ${currentNode.value.nodeID}");
     var tempString = "";
     pathArray.forEach((element) {
       tempString +=
           "${element.nodeID} : ${element.heading} : ${element.levelNavigation} \n";
     });
-    print(tempString);
+    AppLogger.debug(tempString);
   }
 
   String get directionString {
@@ -103,8 +104,8 @@ class NavigationController extends GetxController {
     currentNode.value = node;
     if (isNavigating) {
       if (pathArray.isNotEmpty) {
-        print('List Length: ${pathArray.length}');
-        print(pathArray.toString());
+        AppLogger.debug('List Length: ${pathArray.length}');
+        AppLogger.debug(pathArray.toString());
         if (pathArray.first.nodeID == node.nodeID) {
           if (pathArray.length != 1) {
             pathArray.removeAt(0);
@@ -116,8 +117,9 @@ class NavigationController extends GetxController {
                 levelNavigation.value = LevelNavigation.go_up;
                 break;
               default:
-                if (levelNavigation.value != LevelNavigation.same_level)
+                if (levelNavigation.value != LevelNavigation.same_level) {
                   levelNavigation.value = LevelNavigation.same_level;
+                }
                 break;
             }
 
@@ -126,7 +128,7 @@ class NavigationController extends GetxController {
             pathArray.removeAt(0);
             isNavigating = false;
             isNavigatingRx.value = false;
-            print("Reached Destination");
+            AppLogger.debug("Reached Destination");
             reachedDestination.value = true;
             levelNavigation.value = LevelNavigation.reach_destination;
           }
@@ -173,7 +175,7 @@ class NavigationController extends GetxController {
     expandedNodes.clear();
     int count = 0;
     while (currentNode.nodeID != destinationNode.nodeID || reachedLift) {
-      print("Counting: ${count++}");
+      AppLogger.debug("Counting: ${count++}");
       if (!sameLevel && reachedLift) {
         reachedLift = false;
         sameLevel = true;
@@ -190,7 +192,7 @@ class NavigationController extends GetxController {
         currentNode = poiPriorityQueue
             .firstWhere((element) => element.nodeID == neighbourPOI.nodeID);
       } else {
-        print('Neighbour Array: ${currentNode.neighbourArray}');
+        AppLogger.debug('Neighbour Array: ${currentNode.neighbourArray}');
         for (NeighbourNode neighbour in currentNode.neighbourArray) {
           var index = expandedNodes
               .indexWhere((element) => element.nodeID == neighbour.nodeID);
@@ -217,10 +219,11 @@ class NavigationController extends GetxController {
         poiPriorityQueue
             .removeWhere((element) => element.nodeID == currentNode.nodeID);
         poiPriorityQueue.sort(heuristicComparator);
-        print('Queue: ${poiPriorityQueue.toString()}');
+        AppLogger.debug('Queue: ${poiPriorityQueue.toString()}');
         currentNode = poiPriorityQueue.first;
-        if (currentNode.nodeID == currentNode.nearestLift && !sameLevel)
+        if (currentNode.nodeID == currentNode.nearestLift && !sameLevel) {
           reachedLift = true;
+        }
       }
     }
     //Reached Destination, Add to expandedNodes
@@ -240,6 +243,6 @@ class NavigationController extends GetxController {
     pathArray.add(NeighbourNode(nodeID: startingNodeId));
 
     pathArray = pathArray.reversed.toList();
-    print('Path: ${pathArray.toString()}');
+    AppLogger.debug('Path: ${pathArray.toString()}');
   }
 }

@@ -1,3 +1,4 @@
+import '../core/utils/app_logger.dart';
 import 'dart:async';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:get/get.dart';
@@ -23,7 +24,7 @@ class CompassController extends GetxController {
       final permController = Get.find<PermissionController>();
       ever(permController.locationPermissionGranted, (granted) {
         if (granted) {
-          print('[COMPASS] Location permission granted — re-initializing compass stream for iOS/Android');
+          AppLogger.debug('[COMPASS] Location permission granted — re-initializing compass stream for iOS/Android');
           _initCompass();
         }
       });
@@ -36,11 +37,11 @@ class CompassController extends GetxController {
       _compassSubscription = FlutterCompass.events?.listen(
         _onData,
         onError: (err) {
-          print('[COMPASS] Sensor error: $err');
+          AppLogger.debug('[COMPASS] Sensor error: $err');
         },
       );
     } catch (e) {
-      print('[COMPASS] Exception starting compass: $e');
+      AppLogger.debug('[COMPASS] Exception starting compass: $e');
     }
   }
 

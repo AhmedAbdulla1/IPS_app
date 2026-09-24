@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/services.dart';
+import '../core/utils/app_logger.dart';
 
 /// Thin wrapper around the platform channel used to show Android's native
 /// "Allow app to turn on Bluetooth?" dialog (ACTION_REQUEST_ENABLE).
@@ -24,10 +26,11 @@ class BluetoothNative {
   ///   should treat `null` the same as `false` and fall back to
   ///   re-checking the BLE status stream rather than assuming success.
   static Future<bool?> requestEnableBluetooth() async {
+    if (!Platform.isAndroid) return false;
     try {
       return await _channel.invokeMethod<bool>('requestEnableBluetooth');
     } on PlatformException catch (e) {
-      print('requestEnableBluetooth failed: ${e.code} ${e.message}');
+      AppLogger.error('requestEnableBluetooth failed', e);
       return null;
     }
   }

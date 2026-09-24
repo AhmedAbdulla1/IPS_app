@@ -1,13 +1,12 @@
+import '../../core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pathfinder/core/theme/app_colors.dart';
-import 'package:pathfinder/core/theme/app_palette.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pathfinder/core/constants/app_assets.dart';
 import 'package:pathfinder/core/localization/locale_controller.dart';
 import 'package:pathfinder/core/theme/theme_controller.dart';
 import 'package:pathfinder/features/navigation/views/main_navigation_screen.dart';
-import 'package:pathfinder/utils/constants.dart';
 import 'package:pathfinder/utils/size_config.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -68,7 +67,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Future<void> _completeOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('initial', true);
-    print('[ONBOARDING] ✓ Saved: initial = true');
+    AppLogger.debug('[ONBOARDING] ✓ Saved: initial = true');
     if (mounted) {
       Get.offAll(() => const MainNavigationScreen());
     }
@@ -330,7 +329,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           ),
         ),
       ),
-    );;
+    );
   }
 
   Widget _buildDots(bool isArabic) {

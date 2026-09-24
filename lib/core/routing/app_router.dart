@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controllers/permission_controller.dart';
 import '../../features/navigation/views/main_navigation_screen.dart';
-import '../../features/onboarding/onboarding_page.dart';
 import '../../features/permission/permission_page.dart';
 
 /// مسؤول عن تحديد أول شاشة يراها المستخدم عند فتح التطبيق.

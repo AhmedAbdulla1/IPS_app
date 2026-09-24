@@ -1,3 +1,4 @@
+import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/building_graph.dart';
 import '../../domain/entities/nav_edge.dart';
 import '../../domain/entities/nav_node.dart';
@@ -54,7 +55,7 @@ class NavigationRepositoryImpl implements NavigationRepository {
         return graph;
       }
     } catch (e) {
-      print('[NavigationRepository] ⚠️ RPC failed, falling back to individual tables: $e');
+      AppLogger.debug('[NavigationRepository] ⚠️ RPC failed, falling back to individual tables: $e');
     }
 
     // المحاولة 2 (Fallback): جلب الجداول بالتوازي بالطريقة القديمة

@@ -1,4 +1,6 @@
+import '../core/utils/app_logger.dart';
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:get/get.dart';
@@ -40,9 +42,9 @@ class PermissionController extends GetxController {
     _bleStatusSubscription = _ble.statusStream.listen((status) {
       bluetoothStatus.value = status == BleStatus.ready;
       bleStatusRaw.value = status;
-      print("[PERMISSION] Bluetooth Status (stream): $status");
+      AppLogger.debug("[PERMISSION] Bluetooth Status (stream): $status");
       if (status == BleStatus.ready) {
-        print("[PERMISSION] ✓ Bluetooth ready");
+        AppLogger.debug("[PERMISSION] ✓ Bluetooth ready");
       }
     });
 
@@ -66,25 +68,37 @@ class PermissionController extends GetxController {
     _permissionRequestInFlight = true;
 
     try {
-      // Request location AND the Android 12+ runtime Bluetooth permissions
-      // in a single batched call. Location alone is not enough for BLE
-      // scanning on modern Android -- BLUETOOTH_SCAN/BLUETOOTH_CONNECT are
-      // separate runtime permissions (already declared in the manifest,
-      // but they still have to be requested, not just declared).
-      // Batching them also avoids ever firing two separate native
-      // permission requests back to back.
-      final statuses = await [
-        Permission.location,
-        Permission.bluetoothScan,
-        Permission.bluetoothConnect,
-      ].request();
+      final bool bluetoothPermissionsGranted;
 
-      locationPermissionGranted.value =
-          statuses[Permission.location]?.isGranted ?? false;
+      if (Platform.isIOS) {
+        // On iOS, Bluetooth access uses CoreBluetooth (Permission.bluetooth).
+        // Android-specific permissions (bluetoothScan, bluetoothConnect) do not exist on iOS.
+        final statuses = await [
+          Permission.location,
+          Permission.bluetooth,
+        ].request();
 
-      final bluetoothPermissionsGranted =
-          (statuses[Permission.bluetoothScan]?.isGranted ?? false) &&
-              (statuses[Permission.bluetoothConnect]?.isGranted ?? false);
+        locationPermissionGranted.value =
+            statuses[Permission.location]?.isGranted ?? false;
+
+        bluetoothPermissionsGranted =
+            statuses[Permission.bluetooth]?.isGranted ?? false;
+      } else {
+        // Request location AND the Android 12+ runtime Bluetooth permissions
+        // in a single batched call.
+        final statuses = await [
+          Permission.location,
+          Permission.bluetoothScan,
+          Permission.bluetoothConnect,
+        ].request();
+
+        locationPermissionGranted.value =
+            statuses[Permission.location]?.isGranted ?? false;
+
+        bluetoothPermissionsGranted =
+            (statuses[Permission.bluetoothScan]?.isGranted ?? false) &&
+                (statuses[Permission.bluetoothConnect]?.isGranted ?? false);
+      }
 
       if (!bluetoothPermissionsGranted) {
         bluetoothStatus.value = false;
@@ -103,27 +117,25 @@ class PermissionController extends GetxController {
         bluetoothStatus.value = status == BleStatus.ready;
       }
 
-      print(
+      AppLogger.debug(
           "[PERMISSION] Location Permission: ${locationPermissionGranted.value}");
-      print("[PERMISSION] Bluetooth Status: ${bluetoothStatus.value}");
+      AppLogger.debug("[PERMISSION] Bluetooth Status: ${bluetoothStatus.value}");
       if (bluetoothPermissionsGranted && bluetoothStatus.value) {
-        print("[PERMISSION] ✓ All permissions and Bluetooth ready");
+        AppLogger.debug("[PERMISSION] ✓ All permissions and Bluetooth ready");
       }
     } finally {
       _permissionRequestInFlight = false;
     }
   }
 
-  /// Shows Android's native "turn on Bluetooth?" dialog. Only makes sense
-  /// to call when [bleStatusRaw] is [BleStatus.poweredOff] -- i.e. the
-  /// permissions are fine but the adapter itself is switched off.
-  ///
-  /// Waits for the user's answer and, if they allowed it, waits for
-  /// flutter_reactive_ble's status stream to reflect the adapter actually
-  /// coming back on before updating [bluetoothStatus]/[bleStatusRaw] --
-  /// the OS dialog resolving doesn't mean the radio has finished powering
-  /// up yet.
+  /// Shows the system dialog or opens settings to enable Bluetooth.
+  /// On iOS, apps cannot programmatically toggle Bluetooth, so settings is opened.
   Future<bool> requestEnableBluetooth() async {
+    if (Platform.isIOS) {
+      await openAppSettings();
+      return bluetoothStatus.value;
+    }
+
     final userAllowed = await BluetoothNative.requestEnableBluetooth();
     if (userAllowed != true) return false;
 
@@ -138,3 +150,4 @@ class PermissionController extends GetxController {
     return bluetoothStatus.value;
   }
 }
+
