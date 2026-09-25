@@ -1219,6 +1219,34 @@
       box-shadow: none;
     }
 
+    /* Preset Chips for Place Types */
+    .btn-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: #FFFFFF;
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .btn-chip:hover {
+      background: rgba(0, 242, 254, 0.15);
+      border-color: var(--cyan);
+      transform: translateY(-1px);
+    }
+    .btn-chip.active {
+      background: rgba(0, 242, 254, 0.22);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+    }
+
     /* Stepper Cards */
     .step-track-box {
       display: grid;
@@ -1715,29 +1743,38 @@
       <!-- Card 3: Node Metadata & Location (Floor, X, Y) -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📍 بيانات النود وموقعها على الخريطة</div>
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <div class="card-title">📍 بيانات النود وموقعها على الخريطة</div>
+            <span id="provLevelBadge" class="pill" style="font-size: 0.72rem; padding: 2px 8px; background: rgba(0,242,254,0.1); color: var(--cyan); border: 1px solid rgba(0,242,254,0.25);">
+              فحص أدوار Supabase...
+            </span>
+          </div>
           <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: var(--cyan); cursor: pointer; user-select: none;">
             <input type="checkbox" id="provAutoIncrement" checked style="accent-color: var(--cyan);">
             <span>زيادة الـ node_id تلقائياً (+1) بعد كل عملية ناجحة</span>
           </label>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr; gap: 0.85rem;">
+        <div style="display: grid; grid-template-columns: 1.2fr 1.35fr 1fr 1fr 1.15fr; gap: 0.85rem;">
           <div class="form-group">
             <label class="form-label">رقم النود (node_id) *</label>
             <input type="number" id="provNodeId" class="terminal-input" value="101" style="font-size: 1.1rem; font-weight: 800; font-family: var(--font-mono); color: #fff;">
           </div>
 
           <div class="form-group">
-            <label class="form-label">الدور (Level) *</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <label class="form-label" style="margin: 0;">الدور (من Supabase) *</label>
+              <button type="button" class="btn-secondary" id="btnRefreshLevels" style="padding: 1px 6px; font-size: 0.7rem;" title="إعادة مزامنة الأدوار من Supabase">
+                🔄 تحديث
+              </button>
+            </div>
             <div style="display: flex; gap: 0.35rem;">
               <select id="provLevelSelect" class="form-select" style="flex: 1;">
-                <option value="GF" selected>GF (الأرضي)</option>
-                <option value="F1">F1 (الأول)</option>
-                <option value="F2">F2 (الثاني)</option>
-                <option value="B1">B1 (البدروم)</option>
+                <option value="">⏳ جارٍ تحميل الأدوار...</option>
               </select>
-              <input type="text" id="provCustomLevel" placeholder="مخصص" style="width: 70px; display: none;" class="terminal-input">
+              <button type="button" class="btn-secondary" id="btnToggleAddLevel" style="padding: 0 8px; font-size: 0.8rem;" title="إضافة دور جديد إلى Supabase">
+                ➕
+              </button>
             </div>
           </div>
 
@@ -1752,23 +1789,79 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">نوع النود</label>
+            <label class="form-label">نوع النود (Node Type)</label>
             <select id="provNodeType" class="form-select">
-              <option value="poi" selected>poi (نقطة عادية)</option>
-              <option value="intersection">intersection (تقاطع)</option>
+              <option value="intersection" selected>intersection (تقاطع مسار)</option>
+              <option value="poi">poi (نقطة اهتمام / وصول)</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Quick Pick Presets for Place Type: Intersection / Corridor / Elevator / etc. -->
+        <div style="margin-top: 0.75rem; margin-bottom: 0.75rem; background: rgba(0, 242, 254, 0.04); border: 1px solid rgba(0, 242, 254, 0.15); border-radius: 10px; padding: 0.75rem 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.4rem;">
+            <div style="font-size: 0.82rem; font-weight: 700; color: var(--cyan); display: flex; align-items: center; gap: 0.4rem;">
+              <span>⚡ طبيعة المكان الشائعة (اختيار بضغطة واحدة):</span>
+            </div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">يضبط نوع النود ويملأ الاسم العربي والإنجليزي تلقائياً</span>
+          </div>
+          <div class="preset-chips-row" style="display: flex; gap: 0.55rem; flex-wrap: wrap;">
+            <button type="button" class="btn-chip active" data-preset="intersection" id="chipIntersection">
+              <span style="font-size: 1.1rem;">🔀</span>
+              <strong>تقاطع (Intersection)</strong>
+            </button>
+            <button type="button" class="btn-chip" data-preset="corridor" id="chipCorridor">
+              <span style="font-size: 1.1rem;">🚶</span>
+              <strong>ممر (Corridor)</strong>
+            </button>
+            <button type="button" class="btn-chip" data-preset="elevator" id="chipElevator">
+              <span style="font-size: 1.1rem;">🛗</span>
+              <span>أسانسير (Elevator)</span>
+            </button>
+            <button type="button" class="btn-chip" data-preset="stairs" id="chipStairs">
+              <span style="font-size: 1.1rem;">🪜</span>
+              <span>سلم (Stairs)</span>
+            </button>
+            <button type="button" class="btn-chip" data-preset="exit" id="chipExit">
+              <span style="font-size: 1.1rem;">🚪</span>
+              <span>مخرج طوارئ (Exit)</span>
+            </button>
+            <button type="button" class="btn-chip" data-preset="poi" id="chipPoi">
+              <span style="font-size: 1.1rem;">📍</span>
+              <span>نقطة عامة (Custom POI)</span>
+            </button>
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label">اسم المكان بالعربي (اختياري)</label>
-            <input type="text" id="provNameAr" class="terminal-input" placeholder="مثال: ممر الطوارئ - أمام المصعد">
+            <label class="form-label">اسم المكان بالعربي (name_ar)</label>
+            <input type="text" id="provNameAr" class="terminal-input" placeholder="مثال: تقاطع أو ممر" value="تقاطع">
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label">اسم المكان بالإنجليزي (اختياري)</label>
-            <input type="text" id="provNameEn" class="terminal-input" placeholder="e.g. Corridor near Elevator">
+            <label class="form-label">اسم المكان بالإنجليزي (name_en)</label>
+            <input type="text" id="provNameEn" class="terminal-input" placeholder="e.g. Intersection or Corridor" value="Intersection">
           </div>
+        </div>
+
+        <!-- Inline Add Level Form (Hidden by default, toggled with ➕) -->
+        <div id="inlineAddLevelBox" style="display: none; margin-top: 0.85rem; background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 0.75rem 1rem;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--green); margin-bottom: 0.4rem;">
+            ➕ إضافة دور جديد في جدول levels بـ Supabase
+          </div>
+          <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="newLevelId" class="terminal-input" placeholder="كود الدور (مثال: L4 أو B1)" style="max-width: 140px;">
+            <input type="text" id="newLevelNameAr" class="terminal-input" placeholder="اسم الدور بالعربي (مثال: الدور الرابع)" style="flex: 1; min-width: 180px;">
+            <input type="text" id="newLevelNameEn" class="terminal-input" placeholder="بالإنجليزي (مثال: Fourth Floor)" style="flex: 1; min-width: 160px;">
+            <input type="number" id="newLevelOrder" class="terminal-input" placeholder="ترتيب (1, 2, 3..)" style="max-width: 100px;">
+            <button type="button" class="btn-success" id="btnSubmitNewLevel" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+              💾 حفظ في Supabase
+            </button>
+            <button type="button" class="btn-secondary" id="btnCancelAddLevel" style="padding: 0.5rem 0.8rem; font-size: 0.8rem;">
+              إلغاء
+            </button>
+          </div>
+          <div id="newLevelStatus" style="font-size: 0.75rem; margin-top: 0.35rem; display: none;"></div>
         </div>
       </div>
 
@@ -2590,7 +2683,18 @@
 
     const provNodeId = document.getElementById('provNodeId');
     const provLevelSelect = document.getElementById('provLevelSelect');
-    const provCustomLevel = document.getElementById('provCustomLevel');
+    const provLevelBadge = document.getElementById('provLevelBadge');
+    const btnRefreshLevels = document.getElementById('btnRefreshLevels');
+    const btnToggleAddLevel = document.getElementById('btnToggleAddLevel');
+    const inlineAddLevelBox = document.getElementById('inlineAddLevelBox');
+    const newLevelId = document.getElementById('newLevelId');
+    const newLevelNameAr = document.getElementById('newLevelNameAr');
+    const newLevelNameEn = document.getElementById('newLevelNameEn');
+    const newLevelOrder = document.getElementById('newLevelOrder');
+    const btnSubmitNewLevel = document.getElementById('btnSubmitNewLevel');
+    const btnCancelAddLevel = document.getElementById('btnCancelAddLevel');
+    const newLevelStatus = document.getElementById('newLevelStatus');
+
     const provX = document.getElementById('provX');
     const provY = document.getElementById('provY');
     const provNodeType = document.getElementById('provNodeType');
@@ -2632,6 +2736,7 @@
     let defaultPrinterName = '';
     let isProvisioningBusy = false;
     let provHistoryData = { stats: {}, records: [] };
+    let supabaseLevelsList = [];
 
     // Tab Switching
     tabFlasherBtn.addEventListener('click', () => {
@@ -2649,6 +2754,164 @@
       refreshPrinters();
       refreshProvPorts();
       loadProvHistory();
+      loadSupabaseLevels();
+    });
+
+    // --------------------------------------------------------
+    // Dynamic Supabase Levels Loader
+    // --------------------------------------------------------
+    async function loadSupabaseLevels() {
+      if (!provLevelSelect) return;
+      try {
+        provLevelSelect.innerHTML = '<option value="">⏳ جارٍ جلب الأدوار من Supabase...</option>';
+        if (provLevelBadge) {
+          provLevelBadge.innerHTML = '⏳ جارٍ الاتصال بـ Supabase...';
+          provLevelBadge.style.color = 'var(--cyan)';
+        }
+
+        const res = await fetch('/api/supabase/levels');
+        const data = await res.json();
+
+        if (data.ok && data.levels && data.levels.length > 0) {
+          supabaseLevelsList = data.levels;
+          provLevelSelect.innerHTML = '';
+          data.levels.forEach((l, idx) => {
+            const opt = document.createElement('option');
+            opt.value = l.level_id;
+            const ar = l.name_ar || l.level_id;
+            const en = l.name_en && l.name_en.trim() ? ` (${l.name_en.trim()})` : '';
+            opt.textContent = `${l.level_id} — ${ar}${en}`;
+            if (idx === 0) opt.selected = true;
+            provLevelSelect.appendChild(opt);
+          });
+          if (provLevelBadge) {
+            provLevelBadge.innerHTML = `🟢 متصل بـ Supabase (${data.levels.length} أدوار)`;
+            provLevelBadge.style.color = 'var(--green)';
+            provLevelBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          }
+        } else {
+          fallbackLevels(data.message || 'لا توجد أدوار مسجلة');
+        }
+      } catch (err) {
+        console.error('Failed to load levels from Supabase:', err);
+        fallbackLevels(String(err));
+      }
+      updateStickerPreviews();
+    }
+
+    function fallbackLevels(reason) {
+      provLevelSelect.innerHTML = `
+        <option value="L1" selected>L1 — الدور الأول (First Floor)</option>
+        <option value="L2">L2 — الدور الثاني (Second Floor)</option>
+        <option value="L3">L3 — الدور الثالث</option>
+      `;
+      if (provLevelBadge) {
+        provLevelBadge.innerHTML = `⚠️ وضع احتياطي (${reason})`;
+        provLevelBadge.style.color = 'var(--amber)';
+        provLevelBadge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+      }
+    }
+
+    if (btnRefreshLevels) {
+      btnRefreshLevels.addEventListener('click', () => {
+        loadSupabaseLevels();
+      });
+    }
+
+    // Toggle and Submit Inline Add Level to Supabase
+    if (btnToggleAddLevel) {
+      btnToggleAddLevel.addEventListener('click', () => {
+        const isHidden = inlineAddLevelBox.style.display === 'none';
+        inlineAddLevelBox.style.display = isHidden ? 'block' : 'none';
+      });
+    }
+
+    if (btnCancelAddLevel) {
+      btnCancelAddLevel.addEventListener('click', () => {
+        inlineAddLevelBox.style.display = 'none';
+      });
+    }
+
+    if (btnSubmitNewLevel) {
+      btnSubmitNewLevel.addEventListener('click', async () => {
+        const lid = newLevelId.value.trim().toUpperCase();
+        const nar = newLevelNameAr.value.trim();
+        const nen = newLevelNameEn.value.trim();
+        const lord = parseInt(newLevelOrder.value, 10) || 1;
+
+        if (!lid || !nar) {
+          alert('يرجى إدخال كود الدور والاسم بالعربي');
+          return;
+        }
+
+        btnSubmitNewLevel.disabled = true;
+        newLevelStatus.style.display = 'block';
+        newLevelStatus.innerHTML = '<span style="color:var(--cyan)">⏳ جارٍ حفظ الدور في Supabase...</span>';
+
+        try {
+          const res = await fetch('/api/supabase/levels/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              payload: {
+                level_id: lid,
+                name_ar: nar,
+                name_en: nen || null,
+                level_order: lord
+              }
+            })
+          });
+          const d = await res.json();
+          if (d.ok) {
+            newLevelStatus.innerHTML = `<span style="color:var(--green)">✅ تم حفظ الدور ${lid} بنجاح في Supabase!</span>`;
+            await loadSupabaseLevels();
+            provLevelSelect.value = lid;
+            updateStickerPreviews();
+            setTimeout(() => {
+              inlineAddLevelBox.style.display = 'none';
+              newLevelStatus.style.display = 'none';
+              newLevelId.value = '';
+              newLevelNameAr.value = '';
+              newLevelNameEn.value = '';
+              newLevelOrder.value = '';
+            }, 1200);
+          } else {
+            newLevelStatus.innerHTML = `<span style="color:var(--rose)">❌ فشل الحفظ: ${d.result || 'خطأ'}</span>`;
+          }
+        } catch (e) {
+          newLevelStatus.innerHTML = `<span style="color:var(--rose)">❌ خطأ الاتصال: ${e}</span>`;
+        } finally {
+          btnSubmitNewLevel.disabled = false;
+        }
+      });
+    }
+
+    // --------------------------------------------------------
+    // Quick Pick Place Presets: Intersection, Corridor, POI...
+    // --------------------------------------------------------
+    const presetDefinitions = {
+      intersection: { type: 'intersection', ar: 'تقاطع', en: 'Intersection' },
+      corridor:     { type: 'intersection', ar: 'ممر',   en: 'Corridor' },
+      elevator:     { type: 'poi',          ar: 'أسانسير', en: 'Elevator' },
+      stairs:       { type: 'poi',          ar: 'سلم',    en: 'Stairs' },
+      exit:         { type: 'poi',          ar: 'مخرج طوارئ', en: 'Emergency Exit' },
+      poi:          { type: 'poi',          ar: '',       en: '' }
+    };
+
+    const allPresetChips = document.querySelectorAll('.btn-chip');
+    allPresetChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        allPresetChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+
+        const presetKey = chip.getAttribute('data-preset');
+        const def = presetDefinitions[presetKey];
+        if (def) {
+          provNodeType.value = def.type;
+          provNameAr.value = def.ar;
+          provNameEn.value = def.en;
+        }
+      });
     });
 
     // Format & Generate UID
@@ -3075,6 +3338,14 @@
       setStepState(stepNodeCloud, stepIconCloud, 'active', '☁️', 'حفظ في Supabase...');
       provActionStatusMessage.innerHTML = `<span style="color:var(--cyan)">☁️ [3/4] جاري تسجيل النود في جدول nodes على Supabase...</span>`;
 
+      let facilityType = null;
+      if (nodeType === 'poi') {
+        const arLower = (nameAr || '').toLowerCase();
+        if (arLower.includes('أسانسير') || arLower.includes('مصعد')) facilityType = 'elevator';
+        else if (arLower.includes('سلم')) facilityType = 'stairs';
+        else if (arLower.includes('مخرج') || arLower.includes('طوارئ')) facilityType = 'exit';
+      }
+
       const uuidFormatted = formatAsUuid(uid);
       const nodePayload = {
         node_id: parseInt(nodeId, 10),
@@ -3083,9 +3354,9 @@
         y: y,
         type: nodeType,
         name_ar: nameAr,
-        name_en: nameEn,
+        name_en: nameEn || null,
         esp32_uuid: uuidFormatted,
-        is_active: true
+        facility_type: facilityType
       };
 
       try {
@@ -3099,10 +3370,14 @@
           dbSuccess = true;
           setStepState(stepNodeCloud, stepIconCloud, 'done', '✅', 'تم التسجيل في السحابة');
         } else {
-          setStepState(stepNodeCloud, stepIconCloud, 'error', '⚠️', 'خطأ بالسحابة');
+          console.error('Supabase insert error:', cData);
+          const rawErr = cData.result;
+          const msg = typeof rawErr === 'string' ? rawErr : (rawErr?.message || 'خطأ بالسحابة');
+          setStepState(stepNodeCloud, stepIconCloud, 'error', '⚠️', 'فشل: ' + msg.slice(0, 35));
         }
       } catch (e) {
-        setStepState(stepNodeCloud, stepIconCloud, 'error', '⚠️', 'تعذر الاتصال');
+        console.error('Network error reaching /api/provision/supabase/insert:', e);
+        setStepState(stepNodeCloud, stepIconCloud, 'error', '⚠️', 'تعذر الاتصال بالسيرفر');
       }
 
       // STEP 4: SAVE RECORD IN LOCAL PERSISTENT HISTORY
@@ -3303,11 +3578,12 @@
       URL.revokeObjectURL(url);
     });
 
-    // Generate initial UID & load printers on boot
+    // Generate initial UID & load printers & Supabase levels on boot
     provUidHex.value = generateSecureUidHex();
     updateUidDisplay();
     updateStickerPreviews();
     refreshPrinters();
+    loadSupabaseLevels();
 
   </script>
 </body>

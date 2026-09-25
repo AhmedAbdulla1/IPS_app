@@ -199,6 +199,61 @@ def insert_node_to_supabase(payload, supabase_url, supabase_key):
         return False, f"استثناء الاتصال بـ Supabase: {e}"
 
 
+def fetch_levels_from_supabase(supabase_url, supabase_key):
+    """
+    Fetches all levels from Supabase 'levels' table via REST API.
+    Returns: (success: bool, levels: list, message: str)
+    """
+    if not requests:
+        return False, [], "مكتبة requests غير متوفرة"
+    if not supabase_url or not supabase_key:
+        return False, [], "بيانات اعتماد Supabase مفقودة"
+
+    url = f"{supabase_url.rstrip('/')}/rest/v1/levels?select=level_id,name_ar,name_en,level_order&order=level_order"
+    headers = {
+        "apikey": supabase_key,
+        "Authorization": f"Bearer {supabase_key}",
+    }
+
+    try:
+        res = requests.get(url, headers=headers, timeout=8)
+        if res.status_code == 200:
+            return True, res.json(), "تم جلب الأدوار بنجاح من Supabase"
+        else:
+            return False, [], f"HTTP {res.status_code}: {res.text}"
+    except Exception as e:
+        return False, [], f"استثناء الاتصال بـ Supabase: {e}"
+
+
+def create_level_in_supabase(payload, supabase_url, supabase_key):
+    """
+    Inserts a new level into Supabase 'levels' table via REST API.
+    """
+    if not requests:
+        return False, "مكتبة requests غير متوفرة"
+    if not supabase_url or not supabase_key:
+        return False, "بيانات اعتماد Supabase مفقودة"
+
+    url = f"{supabase_url.rstrip('/')}/rest/v1/levels"
+    headers = {
+        "apikey": supabase_key,
+        "Authorization": f"Bearer {supabase_key}",
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates,return=representation"
+    }
+
+    try:
+        body = [payload] if isinstance(payload, dict) else payload
+        res = requests.post(url, headers=headers, json=body, timeout=8)
+        if res.status_code in (200, 201):
+            return True, res.json()
+        else:
+            return False, f"HTTP {res.status_code}: {res.text}"
+    except Exception as e:
+        return False, f"استثناء الاتصال بـ Supabase: {e}"
+
+
+
 class ProvisioningHistoryStore:
     """
     Thread-safe permanent storage for provisioned nodes in provisioning_history.json.

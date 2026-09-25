@@ -63,10 +63,11 @@ class _ParliamentLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset('assets/images/icon.png',
-    height: 160,
+    return Image.asset(
+      'assets/images/icon.png',
+      height: 160,
       width: 160,
-      fit: BoxFit.fill,
+      fit: BoxFit.contain,
     );
   }
 }

@@ -54,6 +54,8 @@ from provisioning_service import (
     generate_node_uuid_hex,
     format_as_uuid,
     insert_node_to_supabase,
+    fetch_levels_from_supabase,
+    create_level_in_supabase,
     history_store as prov_history_store
 )
 
@@ -642,6 +644,10 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
         elif path == "/api/supabase/config":
             cfg = load_supabase_env()
             self._send_json(cfg)
+        elif path == "/api/supabase/levels":
+            sb_cfg = load_supabase_env()
+            ok, levels, msg = fetch_levels_from_supabase(sb_cfg.get("supabase_url"), sb_cfg.get("supabase_anon_key"))
+            self._send_json({"ok": ok, "levels": levels, "message": msg}, status=200 if ok else 500)
         elif path == "/favicon.ico":
             self.send_response(204)
             self.end_headers()
@@ -813,6 +819,14 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
             sb_url = data.get("supabase_url") or sb_cfg.get("supabase_url")
             sb_key = data.get("supabase_key") or sb_cfg.get("supabase_anon_key")
             ok, res = insert_node_to_supabase(payload, sb_url, sb_key)
+            self._send_json({"ok": ok, "result": res}, status=200 if ok else 400)
+
+        elif path == "/api/supabase/levels/create":
+            payload = data.get("payload", data)
+            sb_cfg = load_supabase_env()
+            sb_url = data.get("supabase_url") or sb_cfg.get("supabase_url")
+            sb_key = data.get("supabase_key") or sb_cfg.get("supabase_anon_key")
+            ok, res = create_level_in_supabase(payload, sb_url, sb_key)
             self._send_json({"ok": ok, "result": res}, status=200 if ok else 400)
 
         else:
