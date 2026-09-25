@@ -38,14 +38,14 @@ dev_dependencies:
 # changes -- editing this file alone does not touch the generated
 # Android/iOS native assets.
 flutter_native_splash:
-  color: "#0a1628"
+  color: "#141414"
   image: assets/images/splash_logo.png
   fullscreen: true
   android_gravity: center
   android_12:
-    color: "#0a1628"
+    color: "#141414"
     image: assets/images/splash_logo.png
-    icon_background_color: "#0a1628"
+    icon_background_color: "#141414"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

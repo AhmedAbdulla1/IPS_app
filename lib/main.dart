@@ -198,7 +198,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'مجلس النواب',
+      title: 'مسار',
       debugShowCheckedModeBanner: false,
       enableLog: !kReleaseMode,
       logWriterCallback: (String text, {bool isError = false}) {

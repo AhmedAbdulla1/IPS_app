@@ -907,6 +907,369 @@
     .history-table tr:hover td {
       background: rgba(255, 255, 255, 0.02);
     }
+  
+    /* ======================================================== */
+    /* Provisioning & Barcode Printer Studio Styles            */
+    /* ======================================================== */
+    .nav-tabs {
+      display: flex;
+      gap: 0.4rem;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .nav-tab {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 0.5rem 1.15rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+    }
+
+    .nav-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab.active {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.18), rgba(59, 130, 246, 0.15));
+      color: #FFFFFF;
+      border-color: rgba(0, 242, 254, 0.4);
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+    }
+
+    .printer-status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: rgba(31, 41, 61, 0.5);
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .printer-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      display: inline-block;
+      transition: all 0.3s;
+    }
+
+    .printer-dot.online {
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .printer-dot.offline {
+      background: var(--rose);
+      box-shadow: 0 0 8px var(--rose);
+    }
+
+    /* Provisioning Section Layout */
+    .prov-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .prov-hero {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(17, 24, 39, 0.9));
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .prov-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .prov-hero-left {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .prov-hero-icon {
+      font-size: 2.8rem;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 14px;
+      width: 65px;
+      height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .prov-hero-info h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .prov-hero-info p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+      max-width: 650px;
+    }
+
+    .prov-hero-stats {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .stat-pill-box {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      text-align: center;
+      min-width: 110px;
+    }
+
+    .stat-val {
+      font-size: 1.7rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--green);
+      line-height: 1;
+    }
+
+    .stat-lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      font-weight: 600;
+    }
+
+    .prov-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 980px) {
+      .prov-grid {
+        grid-template-columns: 1fr;
+      }
+      .prov-hero {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    /* Sticker Visual Preview (Twin Labels) */
+    .sticker-preview-wrapper {
+      background: #080C14;
+      border: 1px dashed rgba(0, 242, 254, 0.25);
+      border-radius: 12px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .sticker-pair-row {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .physical-sticker {
+      background: #FFFFFF;
+      color: #000000;
+      width: 190px;
+      height: 92px;
+      border-radius: 4px;
+      padding: 7px 9px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      user-select: none;
+    }
+
+    .sticker-badge-top {
+      position: absolute;
+      top: -9px;
+      right: 8px;
+      background: #111827;
+      color: var(--cyan);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .sticker-top-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.2;
+      border-bottom: 1px solid #000;
+      padding-bottom: 2px;
+    }
+
+    .sticker-barcode-mock {
+      height: 28px;
+      background: repeating-linear-gradient(90deg,
+        #000 0px, #000 2px,
+        #fff 2px, #fff 3px,
+        #000 3px, #000 6px,
+        #fff 6px, #fff 8px,
+        #000 8px, #000 10px,
+        #fff 10px, #fff 11px,
+        #000 11px, #000 14px,
+        #fff 14px, #fff 16px,
+        #000 16px, #000 17px
+      );
+      margin: 4px 0;
+    }
+
+    .sticker-bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .sticker-logo-mock {
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      background: #000;
+      color: #fff;
+      padding: 1px 4px;
+      border-radius: 2px;
+      font-size: 8px;
+    }
+
+    /* Big One-Click Provisioning Button */
+    .btn-provision-giant {
+      width: 100%;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: #FFFFFF;
+      border: none;
+      padding: 1.1rem 2rem;
+      border-radius: 14px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.85rem;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .btn-provision-giant:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.55);
+      filter: brightness(1.08);
+    }
+
+    .btn-provision-giant:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Stepper Cards */
+    .step-track-box {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.65rem;
+      margin-top: 1rem;
+    }
+
+    .step-node {
+      background: rgba(17, 24, 39, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.7rem 0.6rem;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .step-node.active {
+      border-color: var(--cyan);
+      background: rgba(0, 242, 254, 0.1);
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.15);
+    }
+
+    .step-node.done {
+      border-color: var(--green);
+      background: rgba(16, 185, 129, 0.12);
+    }
+
+    .step-node.error {
+      border-color: var(--rose);
+      background: rgba(244, 63, 94, 0.12);
+    }
+
+    .step-icon {
+      font-size: 1.25rem;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .step-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .step-sub {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
   </style>
 </head>
 <body>
@@ -916,17 +1279,34 @@
     <div class="brand">
       <div class="brand-icon">⚡</div>
       <div>
-        <div class="brand-title">IPS Mesh Multi-Flasher & Terminal</div>
-        <div class="brand-sub">أداة الحرق المتزامن وسجل العمليات الدائم</div>
+        <div class="brand-title">IPS Mesh Multi-Flasher & Provisioning Studio</div>
+        <div class="brand-sub">حرق الفيرموير المتزامن • برمجة البوردات • طباعة ملصقات الباركود</div>
       </div>
     </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" id="tabFlasherBtn">
+        <span>⚡</span> حرق الفيرموير (Multi-Flasher)
+      </button>
+      <button class="nav-tab" id="tabProvisionBtn">
+        <span>🏷️</span> برمجة الـ Beacon وطباعة الباركود (Provisioning)
+      </button>
+    </nav>
+
     <div class="navbar-right">
+      <!-- Printer Status Badge -->
+      <div class="printer-status-badge" id="navPrinterBadge" title="حالة طابعة الباركود الحرارية">
+        <span class="printer-dot" id="navPrinterDot"></span>
+        <span id="navPrinterText">🖨️ فحص الطابعة...</span>
+      </div>
+
       <button class="btn-secondary" id="btnOpenHistory">
-        <span>📜</span> سجل العمليات المحفوظة
+        <span>📜</span> سجل العمليات
       </button>
       <div class="server-status">
         <span class="pulse-dot"></span>
-        <span id="serverStatusText">السيرفر متصل وشغال</span>
+        <span id="serverStatusText">السيرفر متصل</span>
       </div>
     </div>
   </header>
@@ -934,6 +1314,8 @@
   <!-- Main Container -->
   <main class="container">
 
+    <!-- TAB 1: FLASHER VIEW -->
+    <div id="viewFlasher">
     <!-- Lifetime Flashed Hero Card (الدائم الذي لا يصفر أبداً) -->
     <section class="lifetime-banner">
       <div class="lifetime-left">
@@ -1136,7 +1518,338 @@
       </div>
 
     </section>
+    </div>
+    <!-- END TAB 1: FLASHER VIEW -->
 
+    <!-- TAB 2: PROVISIONING & BARCODE PRINTER STUDIO -->
+    <div id="viewProvisioning" style="display: none;" class="prov-container">
+
+      <!-- Provisioning Hero Stats -->
+      <section class="prov-hero">
+        <div class="prov-hero-left">
+          <div class="prov-hero-icon">🏷️</div>
+          <div class="prov-hero-info">
+            <h2>
+              استوديو برمجة الـ Beacons وطباعة الباركود
+              <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.2); color: var(--green); padding: 0.15rem 0.5rem; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                ⚡ Xprinter XP-246B / XP-410B
+              </span>
+            </h2>
+            <p>
+              برمجة معرّف النود (Node UID) مباشرة في ذاكرة NVS على بوردة الـ ESP32، طباعة الملصقين المتزامنين (للجهاز والعلبة)، والربط السحابي مع قاعدة بيانات Supabase.
+            </p>
+          </div>
+        </div>
+
+        <div class="prov-hero-stats">
+          <div class="stat-pill-box">
+            <div class="stat-val" id="provTotalNodes">0</div>
+            <div class="stat-lbl">نود مجهزة</div>
+          </div>
+          <div class="stat-pill-box">
+            <div class="stat-val" id="provTotalLabels">0</div>
+            <div class="stat-lbl">ملصق مطبوع</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Live Hardware Detection Strip (Direct Computer Access) -->
+      <div style="background: rgba(17, 24, 39, 0.95); border: 1px solid rgba(0, 242, 254, 0.35); border-radius: 12px; padding: 0.9rem 1.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 0 15px rgba(0, 242, 254, 0.08);" id="hwDetectBanner">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.5rem;">🔌</span>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">البوردة المكتشفة في النظام (ESP32 Beacon):</div>
+            <div id="hwEspDetail" style="font-size: 0.92rem; font-family: var(--font-mono); color: #fff; margin-top: 2px;">
+              <strong style="color:var(--cyan);">COM9</strong> — Silicon Labs CP210x USB to UART Bridge <span style="background:rgba(16,185,129,0.2); color:var(--green); padding:2px 8px; border-radius:4px; font-size:11px; margin-right:6px;">🟢 متصلة وجاهزة</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.5rem;">🖨️</span>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">طابعة الباركود الحرارية (Thermal Printer):</div>
+            <div id="hwPrinterDetail" style="font-size: 0.92rem; color: #fff; margin-top: 2px;">
+              <strong style="color: var(--green);">Xprinter XP-246B</strong> (منفذ USB001 — رول 38x12 مم) <span style="background:rgba(16,185,129,0.2); color:var(--green); padding:2px 8px; border-radius:4px; font-size:11px; margin-right:6px;">🟢 جاهزة ومتاحة</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-secondary" id="btnHwTestRead" style="font-size: 0.8rem; padding: 0.4rem 0.85rem; font-weight:700; color:var(--cyan); border-color:rgba(0,242,254,0.4);">
+          ⚡ فحص وقراءة البوردة (GET_ID)
+        </button>
+      </div>
+
+      <!-- Main Config Grid (Printer + Beacon Serial) -->
+      <div class="prov-grid">
+
+        <!-- Card 1: Printer Control & Live Sticker Preview -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🖨️ إعدادات طابعة الباركود الحرارية</div>
+            <span class="status-pill pill-success" id="printerCardPill">جاهزة</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.85rem; margin-bottom: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">الطابعة المحددة (Printer)</label>
+              <select id="provPrinterSelect" class="form-select">
+                <option value="">جارٍ كشف الطابعات...</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">نوع الملصق</label>
+              <select id="provPrintMode" class="form-select">
+                <option value="twin" selected>ملصق ثنائي (Twin: جهاز + علبة)</option>
+                <option value="single">ملصق فردي (Single: للجهاز فقط)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Twin Sticker Visual Preview -->
+          <div class="sticker-preview-wrapper">
+            <div style="font-size: 0.8rem; color: var(--cyan); font-weight: 700;">
+              👁️ معاينة بصرية حية لشريط الملصق الحراري (38x12mm)
+            </div>
+            <div class="sticker-pair-row">
+              <!-- Sticker 1 -->
+              <div class="physical-sticker" id="previewSticker1">
+                <div class="sticker-badge-top">ملصق الجهاز</div>
+                <div class="sticker-top-text">
+                  <span>ID:<strong id="prevNodeId1">101</strong></span>
+                  <span>FL:<strong id="prevFloor1">GF</strong></span>
+                </div>
+                <div class="sticker-barcode-mock"></div>
+                <div class="sticker-bottom-row">
+                  <span id="prevBarcodeNum1" style="font-size: 8px;">101</span>
+                  <span class="sticker-logo-mock">TRANEX</span>
+                </div>
+              </div>
+
+              <!-- Sticker 2 -->
+              <div class="physical-sticker" id="previewSticker2">
+                <div class="sticker-badge-top">ملصق العلبة / الكرتونة</div>
+                <div class="sticker-top-text">
+                  <span>ID:<strong id="prevNodeId2">101</strong></span>
+                  <span>FL:<strong id="prevFloor2">GF</strong></span>
+                </div>
+                <div class="sticker-barcode-mock"></div>
+                <div class="sticker-bottom-row">
+                  <span id="prevBarcodeNum2" style="font-size: 8px;">101</span>
+                  <span class="sticker-logo-mock">TRANEX</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Printer Actions -->
+          <div style="display: flex; gap: 0.65rem; margin-top: 1rem; flex-wrap: wrap;">
+            <button class="btn-secondary" id="btnPrinterCalibrate" title="إرسال أمر GAPDETECT لضبط حساسية الفواصل">
+              ⚙️ معايرة الحساس (Gap Detect)
+            </button>
+            <button class="btn-secondary" id="btnPrinterFeed" title="تقديم ملصق واحد للتحقق من خط القطع">
+              📄 تغذية ملصق (FormFeed)
+            </button>
+            <button class="btn-secondary" id="btnPrinterTest" title="طباعة ملصق تجريبي لاختبار المحاذاة">
+              🧪 طباعة تجريبية (Test Print)
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 2: ESP32 Beacon Port & UID Setup -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🔌 اتصال الـ Beacon ومنفذ السيريال</div>
+            <button class="btn-secondary" id="btnProvRefreshPorts" style="font-size: 0.78rem; padding: 0.25rem 0.6rem;">
+              🔄 تحديث المنافذ
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.85rem;">
+            <div class="form-group">
+              <label class="form-label">منفذ السيريال للبوردة (COM Port)</label>
+              <select id="provPortSelect" class="form-select">
+                <option value="">جارٍ البحث عن المنافذ...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">سرعة المنفذ (Baud)</label>
+              <select id="provBaudSelect" class="form-select">
+                <option value="115200" selected>115200 (قياسي)</option>
+                <option value="9600">9600</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- UID Display & Generator -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <label class="form-label" style="margin: 0;">معرّف البوردة المشفر (Node UID - 16 Bytes Hex)</label>
+              <div style="display: flex; gap: 0.4rem;">
+                <button class="btn-secondary" id="btnProvGetId" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;" title="استعلام الـ ESP32 عن الـ UID المخزن حالياً في NVS">
+                  🔍 قراءة الـ UID الحالي (GET_ID)
+                </button>
+                <button class="btn-secondary" id="btnProvGenUid" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">
+                  🎲 توليد UID جديد
+                </button>
+              </div>
+            </div>
+            <input type="text" id="provUidHex" class="terminal-input" style="font-size: 0.95rem; font-family: var(--font-mono); letter-spacing: 1px; color: var(--cyan); text-align: center;" placeholder="32 رمز هيكس (مثال: 7bf0e91ed0eff11f9b4bb3ce8cba4e99)">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">
+              <span>صيغة UUID القياسية: <strong id="provUuidFormatted" style="font-family: var(--font-mono); color: #fff;">--</strong></span>
+              <span id="provUidLen" style="font-family: var(--font-mono);">32 hex chars</span>
+            </div>
+          </div>
+
+          <!-- Direct Serial Terminal Feedback for Provisioning -->
+          <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; font-family: var(--font-mono); font-size: 0.8rem; min-height: 52px; display: flex; align-items: center; justify-content: space-between;">
+            <div id="provSerialStatusText" style="color: var(--text-muted);">جاهز لإرسال الأوامر للبوردة...</div>
+            <button class="btn-secondary" id="btnSendSetIdOnly" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" title="إرسال SET_ID فقط للبوردة دون طباعة أو حفظ سحابي">
+              ⚡ إرسال SET_ID فقط
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Card 3: Node Metadata & Location (Floor, X, Y) -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📍 بيانات النود وموقعها على الخريطة</div>
+          <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: var(--cyan); cursor: pointer; user-select: none;">
+            <input type="checkbox" id="provAutoIncrement" checked style="accent-color: var(--cyan);">
+            <span>زيادة الـ node_id تلقائياً (+1) بعد كل عملية ناجحة</span>
+          </label>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr; gap: 0.85rem;">
+          <div class="form-group">
+            <label class="form-label">رقم النود (node_id) *</label>
+            <input type="number" id="provNodeId" class="terminal-input" value="101" style="font-size: 1.1rem; font-weight: 800; font-family: var(--font-mono); color: #fff;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الدور (Level) *</label>
+            <div style="display: flex; gap: 0.35rem;">
+              <select id="provLevelSelect" class="form-select" style="flex: 1;">
+                <option value="GF" selected>GF (الأرضي)</option>
+                <option value="F1">F1 (الأول)</option>
+                <option value="F2">F2 (الثاني)</option>
+                <option value="B1">B1 (البدروم)</option>
+              </select>
+              <input type="text" id="provCustomLevel" placeholder="مخصص" style="width: 70px; display: none;" class="terminal-input">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الإحداثي X (سم) *</label>
+            <input type="number" id="provX" class="terminal-input" value="1000" style="font-family: var(--font-mono);">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الإحداثي Y (سم) *</label>
+            <input type="number" id="provY" class="terminal-input" value="600" style="font-family: var(--font-mono);">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">نوع النود</label>
+            <select id="provNodeType" class="form-select">
+              <option value="poi" selected>poi (نقطة عادية)</option>
+              <option value="intersection">intersection (تقاطع)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">اسم المكان بالعربي (اختياري)</label>
+            <input type="text" id="provNameAr" class="terminal-input" placeholder="مثال: ممر الطوارئ - أمام المصعد">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">اسم المكان بالإنجليزي (اختياري)</label>
+            <input type="text" id="provNameEn" class="terminal-input" placeholder="e.g. Corridor near Elevator">
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: The ONE-CLICK Provision & Print Giant Action -->
+      <div class="card" style="border-color: rgba(16, 185, 129, 0.4); background: linear-gradient(180deg, rgba(16, 185, 129, 0.05), var(--bg-card));">
+        <button class="btn-provision-giant" id="btnBigProvision">
+          <span style="font-size: 1.6rem;">⚡</span>
+          <span>برمجة الـ Beacon + طباعة الملصقين + الحفظ السحابي</span>
+        </button>
+
+        <!-- 4 Steps Interactive Track -->
+        <div class="step-track-box">
+          <div class="step-node" id="stepNodeSerial">
+            <span class="step-icon" id="stepIconSerial">🔌</span>
+            <div class="step-title">1. برمجة البوردة</div>
+            <div class="step-sub" id="stepSubSerial">إرسال SET_ID وحفظه</div>
+          </div>
+          <div class="step-node" id="stepNodePrint">
+            <span class="step-icon" id="stepIconPrint">🖨️</span>
+            <div class="step-title">2. طباعة الملصقين</div>
+            <div class="step-sub" id="stepSubPrint">Xprinter XP-246B</div>
+          </div>
+          <div class="step-node" id="stepNodeCloud">
+            <span class="step-icon" id="stepIconCloud">☁️</span>
+            <div class="step-title">3. تسجيل السحابة</div>
+            <div class="step-sub" id="stepSubCloud">Supabase nodes table</div>
+          </div>
+          <div class="step-node" id="stepNodeLocal">
+            <span class="step-icon" id="stepIconLocal">💾</span>
+            <div class="step-title">4. التوثيق المحلي</div>
+            <div class="step-sub" id="stepSubLocal">تحديث السجل وزيادة الـ ID</div>
+          </div>
+        </div>
+
+        <div id="provActionStatusMessage" style="margin-top: 0.85rem; font-size: 0.85rem; text-align: center; color: var(--text-muted); min-height: 20px;">
+          جاهز لتنفيذ العملية الموحدة
+        </div>
+      </div>
+
+      <!-- Card 5: Persistent Provisioning History Table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📜 سجل النودز المُجهزة محلياً (Provisioning History)</div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-secondary" id="btnExportProvCsv">
+              <span>⬇️</span> تصدير CSV
+            </button>
+            <button class="btn-secondary" id="btnClearProvHistory" style="color: var(--rose);">
+              <span>🗑️</span> مسح السجل
+            </button>
+          </div>
+        </div>
+
+        <div class="history-table-container" style="max-height: 380px;">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>node_id</th>
+                <th>Node UUID (Hex)</th>
+                <th>الدور والموقع</th>
+                <th>البوردة (Serial)</th>
+                <th>السحابة (DB)</th>
+                <th>الملصقات</th>
+                <th>الوقت</th>
+                <th>إجراءات سريعة</th>
+              </tr>
+            </thead>
+            <tbody id="provHistoryTableBody">
+              <tr>
+                <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                  لا توجد سجلات بعد. قم بتجهيز أول نود لتظهر هنا!
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+    <!-- END TAB 2: PROVISIONING & BARCODE PRINTER STUDIO -->
   </main>
 
   <!-- Interactive Serial Terminal Modal -->
@@ -1378,6 +2091,9 @@
         const data = await res.json();
         availablePorts = data.ports || [];
         renderPortsGrid();
+        if (typeof refreshProvPorts === 'function') {
+          refreshProvPorts();
+        }
       } catch (err) {
         console.error('Failed to load ports:', err);
       }
@@ -1844,6 +2560,755 @@
         loadPorts();
       }
     }, 4000);
+  
+    // ========================================================
+    // Provisioning & Barcode Printer Studio Logic
+    // ========================================================
+    const tabFlasherBtn = document.getElementById('tabFlasherBtn');
+    const tabProvisionBtn = document.getElementById('tabProvisionBtn');
+    const viewFlasher = document.getElementById('viewFlasher');
+    const viewProvisioning = document.getElementById('viewProvisioning');
+
+    const navPrinterBadge = document.getElementById('navPrinterBadge');
+    const navPrinterDot = document.getElementById('navPrinterDot');
+    const navPrinterText = document.getElementById('navPrinterText');
+    const printerCardPill = document.getElementById('printerCardPill');
+
+    const provPrinterSelect = document.getElementById('provPrinterSelect');
+    const provPrintMode = document.getElementById('provPrintMode');
+    const provPortSelect = document.getElementById('provPortSelect');
+    const provBaudSelect = document.getElementById('provBaudSelect');
+    const btnProvRefreshPorts = document.getElementById('btnProvRefreshPorts');
+
+    const provUidHex = document.getElementById('provUidHex');
+    const provUuidFormatted = document.getElementById('provUuidFormatted');
+    const provUidLen = document.getElementById('provUidLen');
+    const btnProvGenUid = document.getElementById('btnProvGenUid');
+    const btnProvGetId = document.getElementById('btnProvGetId');
+    const btnSendSetIdOnly = document.getElementById('btnSendSetIdOnly');
+    const provSerialStatusText = document.getElementById('provSerialStatusText');
+
+    const provNodeId = document.getElementById('provNodeId');
+    const provLevelSelect = document.getElementById('provLevelSelect');
+    const provCustomLevel = document.getElementById('provCustomLevel');
+    const provX = document.getElementById('provX');
+    const provY = document.getElementById('provY');
+    const provNodeType = document.getElementById('provNodeType');
+    const provNameAr = document.getElementById('provNameAr');
+    const provNameEn = document.getElementById('provNameEn');
+    const provAutoIncrement = document.getElementById('provAutoIncrement');
+
+    const prevNodeId1 = document.getElementById('prevNodeId1');
+    const prevNodeId2 = document.getElementById('prevNodeId2');
+    const prevFloor1 = document.getElementById('prevFloor1');
+    const prevFloor2 = document.getElementById('prevFloor2');
+    const prevBarcodeNum1 = document.getElementById('prevBarcodeNum1');
+    const prevBarcodeNum2 = document.getElementById('prevBarcodeNum2');
+
+    const btnPrinterCalibrate = document.getElementById('btnPrinterCalibrate');
+    const btnPrinterFeed = document.getElementById('btnPrinterFeed');
+    const btnPrinterTest = document.getElementById('btnPrinterTest');
+
+    const btnBigProvision = document.getElementById('btnBigProvision');
+    const provActionStatusMessage = document.getElementById('provActionStatusMessage');
+
+    const stepNodeSerial = document.getElementById('stepNodeSerial');
+    const stepNodePrint = document.getElementById('stepNodePrint');
+    const stepNodeCloud = document.getElementById('stepNodeCloud');
+    const stepNodeLocal = document.getElementById('stepNodeLocal');
+
+    const stepIconSerial = document.getElementById('stepIconSerial');
+    const stepIconPrint = document.getElementById('stepIconPrint');
+    const stepIconCloud = document.getElementById('stepIconCloud');
+    const stepIconLocal = document.getElementById('stepIconLocal');
+
+    const provTotalNodes = document.getElementById('provTotalNodes');
+    const provTotalLabels = document.getElementById('provTotalLabels');
+    const provHistoryTableBody = document.getElementById('provHistoryTableBody');
+    const btnExportProvCsv = document.getElementById('btnExportProvCsv');
+    const btnClearProvHistory = document.getElementById('btnClearProvHistory');
+
+    let currentPrintersList = [];
+    let defaultPrinterName = '';
+    let isProvisioningBusy = false;
+    let provHistoryData = { stats: {}, records: [] };
+
+    // Tab Switching
+    tabFlasherBtn.addEventListener('click', () => {
+      tabFlasherBtn.classList.add('active');
+      tabProvisionBtn.classList.remove('active');
+      viewFlasher.style.display = 'block';
+      viewProvisioning.style.display = 'none';
+    });
+
+    tabProvisionBtn.addEventListener('click', () => {
+      tabProvisionBtn.classList.add('active');
+      tabFlasherBtn.classList.remove('active');
+      viewFlasher.style.display = 'none';
+      viewProvisioning.style.display = 'flex';
+      refreshPrinters();
+      refreshProvPorts();
+      loadProvHistory();
+    });
+
+    // Format & Generate UID
+    function generateSecureUidHex() {
+      const arr = new Uint8Array(16);
+      window.crypto.getRandomValues(arr);
+      return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function formatAsUuid(hexStr) {
+      const clean = (hexStr || '').replace(/[^0-9a-fA-F]/g, '').toLowerCase().padStart(32, '0').slice(0, 32);
+      return `${clean.slice(0,8)}-${clean.slice(8,12)}-${clean.slice(12,16)}-${clean.slice(16,20)}-${clean.slice(20,32)}`;
+    }
+
+    function updateUidDisplay() {
+      const val = provUidHex.value.trim().toLowerCase();
+      provUidLen.textContent = `${val.length}/32 hex`;
+      if (val.length === 32) {
+        provUuidFormatted.textContent = formatAsUuid(val);
+        provUidHex.style.borderColor = 'var(--green)';
+      } else {
+        provUuidFormatted.textContent = 'غير مكتمل (يلزم 32 حرفاً)';
+        provUidHex.style.borderColor = val.length ? 'var(--amber)' : 'var(--border)';
+      }
+    }
+
+    provUidHex.addEventListener('input', updateUidDisplay);
+
+    btnProvGenUid.addEventListener('click', () => {
+      provUidHex.value = generateSecureUidHex();
+      updateUidDisplay();
+      provSerialStatusText.innerHTML = '<span style="color:var(--cyan)">🎲 تم توليد معرّف UID عشوائي جديد. جاهز للإرسال للبوردة.</span>';
+    });
+
+    // Update Live Sticker Previews
+    function updateStickerPreviews() {
+      const id = provNodeId.value.trim() || '101';
+      const fl = provLevelSelect.value.trim() || 'GF';
+
+      prevNodeId1.textContent = id;
+      prevNodeId2.textContent = id;
+      prevFloor1.textContent = fl;
+      prevFloor2.textContent = fl;
+      prevBarcodeNum1.textContent = id;
+      prevBarcodeNum2.textContent = id;
+    }
+
+    provNodeId.addEventListener('input', updateStickerPreviews);
+    provLevelSelect.addEventListener('change', updateStickerPreviews);
+
+    // Printers Integration
+    async function refreshPrinters() {
+      try {
+        const res = await fetch('/api/printers');
+        const data = await res.json();
+        currentPrintersList = data.printers || [];
+        defaultPrinterName = data.default_printer || (currentPrintersList[0] ? currentPrintersList[0].name : '');
+
+        provPrinterSelect.innerHTML = '';
+        if (currentPrintersList.length === 0) {
+          provPrinterSelect.innerHTML = '<option value="">لا توجد طابعات مثبتة</option>';
+          updatePrinterBadge(false, 'لا توجد طابعات');
+          return;
+        }
+
+        currentPrintersList.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.name;
+          const tag = p.is_thermal ? ' [THERMAL]' : '';
+          const def = p.is_default ? ' (الافتراضية)' : '';
+          opt.textContent = `${p.name} (${p.port})${def}${tag}`;
+          if (p.is_default || (p.is_thermal && !defaultPrinterName)) {
+            opt.selected = true;
+          }
+          provPrinterSelect.appendChild(opt);
+        });
+
+        checkSelectedPrinterStatus();
+      } catch (err) {
+        console.error('Failed to load printers:', err);
+        updatePrinterBadge(false, 'خطأ اتصال');
+      }
+    }
+
+    async function checkSelectedPrinterStatus() {
+      const pName = provPrinterSelect.value || defaultPrinterName;
+      if (!pName) return;
+
+      try {
+        const res = await fetch(`/api/printer/status?printer=${encodeURIComponent(pName)}`);
+        const data = await res.json();
+        const ok = data.connected;
+        updatePrinterBadge(ok, data.name, data.message);
+      } catch (err) {
+        updatePrinterBadge(false, pName, 'غير مستجيبة');
+      }
+    }
+
+    function updatePrinterBadge(online, name, message) {
+      if (online) {
+        navPrinterDot.className = 'printer-dot online';
+        navPrinterText.textContent = `🖨️ ${name || 'الطابعة'}: جاهزة`;
+        navPrinterBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        printerCardPill.className = 'status-pill pill-success';
+        printerCardPill.textContent = 'جاهزة ومتاحة';
+      } else {
+        navPrinterDot.className = 'printer-dot offline';
+        navPrinterText.textContent = `🖨️ ${name || 'الطابعة'}: غير متصلة`;
+        navPrinterBadge.style.borderColor = 'rgba(244, 63, 94, 0.4)';
+        printerCardPill.className = 'status-pill pill-error';
+        printerCardPill.textContent = message || 'غير متصلة';
+      }
+    }
+
+    provPrinterSelect.addEventListener('change', checkSelectedPrinterStatus);
+
+    // Quick Printer Commands
+    btnPrinterCalibrate.addEventListener('click', async () => {
+      const p = provPrinterSelect.value;
+      btnPrinterCalibrate.disabled = true;
+      btnPrinterCalibrate.textContent = '⏳ جارٍ المعايرة...';
+      try {
+        const res = await fetch('/api/printer/calibrate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ printer_name: p })
+        });
+        const d = await res.json();
+        alert(d.message || (d.ok ? 'تمت معايرة الحساس بنجاح!' : 'فشلت المعايرة'));
+      } catch (e) {
+        alert('خطأ أثناء المعايرة: ' + e);
+      } finally {
+        btnPrinterCalibrate.disabled = false;
+        btnPrinterCalibrate.textContent = '⚙️ معايرة الحساس (Gap Detect)';
+      }
+    });
+
+    btnPrinterFeed.addEventListener('click', async () => {
+      const p = provPrinterSelect.value;
+      try {
+        await fetch('/api/printer/feed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ printer_name: p })
+        });
+      } catch (e) {
+        alert('خطأ أثناء التغذية: ' + e);
+      }
+    });
+
+    btnPrinterTest.addEventListener('click', async () => {
+      const p = provPrinterSelect.value;
+      btnPrinterTest.disabled = true;
+      btnPrinterTest.textContent = '⏳ جاري الطباعة...';
+      try {
+        const res = await fetch('/api/printer/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ printer_name: p })
+        });
+        const d = await res.json();
+        alert(d.message || (d.ok ? 'تم إرسال الملصق التجريبي للطابعة بنجاح!' : 'فشل الطباعة'));
+      } catch (e) {
+        alert('خطأ: ' + e);
+      } finally {
+        btnPrinterTest.disabled = false;
+        btnPrinterTest.textContent = '🧪 طباعة تجريبية (Test Print)';
+      }
+    });
+
+    // Ports for Provisioning (Smart Hardware Identification)
+    let espDetectedPort = null;
+    function refreshProvPorts() {
+      provPortSelect.innerHTML = '';
+      if (!availablePorts || availablePorts.length === 0) {
+        provPortSelect.innerHTML = '<option value="">❌ لا توجد أي منافذ متصلة بالجهاز</option>';
+        updateHwDetectBanner(null);
+        return;
+      }
+
+      let selected = false;
+      espDetectedPort = null;
+
+      availablePorts.forEach(port => {
+        const opt = document.createElement('option');
+        opt.value = port.port;
+        const descText = port.description || port.desc || 'منفذ تسلسلي';
+        const descLower = descText.toLowerCase();
+        
+        let typeBadge = '';
+        const isEsp = port.is_esp || port.port === 'COM9' || descLower.includes('cp210') || descLower.includes('ch340') || descLower.includes('uart') || descLower.includes('silicon labs');
+        const isBluetooth = descLower.includes('bluetooth');
+        const isIntel = descLower.includes('intel') || descLower.includes('amt');
+
+        if (isEsp) {
+          typeBadge = ' ⚡ [بوردة ESP32 Beacon]';
+        } else if (isBluetooth) {
+          typeBadge = ' 📶 [بلوتوث افتراضي]';
+        } else if (isIntel) {
+          typeBadge = ' ⚙️ [نظام Intel AMT]';
+        } else {
+          typeBadge = ' 🔌 [منفذ تسلسلي]';
+        }
+
+        opt.textContent = `${port.port} — ${descText}${typeBadge}`;
+        
+        if (isEsp && !selected) {
+          opt.selected = true;
+          selected = true;
+          espDetectedPort = port;
+        }
+        provPortSelect.appendChild(opt);
+      });
+
+      if (!selected && availablePorts.length > 0) {
+        provPortSelect.selectedIndex = 0;
+        espDetectedPort = availablePorts[0];
+      }
+
+      updateHwDetectBanner(espDetectedPort);
+    }
+
+    function updateHwDetectBanner(portObj) {
+      const espText = document.getElementById('hwEspDetail');
+      if (!espText) return;
+
+      if (!portObj) {
+        espText.innerHTML = `<span style="color:var(--rose);">❌ لم يتم العثور على بوردة متصلة بجهاز الكمبيوتر</span>`;
+        return;
+      }
+
+      const descText = portObj.description || portObj.desc || 'منفذ تسلسلي';
+      const descLower = descText.toLowerCase();
+      const isEsp = portObj.is_esp || portObj.port === 'COM9' || descLower.includes('cp210') || descLower.includes('ch340') || descLower.includes('uart');
+
+      if (isEsp) {
+        espText.innerHTML = `<strong style="color:var(--cyan); font-size:1.05rem;">${portObj.port}</strong> — <span style="color:#fff;">${descText}</span> <span style="background:rgba(16,185,129,0.2); color:var(--green); padding:2px 8px; border-radius:4px; font-size:11px; margin-right:6px;">🟢 بوردة Beacon جاهزة للبرمجة</span>`;
+      } else {
+        espText.innerHTML = `<strong style="color:var(--amber); font-size:1rem;">${portObj.port}</strong> — <span style="color:#fff;">${descText}</span> <span style="background:rgba(245,158,11,0.2); color:var(--amber); padding:2px 8px; border-radius:4px; font-size:11px; margin-right:6px;">⚠️ ليس ESP32</span>`;
+      }
+    }
+
+    provPortSelect.addEventListener('change', () => {
+      const selPort = provPortSelect.value;
+      const matched = availablePorts.find(p => p.port === selPort);
+      updateHwDetectBanner(matched);
+    });
+
+    const btnHwTestRead = document.getElementById('btnHwTestRead');
+    if (btnHwTestRead) {
+      btnHwTestRead.addEventListener('click', () => {
+        btnProvGetId.click();
+      });
+    }
+
+    btnProvRefreshPorts.addEventListener('click', () => {
+      loadPorts().then(refreshProvPorts);
+    });
+
+    // Query Current UID from Beacon (GET_ID)
+    btnProvGetId.addEventListener('click', async () => {
+      const port = provPortSelect.value;
+      const baud = parseInt(provBaudSelect.value, 10) || 115200;
+      if (!port) {
+        alert('يرجى اختيار منفذ السيريال المتصل بالبوردة أولاً');
+        return;
+      }
+
+      btnProvGetId.disabled = true;
+      btnProvGetId.textContent = '⏳ جاري القراءة...';
+      provSerialStatusText.innerHTML = `<span style="color:var(--cyan)">🔌 جارٍ إرسال GET_ID عبر ${port}...</span>`;
+
+      try {
+        const res = await fetch('/api/provision/get_id', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ port, baud })
+        });
+        const data = await res.json();
+        if (data.ok && data.uid) {
+          provUidHex.value = data.uid;
+          updateUidDisplay();
+          provSerialStatusText.innerHTML = `<span style="color:var(--green)">✅ تم استلام الـ UID المخزن بالبوردة: ${data.uid}</span>`;
+        } else {
+          provSerialStatusText.innerHTML = `<span style="color:var(--amber)">⚠️ لم يتم استخراج UID. الرد: ${data.raw || 'لا رد'}</span>`;
+        }
+      } catch (err) {
+        provSerialStatusText.innerHTML = `<span style="color:var(--rose)">❌ خطأ الاتصال بالمنفذ: ${err}</span>`;
+      } finally {
+        btnProvGetId.disabled = false;
+        btnProvGetId.textContent = '🔍 قراءة الـ UID الحالي (GET_ID)';
+      }
+    });
+
+    // Send SET_ID Only
+    btnSendSetIdOnly.addEventListener('click', async () => {
+      const port = provPortSelect.value;
+      const uid = provUidHex.value.trim();
+      const baud = parseInt(provBaudSelect.value, 10) || 115200;
+
+      if (!port) {
+        alert('يرجى اختيار منفذ السيريال');
+        return;
+      }
+      if (!uid || uid.length !== 32) {
+        alert('يرجى إدخال UID صالح مكون من 32 رمز hex');
+        return;
+      }
+
+      btnSendSetIdOnly.disabled = true;
+      provSerialStatusText.innerHTML = `<span style="color:var(--cyan)">⚡ جاري إرسال SET_ID:${uid} للبوردة...</span>`;
+
+      try {
+        const res = await fetch('/api/provision/send_id', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ port, uid, baud })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          provSerialStatusText.innerHTML = `<span style="color:var(--green)">✅ ${data.message}</span>`;
+        } else {
+          provSerialStatusText.innerHTML = `<span style="color:var(--rose)">❌ ${data.message} (${data.raw || ''})</span>`;
+        }
+      } catch (err) {
+        provSerialStatusText.innerHTML = `<span style="color:var(--rose)">❌ خطأ: ${err}</span>`;
+      } finally {
+        btnSendSetIdOnly.disabled = false;
+      }
+    });
+
+    // ========================================================
+    // THE GIANT ONE-CLICK PROVISION & PRINT ACTION
+    // ========================================================
+    btnBigProvision.addEventListener('click', async () => {
+      if (isProvisioningBusy) return;
+
+      const port = provPortSelect.value;
+      let uid = provUidHex.value.trim().toLowerCase();
+      const nodeId = provNodeId.value.trim();
+      const levelId = provLevelSelect.value;
+      const x = parseFloat(provX.value) || 0;
+      const y = parseFloat(provY.value) || 0;
+      const nodeType = provNodeType.value || 'poi';
+      const nameAr = provNameAr.value.trim() || `نقطة ${nodeId} - ${levelId}`;
+      const nameEn = provNameEn.value.trim() || `Node ${nodeId}`;
+      const printerName = provPrinterSelect.value || defaultPrinterName;
+      const printMode = provPrintMode.value || 'twin';
+      const baud = parseInt(provBaudSelect.value, 10) || 115200;
+
+      if (!nodeId) {
+        alert('يرجى إدخال رقم النود (node_id)');
+        provNodeId.focus();
+        return;
+      }
+
+      if (!uid || uid.length !== 32) {
+        uid = generateSecureUidHex();
+        provUidHex.value = uid;
+        updateUidDisplay();
+      }
+
+      isProvisioningBusy = true;
+      btnBigProvision.disabled = true;
+      resetStepTrackers();
+
+      let serialSuccess = false;
+      let printSuccess = false;
+      let dbSuccess = false;
+
+      // STEP 1: SERIAL PROVISIONING (SET_ID)
+      setStepState(stepNodeSerial, stepIconSerial, 'active', '🔌', 'جاري إرسال SET_ID...');
+      provActionStatusMessage.innerHTML = `<span style="color:var(--cyan)">🔌 [1/4] إرسال SET_ID:${uid} للبوردة على ${port || 'المنفذ'}...</span>`;
+
+      if (port) {
+        try {
+          const sRes = await fetch('/api/provision/send_id', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ port, uid, baud })
+          });
+          const sData = await sRes.json();
+          if (sData.ok) {
+            serialSuccess = true;
+            setStepState(stepNodeSerial, stepIconSerial, 'done', '✅', 'تم الحفظ في NVS');
+          } else {
+            setStepState(stepNodeSerial, stepIconSerial, 'error', '⚠️', 'رد غير مؤكد');
+          }
+        } catch (e) {
+          setStepState(stepNodeSerial, stepIconSerial, 'error', '❌', 'فشل المنفذ');
+        }
+      } else {
+        setStepState(stepNodeSerial, stepIconSerial, 'error', '⚠️', 'لم يحدد منفذ');
+      }
+
+      // STEP 2: PRINT LABELS (TWIN / SINGLE)
+      setStepState(stepNodePrint, stepIconPrint, 'active', '🖨️', 'إرسال أمر الطباعة...');
+      provActionStatusMessage.innerHTML = `<span style="color:var(--cyan)">🖨️ [2/4] جاري إرسال الملصق للطابعة ${printerName}...</span>`;
+
+      try {
+        const pRes = await fetch('/api/printer/print', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            node_id: nodeId,
+            floor: levelId,
+            printer_name: printerName,
+            mode: printMode,
+            copies: 1
+          })
+        });
+        const pData = await pRes.json();
+        if (pData.ok) {
+          printSuccess = true;
+          setStepState(stepNodePrint, stepIconPrint, 'done', '✅', 'تمت الطباعة بنجاح');
+        } else {
+          setStepState(stepNodePrint, stepIconPrint, 'error', '❌', pData.message || 'فشل الطباعة');
+        }
+      } catch (e) {
+        setStepState(stepNodePrint, stepIconPrint, 'error', '❌', 'خطأ في الطابعة: ' + e);
+      }
+
+      // STEP 3: INSERT TO SUPABASE
+      setStepState(stepNodeCloud, stepIconCloud, 'active', '☁️', 'حفظ في Supabase...');
+      provActionStatusMessage.innerHTML = `<span style="color:var(--cyan)">☁️ [3/4] جاري تسجيل النود في جدول nodes على Supabase...</span>`;
+
+      const uuidFormatted = formatAsUuid(uid);
+      const nodePayload = {
+        node_id: parseInt(nodeId, 10),
+        level_id: levelId,
+        x: x,
+        y: y,
+        type: nodeType,
+        name_ar: nameAr,
+        name_en: nameEn,
+        esp32_uuid: uuidFormatted,
+        is_active: true
+      };
+
+      try {
+        const cRes = await fetch('/api/provision/supabase/insert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payload: nodePayload })
+        });
+        const cData = await cRes.json();
+        if (cData.ok) {
+          dbSuccess = true;
+          setStepState(stepNodeCloud, stepIconCloud, 'done', '✅', 'تم التسجيل في السحابة');
+        } else {
+          setStepState(stepNodeCloud, stepIconCloud, 'error', '⚠️', 'خطأ بالسحابة');
+        }
+      } catch (e) {
+        setStepState(stepNodeCloud, stepIconCloud, 'error', '⚠️', 'تعذر الاتصال');
+      }
+
+      // STEP 4: SAVE RECORD IN LOCAL PERSISTENT HISTORY
+      setStepState(stepNodeLocal, stepIconLocal, 'active', '💾', 'حفظ السجل المحلي...');
+      provActionStatusMessage.innerHTML = `<span style="color:var(--cyan)">💾 [4/4] توثيق العملية في السجل الدائم...</span>`;
+
+      try {
+        const record = {
+          node_id: nodeId,
+          level_id: levelId,
+          x: x,
+          y: y,
+          type: nodeType,
+          name_ar: nameAr,
+          name_en: nameEn,
+          esp32_uuid: uid,
+          port: port,
+          serial_ok: serialSuccess,
+          db_ok: dbSuccess,
+          print_ok: printSuccess
+        };
+        await fetch('/api/provision/history/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ record })
+        });
+        setStepState(stepNodeLocal, stepIconLocal, 'done', '✅', 'تم التوثيق محلياً');
+      } catch (e) {
+        setStepState(stepNodeLocal, stepIconLocal, 'error', '⚠️', 'خطأ بالحفظ');
+      }
+
+      // Final wrap up & auto increment
+      await loadProvHistory();
+
+      if (provAutoIncrement.checked) {
+        const nextId = parseInt(nodeId, 10) + 1;
+        provNodeId.value = nextId;
+        updateStickerPreviews();
+      }
+
+      // Generate a fresh random UID ready for the next node
+      provUidHex.value = generateSecureUidHex();
+      updateUidDisplay();
+
+      const overallOk = printSuccess || serialSuccess;
+      provActionStatusMessage.innerHTML = overallOk
+        ? `<strong style="color:var(--green)">🎉 اكتملت العملية بنجاح للنود ${nodeId}! الملصق جاهز وتم تحديث السجل.</strong>`
+        : `<strong style="color:var(--rose)">⚠️ انتهت العملية مع بعض التنبيهات. يرجى مراجعة الخطوات أعلاه.</strong>`;
+
+      isProvisioningBusy = false;
+      btnBigProvision.disabled = false;
+    });
+
+    function resetStepTrackers() {
+      [stepNodeSerial, stepNodePrint, stepNodeCloud, stepNodeLocal].forEach(n => {
+        n.className = 'step-node';
+      });
+      stepIconSerial.textContent = '🔌';
+      stepIconPrint.textContent = '🖨️';
+      stepIconCloud.textContent = '☁️';
+      stepIconLocal.textContent = '💾';
+    }
+
+    function setStepState(node, iconEl, state, iconChar, subText) {
+      node.className = `step-node ${state}`;
+      if (iconChar) iconEl.textContent = iconChar;
+      const sub = node.querySelector('.step-sub');
+      if (sub && subText) sub.textContent = subText;
+    }
+
+    // Load Provisioning History
+    async function loadProvHistory() {
+      try {
+        const res = await fetch('/api/provision/history');
+        const data = await res.json();
+        provHistoryData = data;
+
+        const stats = data.stats || {};
+        provTotalNodes.textContent = stats.total_provisioned || (data.records ? data.records.length : 0);
+        provTotalLabels.textContent = stats.total_labels_printed || 0;
+
+        renderProvHistoryRows(data.records || []);
+      } catch (err) {
+        console.error('Failed to load prov history:', err);
+      }
+    }
+
+    function renderProvHistoryRows(records) {
+      provHistoryTableBody.innerHTML = '';
+      if (!records || records.length === 0) {
+        provHistoryTableBody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+              لا توجد سجلات بعد. قم بتجهيز أول نود لتظهر هنا!
+            </td>
+          </tr>`;
+        return;
+      }
+
+      records.forEach(r => {
+        const tr = document.createElement('tr');
+        const serialBadge = r.serial_ok ? '<span style="color:var(--green)">✅ نعم</span>' : '<span style="color:var(--rose)">❌ لا</span>';
+        const dbBadge = r.db_ok ? '<span style="color:var(--green)">✅ مسجل</span>' : '<span style="color:var(--amber)">⚠️ معلق</span>';
+        const printCount = r.printed_count || (r.print_ok ? 1 : 0);
+        const uidShort = (r.esp32_uuid || '').slice(0, 8) + '...';
+
+        tr.innerHTML = `
+          <td style="font-family: var(--font-mono); color: var(--text-muted);">${r.id}</td>
+          <td style="font-weight: 800; color: #fff; font-family: var(--font-mono); font-size: 1.05rem;">${r.node_id}</td>
+          <td>
+            <code style="font-family: var(--font-mono); color: var(--cyan); cursor: pointer;" title="انقر للنسخ: ${r.esp32_uuid}" onclick="navigator.clipboard.writeText('${r.esp32_uuid}'); alert('تم نسخ الـ UID');">${uidShort}</code>
+          </td>
+          <td><strong style="color: #fff;">${r.level_id || 'GF'}</strong> (X:${r.x}, Y:${r.y})</td>
+          <td>${serialBadge}</td>
+          <td>${dbBadge}</td>
+          <td>
+            <span class="port-badge ${printCount > 0 ? 'badge-esp' : 'badge-generic'}">🖨️ ${printCount}</span>
+          </td>
+          <td style="font-size: 0.78rem; color: var(--text-muted);">${r.timestamp || '--'}</td>
+          <td>
+            <div style="display: flex; gap: 0.35rem;">
+              <button class="btn-secondary" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;" title="إعادة طباعة الملصق فوراً" onclick="reprintNodeLabel('${r.node_id}', '${r.level_id || 'GF'}')">
+                🖨️ إعادة طباعة
+              </button>
+              <button class="btn-secondary" style="font-size: 0.75rem; padding: 0.2rem 0.4rem; color: var(--rose);" title="حذف من السجل" onclick="deleteProvRecord(${r.id})">
+                ✕
+              </button>
+            </div>
+          </td>
+        `;
+        provHistoryTableBody.appendChild(tr);
+      });
+    }
+
+    // Global helper for reprint
+    window.reprintNodeLabel = async function(nodeId, floor) {
+      const p = provPrinterSelect.value || defaultPrinterName;
+      try {
+        const res = await fetch('/api/printer/print', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ node_id: nodeId, floor: floor, printer_name: p, mode: 'twin' })
+        });
+        const d = await res.json();
+        if (d.ok) {
+          alert(`تم إرسال أمر إعادة طباعة ملصق النود ${nodeId} بنجاح!`);
+          loadProvHistory();
+        } else {
+          alert('فشلت إعادة الطباعة: ' + d.message);
+        }
+      } catch (err) {
+        alert('خطأ: ' + err);
+      }
+    };
+
+    window.deleteProvRecord = async function(id) {
+      if (!confirm(`هل أنت متأكد من حذف السجل رقم ${id}؟`)) return;
+      try {
+        await fetch('/api/provision/history/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        loadProvHistory();
+      } catch (e) {
+        alert('فشل الحذف: ' + e);
+      }
+    };
+
+    btnClearProvHistory.addEventListener('click', async () => {
+      if (!confirm('هل أنت متأكد من رغبتك في مسح سجل التجهيز بالكامل؟ لا يمكن التراجع عن هذه الخطوة.')) return;
+      try {
+        await fetch('/api/provision/history/clear', { method: 'POST' });
+        loadProvHistory();
+      } catch (e) {
+        alert('خطأ: ' + e);
+      }
+    });
+
+    btnExportProvCsv.addEventListener('click', () => {
+      const records = provHistoryData.records || [];
+      if (records.length === 0) {
+        alert('لا توجد سجلات لتصديرها');
+        return;
+      }
+
+      let csv = 'ID,Node_ID,Floor,X_cm,Y_cm,Type,Name_AR,Name_EN,UUID,Serial_OK,DB_OK,Prints,Timestamp\n';
+      records.forEach(r => {
+        csv += `${r.id},"${r.node_id}","${r.level_id}",${r.x},${r.y},"${r.type}","${r.name_ar}","${r.name_en}","${r.esp32_uuid}",${r.serial_ok},${r.db_ok},${r.printed_count || 1},"${r.timestamp}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `IPS_Provisioned_Nodes_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Generate initial UID & load printers on boot
+    provUidHex.value = generateSecureUidHex();
+    updateUidDisplay();
+    updateStickerPreviews();
+    refreshPrinters();
+
   </script>
 </body>
 </html>

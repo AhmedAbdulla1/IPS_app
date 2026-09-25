@@ -34,6 +34,46 @@ FIRMWARE_DIR = PROJECT_ROOT
 UI_DIR = SCRIPT_DIR / "flasher-ui"
 HISTORY_FILE = SCRIPT_DIR / "flasher_history.json"
 
+# Import dedicated Printer & Provisioning Services
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from printer_service import (
+    list_printers,
+    get_default_printer,
+    get_printer_status,
+    print_twin_label,
+    print_single_label,
+    print_calibration_test,
+    calibrate_gap,
+    feed_label
+)
+from provisioning_service import (
+    send_set_id,
+    send_get_id,
+    generate_node_uuid_hex,
+    format_as_uuid,
+    insert_node_to_supabase,
+    history_store as prov_history_store
+)
+
+def load_supabase_env():
+    """Reads default Supabase credentials from .env in workspace root."""
+    env_file = PROJECT_ROOT.parent / ".env"
+    cfg = {"supabase_url": "", "supabase_anon_key": ""}
+    if env_file.exists():
+        try:
+            with open(env_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("SUPABASE_URL="):
+                        cfg["supabase_url"] = line.split("=", 1)[1].strip()
+                    elif line.startswith("SUPABASE_ANON_KEY="):
+                        cfg["supabase_anon_key"] = line.split("=", 1)[1].strip()
+        except Exception:
+            pass
+    return cfg
+
 # Find ESP-IDF Python and esptool
 def find_esp_tools():
     direct_candidates = [
@@ -378,7 +418,9 @@ def get_connected_ports():
         ports.append({
             "port": p.device,
             "description": p.description or "Serial Port",
+            "desc": p.description or "Serial Port",
             "manufacturer": p.manufacturer or "",
+            "hwid": p.hwid or "",
             "is_esp": is_esp,
             "terminal_open": is_open_in_term
         })
@@ -556,6 +598,13 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(UI_DIR), **kwargs)
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, apikey")
+        self.end_headers()
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
@@ -578,6 +627,21 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
             since = int(qs.get("since", [0])[0])
             res = terminal_manager.poll_lines(port, since_id=since)
             self._send_json(res)
+        elif path == "/api/printers":
+            printers = list_printers()
+            default_p = get_default_printer()
+            self._send_json({"printers": printers, "default_printer": default_p})
+        elif path == "/api/printer/status":
+            qs = parse_qs(parsed.query)
+            p_name = qs.get("printer", [""])[0] or None
+            status = get_printer_status(p_name)
+            self._send_json(status)
+        elif path == "/api/provision/history":
+            hist = prov_history_store.get_data()
+            self._send_json(hist)
+        elif path == "/api/supabase/config":
+            cfg = load_supabase_env()
+            self._send_json(cfg)
         elif path == "/favicon.ico":
             self.send_response(204)
             self.end_headers()
@@ -653,6 +717,104 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
             terminal_manager.close_port(port)
             self._send_json({"ok": True, "message": "Closed"})
 
+        elif path == "/api/printer/print":
+            node_id = str(data.get("node_id", "101")).strip()
+            floor = str(data.get("floor", "GF")).strip()
+            p_name = data.get("printer_name") or None
+            mode = data.get("mode", "twin")
+            copies = int(data.get("copies", 1))
+            height_mm = float(data.get("height_mm", 24.0))
+            gap_mm = float(data.get("gap_mm", 3.0))
+            offset_y = int(data.get("offset_y", 0))
+            if "offset_mm" in data:
+                offset_y = int(round(float(data["offset_mm"]) * 8))
+            inter_gap_dots = 8
+            if "inter_gap_mm" in data:
+                inter_gap_dots = int(round(float(data["inter_gap_mm"]) * 8))
+
+            if mode == "single":
+                ok, msg = print_single_label(node_id, floor, printer_name=p_name, copies=copies, height_mm=height_mm, gap_mm=gap_mm, offset_y=offset_y)
+            else:
+                ok, msg = print_twin_label(node_id, floor, printer_name=p_name, copies=copies, height_mm=height_mm, gap_mm=gap_mm, offset_y=offset_y, inter_gap_dots=inter_gap_dots)
+
+            if ok:
+                prov_history_store.record_print_event(node_id)
+            self._send_json({"ok": ok, "message": msg}, status=200 if ok else 500)
+
+        elif path == "/api/printer/calibrate":
+            p_name = data.get("printer_name") or None
+            ok, msg = calibrate_gap(p_name)
+            self._send_json({"ok": ok, "message": msg}, status=200 if ok else 500)
+
+        elif path == "/api/printer/feed":
+            p_name = data.get("printer_name") or None
+            height_mm = float(data.get("height_mm", 24.0))
+            gap_mm = float(data.get("gap_mm", 3.0))
+            ok, msg = feed_label(p_name, height_mm=height_mm, gap_mm=gap_mm)
+            self._send_json({"ok": ok, "message": msg}, status=200 if ok else 500)
+
+        elif path == "/api/printer/calibrate_ruler":
+            p_name = data.get("printer_name") or None
+            height_mm = float(data.get("height_mm", 24.0))
+            gap_mm = float(data.get("gap_mm", 3.0))
+            copies = int(data.get("copies", 1))
+            ok, msg = print_calibration_test(p_name, height_mm=height_mm, gap_mm=gap_mm, copies=copies)
+            self._send_json({"ok": ok, "message": msg}, status=200 if ok else 500)
+
+        elif path == "/api/printer/test":
+            p_name = data.get("printer_name") or None
+            height_mm = float(data.get("height_mm", 24.0))
+            gap_mm = float(data.get("gap_mm", 3.0))
+            copies = int(data.get("copies", 1))
+            ok, msg = print_twin_label("999", "TEST", printer_name=p_name, copies=copies, height_mm=height_mm, gap_mm=gap_mm)
+            self._send_json({"ok": ok, "message": msg}, status=200 if ok else 500)
+
+        elif path == "/api/provision/send_id":
+            port = data.get("port", "")
+            uid = data.get("uid", "")
+            baud = int(data.get("baud", 115200))
+            if not port:
+                self._send_json({"error": "No COM port specified"}, status=400)
+                return
+            if not uid:
+                uid = generate_node_uuid_hex()
+            terminal_manager.close_port(port)
+            ok, msg, raw = send_set_id(port, uid, baud)
+            self._send_json({"ok": ok, "message": msg, "uid": uid, "raw": raw}, status=200 if ok else 400)
+
+        elif path == "/api/provision/get_id":
+            port = data.get("port", "")
+            baud = int(data.get("baud", 115200))
+            if not port:
+                self._send_json({"error": "No COM port specified"}, status=400)
+                return
+            terminal_manager.close_port(port)
+            ok, uid, raw = send_get_id(port, baud)
+            self._send_json({"ok": ok, "uid": uid, "raw": raw}, status=200 if ok else 400)
+
+        elif path == "/api/provision/history/save":
+            record = data.get("record", data)
+            saved = prov_history_store.add_record(record)
+            self._send_json({"ok": True, "record": saved})
+
+        elif path == "/api/provision/history/delete":
+            rec_id = data.get("id")
+            if rec_id is not None:
+                prov_history_store.delete_record(rec_id)
+            self._send_json({"ok": True})
+
+        elif path == "/api/provision/history/clear":
+            prov_history_store.clear_all()
+            self._send_json({"ok": True})
+
+        elif path == "/api/provision/supabase/insert":
+            payload = data.get("payload", {})
+            sb_cfg = load_supabase_env()
+            sb_url = data.get("supabase_url") or sb_cfg.get("supabase_url")
+            sb_key = data.get("supabase_key") or sb_cfg.get("supabase_anon_key")
+            ok, res = insert_node_to_supabase(payload, sb_url, sb_key)
+            self._send_json({"ok": ok, "result": res}, status=200 if ok else 400)
+
         else:
             self._send_json({"error": "Not found"}, status=404)
 
@@ -684,10 +846,13 @@ def run_server(port=8585, open_browser=True):
 
     url = f"http://localhost:{port}"
     print(f"\n=======================================================")
-    print(f"  ⚡ ESP32 Multi-Flasher with Persistent History & Terminal")
+    print(f"  ⚡ IPS Flasher & Provisioning Studio (with Barcode Printer)")
     print(f"  🌐 URL: {url}")
-    print(f"  📁 Database: {HISTORY_FILE}")
-    print(f"  📊 Initial Success Count: {history_store.get_stats().get('total_flashed_success', 7)}")
+    print(f"  🖨️ Default Printer: {get_default_printer()}")
+    print(f"  📁 Flasher DB: {HISTORY_FILE.name}")
+    print(f"  🏷️ Provisioning DB: provisioning_history.json")
+    print(f"  📊 Flashed Boards: {history_store.get_stats().get('total_flashed_success', 7)}")
+    print(f"  🏷️ Provisioned Nodes: {prov_history_store.get_data()['stats'].get('total_provisioned', 0)}")
     print(f"  Press Ctrl+C to stop the server")
     print(f"=======================================================\n")
 
