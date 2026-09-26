@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سياسة الخصوصية | تطبيق مسار للملاحة الداخلية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0e1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --gold: #c29b4e;
+      --gold-light: #e6c587;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.8;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+    .header {
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 25px;
+      margin-bottom: 30px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(194, 155, 78, 0.15);
+      color: var(--gold-light);
+      padding: 4px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid var(--gold);
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 28px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .date {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    h2 {
+      font-size: 20px;
+      color: var(--gold-light);
+      margin: 28px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    p, li {
+      color: #c9d1d9;
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+    ul {
+      list-style-type: none;
+      padding-right: 15px;
+    }
+    ul li::before {
+      content: "▪";
+      color: var(--gold);
+      font-size: 18px;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    .disclaimer-box {
+      background: rgba(194, 155, 78, 0.08);
+      border-right: 4px solid var(--gold);
+      padding: 16px 20px;
+      border-radius: 6px;
+      margin: 24px 0;
+    }
+    .lang-section {
+      margin-top: 50px;
+      padding-top: 40px;
+      border-top: 2px dashed var(--border);
+      direction: ltr;
+      text-align: left;
+    }
+    .lang-section h2 { color: var(--gold-light); }
+    .lang-section ul { padding-left: 15px; padding-right: 0; }
+    .lang-section ul li::before { margin-right: 10px; margin-left: 0; }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="badge">وثيقة رسمية</div>
+      <h1>سياسة الخصوصية | Privacy Policy</h1>
+      <p style="color: var(--gold);">تطبيق «مَسار» للملاحة وتحديد المواقع الداخلية (Masar IPS)</p>
+      <div class="date">آخر تحديث: سبتمبر 2026</div>
+    </div>
+
+    <div class="disclaimer-box">
+      <strong>⚠️ تنويه وإخلاء مسؤولية قانوني:</strong>
+      <p style="margin-top: 6px; margin-bottom: 0;">
+        هذا التطبيق هو أداة ملاحة وإرشاد وتحديد مواقع داخلية ذكية، مطورة بواسطة شركة خاصة لتسهيل حركة وتنقل الزوار والموظفين داخل المبنى والقاعات، ولا يمثل أي جهة حكومية أو سيادية رسمية.
+      </p>
+    </div>
+
+    <h2>1. مقدمة</h2>
+    <p>
+      نحن نولي خصوصية وأمان بيانات مستخدمي تطبيق <strong>«مَسار»</strong> أهمية قصوى. توضح هذه السياسة طبيعة البيانات والصلاحيات التي يطلبها التطبيق وكيفية معالجتها بما يتوافق بالكامل مع معايير وسياسات متجر Google Play.
+    </p>
+
+    <h2>2. البيانات والصلاحيات المطلوبة</h2>
+    <ul>
+      <li>
+        <strong>صلاحية الموقع الجغرافي (ACCESS_FINE_LOCATION & ACCESS_COARSE_LOCATION):</strong><br>
+        يتطلب نظام أندرويد منح إذن الموقع ليتمكن التطبيق من إجراء مسح للبلوتوث منخفض الطاقة (Bluetooth Low Energy - BLE). تُستخدم بيانات الموقع حصرياً وفورياً داخل ذاكرة الهاتف العشوائية (RAM) لحساب موقعك الداخلي بين منارات القاعات، <strong>ولا يتم حفظ أو تسجيل أو رفع أي إحداثيات موقع على أي خوادم خارجية</strong>.
+      </li>
+      <li>
+        <strong>صلاحية البلوتوث (BLUETOOTH_SCAN & BLUETOOTH_CONNECT):</strong><br>
+        تُستخدم فقط للبحث عن الإشارات الصادرة من المنارات المثبتة بالمبنى (Beacons) لتحديد موقع المستخدم اللحظي والتوجيه نحو الوجهات المطلوبة.
+      </li>
+      <li>
+        <strong>صلاحية الإنترنت (INTERNET):</strong><br>
+        تُستخدم لتحميل بيانات ومخططات الطوابق والقاعات الثابتة، ولإرسال تقارير الأخطاء البرمجية المجهولة الهوية لتحسين استقرار التطبيق.
+      </li>
+    </ul>
+
+    <h2>3. مشاركة البيانات مع أطراف ثالثة</h2>
+    <p>
+      <strong>نحن لا نبيع ولا نؤجر ولا نشارك أي بيانات شخصية أو بيانات موقع مع أي طرف ثالث أو شبكات إعلانية على الإطلاق.</strong> التطبيق خالٍ تماماً من أي إعلانات تجارية.
+    </p>
+
+    <h2>4. الاحتفاظ بالبيانات وحذفها</h2>
+    <p>
+      بما أن التطبيق لا يتطلب إنشاء حساب أو تسجيل دخول، فإن جميع بيانات التموضع الداخلي تُحذف تلقائياً ومباشرة بمجرد إغلاق التطبيق.
+    </p>
+
+    <h2>5. أمان البيانات (Data Security)</h2>
+    <p>
+      جميع الاتصالات بالخوادم لتحميل الخرائط تتم عبر بروتوكولات التشفير القياسية الآمنة (HTTPS / TLS 1.3).
+    </p>
+
+    <h2>6. تواصل معنا</h2>
+    <p>
+      إذا كان لديك أي استفسار حول سياسة الخصوصية، يمكنك التواصل معنا عبر البريد الإلكتروني:<br>
+      <strong style="color: var(--gold-light);">support@tranex.com</strong>
+    </p>
+
+    <!-- English Version -->
+    <div class="lang-section">
+      <div class="badge">English Version</div>
+      <h1>Privacy Policy - Masar IPS</h1>
+      <p class="date">Last Updated: September 2026</p>
+
+      <div class="disclaimer-box">
+        <strong>Disclaimer:</strong> This application is an indoor wayfinding and navigation tool developed by a private technology company to assist visitors within the building. It does not represent any government entity.
+      </div>
+
+      <h2>1. Information & Permissions We Collect</h2>
+      <ul>
+        <li><strong>Location Permission (Fine & Coarse):</strong> Required by Android to scan for Bluetooth Low Energy (BLE) beacons. Location data is processed ephemerally on-device solely to compute your real-time indoor coordinates and is never stored, tracked, or sent to external servers.</li>
+        <li><strong>Bluetooth Scanning:</strong> Used exclusively to detect nearby building beacons to provide turn-by-turn guidance.</li>
+        <li><strong>Internet:</strong> Used to load indoor building maps and anonymized diagnostic crash logs to improve app stability.</li>
+      </ul>
+
+      <h2>2. Third-Party Sharing</h2>
+      <p>We do not sell, rent, or share user data with third-party advertisers. The app is completely ad-free.</p>
+
+      <h2>3. Data Retention</h2>
+      <p>No personal location histories or user profiles are retained. All real-time navigation calculations are discarded immediately upon closing the app.</p>
+
+      <h2>4. Contact Us</h2>
+      <p>For inquiries, please contact us at: <strong style="color: var(--gold-light);">support@tranex.com</strong></p>
+    </div>
+
+    <div class="footer">
+      جميع الحقوق محفوظة © 2026 - تطبيق مسار للملاحة الداخلية (Masar IPS)
+    </div>
+  </div>
+
+</body>
+</html>
