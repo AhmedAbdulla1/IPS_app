@@ -60,3 +60,5 @@ firmware/**/flash_logs/
 /android/build/
 *.rar
 firmware/tools/system-monitor/data/history/*.jsonl
+*.hprof
+.kotlin/

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/navigation_destination.dart';
 import '../utils/arabic_search_utils.dart';
+import '../utils/floor_ordinal.dart';
 import '../../../controllers/beacon_controller.dart';
 import '../../../controllers/compass_controller.dart';
 import '../../../core/localization/locale_controller.dart';
@@ -376,14 +377,38 @@ class NavigationScreenController extends GetxController {
 
     final step = _currentPath[_currentStepIndex];
 
+    final graph = _navigationRepository.cachedGraph;
+    final node = graph?.nodeById(step.nodeId);
+    final navLevel = (graph != null && node != null) ? graph.levelsById[node.levelId] : null;
+    final level = navLevel?.order ?? (node != null ? int.tryParse(node.levelId) : null);
+    targetFloor.value = level ?? beaconController.currentLocation.value.level;
+
     if (step.verticalDirection == VerticalDirection.VerticalDirection.up) {
       currentDirection.value = 'up';
-      directionInstruction.value = isArabic ? 'اصعد للدور التالي' : 'Go up to the next floor';
+      final floorTextAr = (navLevel != null && navLevel.nameAr.trim().isNotEmpty)
+          ? (navLevel.nameAr.trim().startsWith('الدور') || navLevel.nameAr.trim().startsWith('دور')
+              ? navLevel.nameAr.trim()
+              : 'الدور ${navLevel.nameAr.trim()}')
+          : floorOrdinalArabic(targetFloor.value);
+      final floorTextEn = (navLevel != null && navLevel.nameEn != null && navLevel.nameEn!.trim().isNotEmpty)
+          ? navLevel.nameEn!.trim()
+          : floorOrdinalEnglish(targetFloor.value);
+
+      directionInstruction.value = isArabic ? 'اصعد إلى $floorTextAr' : 'Go up to $floorTextEn';
       directionSubInstruction.value =
           isArabic ? 'خُد المصعد أو السلم لأعلى' : 'Take the elevator or stairs up';
     } else if (step.verticalDirection == VerticalDirection.VerticalDirection.down) {
       currentDirection.value = 'down';
-      directionInstruction.value = isArabic ? 'انزل للدور التالي' : 'Go down to the next floor';
+      final floorTextAr = (navLevel != null && navLevel.nameAr.trim().isNotEmpty)
+          ? (navLevel.nameAr.trim().startsWith('الدور') || navLevel.nameAr.trim().startsWith('دور')
+              ? navLevel.nameAr.trim()
+              : 'الدور ${navLevel.nameAr.trim()}')
+          : floorOrdinalArabic(targetFloor.value);
+      final floorTextEn = (navLevel != null && navLevel.nameEn != null && navLevel.nameEn!.trim().isNotEmpty)
+          ? navLevel.nameEn!.trim()
+          : floorOrdinalEnglish(targetFloor.value);
+
+      directionInstruction.value = isArabic ? 'انزل إلى $floorTextAr' : 'Go down to $floorTextEn';
       directionSubInstruction.value =
           isArabic ? 'خُد المصعد أو السلم لأسفل' : 'Take the elevator or stairs down';
     } else {
@@ -443,11 +468,6 @@ class NavigationScreenController extends GetxController {
           ? 'وجهتك قريبة جداً (تأكد من الباب على يمينك أو يسارك)'
           : 'Destination is right beside you';
     }
-
-    final graph = _navigationRepository.cachedGraph;
-    final node = graph?.nodeById(step.nodeId);
-    final level = node != null ? graph?.levelsById[node.levelId]?.order : null;
-    targetFloor.value = level ?? beaconController.currentLocation.value.level;
   }
 
   /// فحص الوصول المتري للوجهة (أبواب المكاتب بدون بيكون) عبر الإحداثيات المستمرة
