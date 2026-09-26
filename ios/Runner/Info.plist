@@ -7,7 +7,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>مجلس النواب</string>
+		<string>مسار</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>مجلس النواب</string>
+		<string>مسار</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -67,15 +67,15 @@
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>يستخدم التطبيق خدمات الموقع والبوصلة لتحديد مسار التوجيه داخل المجلس.</string>
+		<string>يستخدم التطبيق خدمات الموقع والبوصلة لتحديد مسار التوجيه الداخلي.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>يستخدم التطبيق خدمات الموقع والبوصلة لتحديد مسار التوجيه داخل المجلس.</string>
+		<string>يستخدم التطبيق خدمات الموقع والبوصلة لتحديد مسار التوجيه الداخلي.</string>
 		<key>NSLocationAlwaysUsageDescription</key>
-		<string>يستخدم التطبيق خدمات الموقع والبوصلة لتحديد مسار التوجيه داخل المجلس.</string>
+		<string>يستخدم التطبيق خدمات الموقع والبوصلة لتحديد مسار التوجيه الداخلي.</string>
 		<key>NSBluetoothAlwaysUsageDescription</key>
-		<string>يستخدم التطبيق البلوتوث لتحديد موقعك وتوجيهك داخل مبنى مجلس النواب.</string>
+		<string>يستخدم التطبيق البلوتوث لتحديد موقعك وتوجيهك داخل المبنى.</string>
 		<key>NSBluetoothPeripheralUsageDescription</key>
-		<string>يستخدم التطبيق البلوتوث للتواصل مع محطات التموضع الداخلي بالمجلس.</string>
+		<string>يستخدم التطبيق البلوتوث للتواصل مع محطات التموضع الداخلي.</string>
 		<key>UIStatusBarHidden</key>
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
