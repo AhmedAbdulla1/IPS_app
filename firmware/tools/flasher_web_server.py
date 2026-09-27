@@ -749,21 +749,45 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
             node_id = str(data.get("node_id", "101")).strip()
             floor = str(data.get("floor", "GF")).strip()
             p_name = data.get("printer_name") or None
-            mode = data.get("mode", "twin")
+            mode = data.get("mode", "single")
             copies = int(data.get("copies", 1))
-            height_mm = float(data.get("height_mm", 24.0))
-            gap_mm = float(data.get("gap_mm", 3.0))
+            height_mm = float(data.get("height_mm", 12.0))
+            width_mm = float(data.get("width_mm", 38.0))
+            gap_mm = float(data.get("gap_mm", 2.0))
             offset_y = int(data.get("offset_y", 0))
             if "offset_mm" in data:
                 offset_y = int(round(float(data["offset_mm"]) * 8))
-            inter_gap_dots = 8
-            if "inter_gap_mm" in data:
-                inter_gap_dots = int(round(float(data["inter_gap_mm"]) * 8))
+            density = int(data.get("density", 10))
+            speed = int(data.get("speed", 3))
 
             if mode == "single":
-                ok, msg = print_single_label(node_id, floor, printer_name=p_name, copies=copies, height_mm=height_mm, gap_mm=gap_mm, offset_y=offset_y)
+                ok, msg = print_single_label(
+                    node_id, floor,
+                    printer_name=p_name,
+                    copies=copies,
+                    height_mm=height_mm,
+                    width_mm=width_mm,
+                    gap_mm=gap_mm,
+                    offset_y=offset_y,
+                    density=density,
+                    speed=speed
+                )
             else:
-                ok, msg = print_twin_label(node_id, floor, printer_name=p_name, copies=copies, height_mm=height_mm, gap_mm=gap_mm, offset_y=offset_y, inter_gap_dots=inter_gap_dots)
+                inter_gap_dots = 8
+                if "inter_gap_mm" in data:
+                    inter_gap_dots = int(round(float(data["inter_gap_mm"]) * 8))
+                ok, msg = print_twin_label(
+                    node_id, floor,
+                    printer_name=p_name,
+                    copies=copies,
+                    height_mm=height_mm,
+                    width_mm=width_mm,
+                    gap_mm=gap_mm,
+                    offset_y=offset_y,
+                    inter_gap_dots=inter_gap_dots,
+                    density=density,
+                    speed=speed
+                )
 
             if ok:
                 prov_history_store.record_print_event(node_id)
@@ -776,25 +800,43 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
 
         elif path == "/api/printer/feed":
             p_name = data.get("printer_name") or None
-            height_mm = float(data.get("height_mm", 24.0))
-            gap_mm = float(data.get("gap_mm", 3.0))
-            ok, msg = feed_label(p_name, height_mm=height_mm, gap_mm=gap_mm)
+            height_mm = float(data.get("height_mm", 12.0))
+            width_mm = float(data.get("width_mm", 38.0))
+            gap_mm = float(data.get("gap_mm", 2.0))
+            ok, msg = feed_label(p_name, height_mm=height_mm, gap_mm=gap_mm, width_mm=width_mm)
             self._send_json({"ok": ok, "message": msg}, status=200 if ok else 500)
 
         elif path == "/api/printer/calibrate_ruler":
             p_name = data.get("printer_name") or None
-            height_mm = float(data.get("height_mm", 24.0))
-            gap_mm = float(data.get("gap_mm", 3.0))
+            height_mm = float(data.get("height_mm", 12.0))
+            width_mm = float(data.get("width_mm", 38.0))
+            gap_mm = float(data.get("gap_mm", 2.0))
             copies = int(data.get("copies", 1))
             ok, msg = print_calibration_test(p_name, height_mm=height_mm, gap_mm=gap_mm, copies=copies)
             self._send_json({"ok": ok, "message": msg}, status=200 if ok else 500)
 
         elif path == "/api/printer/test":
             p_name = data.get("printer_name") or None
-            height_mm = float(data.get("height_mm", 24.0))
-            gap_mm = float(data.get("gap_mm", 3.0))
+            height_mm = float(data.get("height_mm", 12.0))
+            width_mm = float(data.get("width_mm", 38.0))
+            gap_mm = float(data.get("gap_mm", 2.0))
+            offset_y = int(data.get("offset_y", 0))
+            if "offset_mm" in data:
+                offset_y = int(round(float(data["offset_mm"]) * 8))
+            density = int(data.get("density", 10))
+            speed = int(data.get("speed", 3))
             copies = int(data.get("copies", 1))
-            ok, msg = print_twin_label("999", "TEST", printer_name=p_name, copies=copies, height_mm=height_mm, gap_mm=gap_mm)
+            ok, msg = print_single_label(
+                "999", "TEST",
+                printer_name=p_name,
+                copies=copies,
+                height_mm=height_mm,
+                width_mm=width_mm,
+                gap_mm=gap_mm,
+                offset_y=offset_y,
+                density=density,
+                speed=speed
+            )
             self._send_json({"ok": ok, "message": msg}, status=200 if ok else 500)
 
         elif path == "/api/provision/send_id":
@@ -807,6 +849,7 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
             if not uid:
                 uid = generate_node_uuid_hex()
             terminal_manager.close_port(port)
+            time.sleep(0.1)
             ok, msg, raw = send_set_id(port, uid, baud)
             self._send_json({"ok": ok, "message": msg, "uid": uid, "raw": raw}, status=200 if ok else 400)
 
@@ -817,6 +860,7 @@ class FlasherHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self._send_json({"error": "No COM port specified"}, status=400)
                 return
             terminal_manager.close_port(port)
+            time.sleep(0.1)
             ok, uid, raw = send_get_id(port, baud)
             self._send_json({"ok": ok, "uid": uid, "raw": raw}, status=200 if ok else 400)
 

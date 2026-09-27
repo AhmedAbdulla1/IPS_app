@@ -1112,25 +1112,100 @@
       justify-content: center;
     }
 
-    .physical-sticker {
+    .physical-sticker-single {
       background: #FFFFFF;
       color: #000000;
-      width: 190px;
-      height: 92px;
+      width: 220px;
+      height: 76px;
       border-radius: 4px;
-      padding: 7px 9px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
-      font-family: 'JetBrains Mono', monospace;
+      padding: 5px 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+      font-family: 'JetBrains Mono', 'Segoe UI', monospace;
       display: flex;
       flex-direction: column;
+      align-items: center;
       justify-content: space-between;
       position: relative;
       user-select: none;
+      border: none;
+      transition: all 0.25s ease;
+    }
+
+    .physical-sticker-single.tall {
+      height: 126px;
+      padding: 10px 14px;
+    }
+
+    .sticker-single-logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 16px;
+      width: 100%;
+    }
+
+    .physical-sticker-single.tall .sticker-single-logo {
+      height: 28px;
+    }
+
+    .sticker-single-logo img {
+      max-height: 16px;
+      max-width: 90px;
+      object-fit: contain;
+    }
+
+    .physical-sticker-single.tall .sticker-single-logo img {
+      max-height: 26px;
+      max-width: 120px;
+    }
+
+    .sticker-single-node {
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1;
+      color: #000000;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .physical-sticker-single.tall .sticker-single-node {
+      font-size: 32px;
+    }
+
+    .sticker-single-floor {
+      font-size: 11px;
+      font-weight: 800;
+      color: #111827;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .physical-sticker-single.tall .sticker-single-floor {
+      font-size: 15px;
+    }
+
+    .physical-sticker {
+      background: #FFFFFF;
+      color: #000000;
+      width: 180px;
+      height: 80px;
+      border-radius: 4px;
+      padding: 6px 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      position: relative;
+      user-select: none;
+      border: none;
     }
 
     .sticker-badge-top {
       position: absolute;
-      top: -9px;
+      top: -8px;
       right: 8px;
       background: #111827;
       color: var(--cyan);
@@ -1139,50 +1214,6 @@
       padding: 1px 6px;
       border-radius: 4px;
       font-weight: 700;
-    }
-
-    .sticker-top-text {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      font-weight: 900;
-      line-height: 1.2;
-      border-bottom: 1px solid #000;
-      padding-bottom: 2px;
-    }
-
-    .sticker-barcode-mock {
-      height: 28px;
-      background: repeating-linear-gradient(90deg,
-        #000 0px, #000 2px,
-        #fff 2px, #fff 3px,
-        #000 3px, #000 6px,
-        #fff 6px, #fff 8px,
-        #000 8px, #000 10px,
-        #fff 10px, #fff 11px,
-        #000 11px, #000 14px,
-        #fff 14px, #fff 16px,
-        #000 16px, #000 17px
-      );
-      margin: 4px 0;
-    }
-
-    .sticker-bottom-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 9px;
-      font-weight: 800;
-    }
-
-    .sticker-logo-mock {
-      font-weight: 900;
-      letter-spacing: 0.5px;
-      background: #000;
-      color: #fff;
-      padding: 1px 4px;
-      border-radius: 2px;
-      font-size: 8px;
     }
 
     /* Big One-Click Provisioning Button */
@@ -1628,44 +1659,111 @@
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label">نوع الملصق</label>
               <select id="provPrintMode" class="form-select">
-                <option value="twin" selected>ملصق ثنائي (Twin: جهاز + علبة)</option>
-                <option value="single">ملصق فردي (Single: للجهاز فقط)</option>
+                <option value="single" selected>ملصق فردي (Single - ورقة واحدة)</option>
+                <option value="twin">ملصق مزدوج (Twin - ملصقان متتاليان)</option>
               </select>
             </div>
           </div>
 
-          <!-- Twin Sticker Visual Preview -->
-          <div class="sticker-preview-wrapper">
-            <div style="font-size: 0.8rem; color: var(--cyan); font-weight: 700;">
-              👁️ معاينة بصرية حية لشريط الملصق الحراري (38x12mm)
+          <!-- Printer Roll & Hardware Dimensions Setup -->
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+              <span style="font-size: 0.82rem; font-weight: 700; color: var(--amber);">
+                ⚙️ إعدادات مقاس الورقة والرول (38x12mm / 1.2cm)
+              </span>
+              <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: var(--amber); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 700;">
+                الارتفاع الحالي: 1.2 سم (12 مم)
+              </span>
             </div>
-            <div class="sticker-pair-row">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.65rem; margin-bottom: 0.65rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.72rem;">العرض (Width mm)</label>
+                <input type="number" id="printerRollWidth" class="form-input" value="38" min="15" max="100" style="padding: 0.35rem 0.5rem; font-size: 0.85rem;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.72rem;">الارتفاع (Height mm)</label>
+                <input type="number" id="printerRollHeight" class="form-input" value="12" min="6" max="150" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; border-color: var(--amber); color: var(--amber); font-weight: bold;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.72rem;">الفاصل (Gap mm)</label>
+                <input type="number" id="printerRollGap" class="form-input" value="2.0" step="0.5" min="0" max="10" style="padding: 0.35rem 0.5rem; font-size: 0.85rem;">
+              </div>
+            </div>
+
+            <!-- Quick Presets -->
+            <div style="display: flex; gap: 0.4rem; align-items: center; margin-bottom: 0.65rem; flex-wrap: wrap;">
+              <span style="font-size: 0.7rem; color: var(--text-muted);">المقاسات الجاهزة:</span>
+              <button type="button" class="btn-secondary" id="btnPreset12" style="font-size: 0.7rem; padding: 2px 7px; border-color: var(--amber); color: var(--amber); font-weight: 700;">
+                ⚡ 12 مم (1.2 سم) - ملصقك الصغير
+              </button>
+              <button type="button" class="btn-secondary" id="btnPreset24" style="font-size: 0.7rem; padding: 2px 7px;">
+                24 مم (2.4 سم)
+              </button>
+              <button type="button" class="btn-secondary" id="btnPreset30" style="font-size: 0.7rem; padding: 2px 7px;">
+                30 مم (3.0 سم)
+              </button>
+            </div>
+
+            <!-- Fine-Tuning: Offset Y, Density, Speed -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.65rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.72rem;">إزاحة رأسية (Offset mm)</label>
+                <input type="number" id="printerRollOffsetY" class="form-input" value="0.0" step="0.5" min="-10" max="10" style="padding: 0.35rem 0.5rem; font-size: 0.85rem;" title="لتوسيط النصوص للأعلى أو الأسفل بدقة">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.72rem;">الكثافة (Density)</label>
+                <select id="printerDensity" class="form-select" style="padding: 0.35rem 0.5rem; font-size: 0.82rem;">
+                  <option value="8">8 - خفيف</option>
+                  <option value="10" selected>10 - متوازن قياسي</option>
+                  <option value="12">12 - غامق وواضح</option>
+                  <option value="14">14 - داكن جداً</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.72rem;">السرعة (Speed)</label>
+                <select id="printerSpeed" class="form-select" style="padding: 0.35rem 0.5rem; font-size: 0.82rem;">
+                  <option value="2">2 - هادئ ودقيق</option>
+                  <option value="3" selected>3 - متوسط قياسي</option>
+                  <option value="4">4 - سريع</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Clean Borderless Sticker Visual Preview -->
+          <div class="sticker-preview-wrapper">
+            <div style="font-size: 0.8rem; color: var(--cyan); font-weight: 700; display: flex; justify-content: space-between; width: 100%;">
+              <span id="previewLabelDimensions">👁️ معاينة بصرية للملصق الحراري (38x12mm / 1.2cm)</span>
+              <span style="font-size: 0.72rem; color: var(--text-dim); font-weight: normal;">بدون إطار • بدون باركود • ورقة واحدة</span>
+            </div>
+
+            <!-- Single Clean Sticker Preview -->
+            <div class="physical-sticker-single" id="previewSingleSticker">
+              <div class="sticker-single-logo">
+                <img src="./logo.svg" alt="TRANEX" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <span style="display:none; font-weight:900; font-size:16px; letter-spacing:2px; color:#000;">TRANEX</span>
+              </div>
+              <div class="sticker-single-node" id="prevSingleNodeId">101</div>
+              <div class="sticker-single-floor" id="prevSingleFloor">FL: GF</div>
+            </div>
+
+            <!-- Twin Sticker Preview (Only shown if Twin mode selected) -->
+            <div class="sticker-pair-row" id="previewTwinRow" style="display: none;">
               <!-- Sticker 1 -->
               <div class="physical-sticker" id="previewSticker1">
-                <div class="sticker-badge-top">ملصق الجهاز</div>
-                <div class="sticker-top-text">
-                  <span>ID:<strong id="prevNodeId1">101</strong></span>
-                  <span>FL:<strong id="prevFloor1">GF</strong></span>
-                </div>
-                <div class="sticker-barcode-mock"></div>
-                <div class="sticker-bottom-row">
-                  <span id="prevBarcodeNum1" style="font-size: 8px;">101</span>
-                  <span class="sticker-logo-mock">TRANEX</span>
-                </div>
+                <div class="sticker-badge-top">جهاز</div>
+                <div style="text-align: center;"><span style="font-size: 9px; font-weight: 900; letter-spacing: 1px;">TRANEX</span></div>
+                <div style="text-align: center; font-size: 16px; font-weight: 900;" id="prevNodeId1">101</div>
+                <div style="text-align: center; font-size: 11px; font-weight: 700;" id="prevFloor1">FL: GF</div>
               </div>
 
               <!-- Sticker 2 -->
               <div class="physical-sticker" id="previewSticker2">
-                <div class="sticker-badge-top">ملصق العلبة / الكرتونة</div>
-                <div class="sticker-top-text">
-                  <span>ID:<strong id="prevNodeId2">101</strong></span>
-                  <span>FL:<strong id="prevFloor2">GF</strong></span>
-                </div>
-                <div class="sticker-barcode-mock"></div>
-                <div class="sticker-bottom-row">
-                  <span id="prevBarcodeNum2" style="font-size: 8px;">101</span>
-                  <span class="sticker-logo-mock">TRANEX</span>
-                </div>
+                <div class="sticker-badge-top">كرتونة</div>
+                <div style="text-align: center;"><span style="font-size: 9px; font-weight: 900; letter-spacing: 1px;">TRANEX</span></div>
+                <div style="text-align: center; font-size: 16px; font-weight: 900;" id="prevNodeId2">101</div>
+                <div style="text-align: center; font-size: 11px; font-weight: 700;" id="prevFloor2">FL: GF</div>
               </div>
             </div>
           </div>
@@ -3280,21 +3378,128 @@
       provSerialStatusText.innerHTML = '<span style="color:var(--cyan)">🎲 تم توليد معرّف UID عشوائي جديد. جاهز للإرسال للبوردة.</span>';
     });
 
+    // Printer Configuration Management (Roll Size, Gap, Density, Speed)
+    function getPrinterConfig() {
+      return {
+        width_mm: parseFloat(document.getElementById('printerRollWidth')?.value || 38),
+        height_mm: parseFloat(document.getElementById('printerRollHeight')?.value || 12),
+        gap_mm: parseFloat(document.getElementById('printerRollGap')?.value || 2.0),
+        offset_mm: parseFloat(document.getElementById('printerRollOffsetY')?.value || 0.0),
+        density: parseInt(document.getElementById('printerDensity')?.value || 10, 10),
+        speed: parseInt(document.getElementById('printerSpeed')?.value || 3, 10)
+      };
+    }
+
+    function savePrinterConfig() {
+      const cfg = getPrinterConfig();
+      try {
+        localStorage.setItem('ips_printer_config', JSON.stringify(cfg));
+      } catch (e) {}
+    }
+
+    function loadPrinterConfig() {
+      try {
+        const saved = localStorage.getItem('ips_printer_config');
+        if (saved) {
+          const cfg = JSON.parse(saved);
+          if (document.getElementById('printerRollWidth') && cfg.width_mm) document.getElementById('printerRollWidth').value = cfg.width_mm;
+          if (document.getElementById('printerRollHeight') && cfg.height_mm) document.getElementById('printerRollHeight').value = cfg.height_mm;
+          if (document.getElementById('printerRollGap') && cfg.gap_mm !== undefined) document.getElementById('printerRollGap').value = cfg.gap_mm;
+          if (document.getElementById('printerRollOffsetY') && cfg.offset_mm !== undefined) document.getElementById('printerRollOffsetY').value = cfg.offset_mm;
+          if (document.getElementById('printerDensity') && cfg.density) document.getElementById('printerDensity').value = cfg.density;
+          if (document.getElementById('printerSpeed') && cfg.speed) document.getElementById('printerSpeed').value = cfg.speed;
+        }
+      } catch (e) {}
+    }
+
+    // Quick Presets for 12mm / 24mm / 30mm
+    document.getElementById('btnPreset12')?.addEventListener('click', () => {
+      if (document.getElementById('printerRollHeight')) document.getElementById('printerRollHeight').value = 12;
+      if (document.getElementById('printerRollGap')) document.getElementById('printerRollGap').value = 2.0;
+      savePrinterConfig();
+      updateStickerPreviews();
+    });
+
+    document.getElementById('btnPreset24')?.addEventListener('click', () => {
+      if (document.getElementById('printerRollHeight')) document.getElementById('printerRollHeight').value = 24;
+      if (document.getElementById('printerRollGap')) document.getElementById('printerRollGap').value = 3.0;
+      savePrinterConfig();
+      updateStickerPreviews();
+    });
+
+    document.getElementById('btnPreset30')?.addEventListener('click', () => {
+      if (document.getElementById('printerRollHeight')) document.getElementById('printerRollHeight').value = 30;
+      if (document.getElementById('printerRollGap')) document.getElementById('printerRollGap').value = 3.0;
+      savePrinterConfig();
+      updateStickerPreviews();
+    });
+
+    ['printerRollWidth', 'printerRollHeight', 'printerRollGap', 'printerRollOffsetY', 'printerDensity', 'printerSpeed'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', () => {
+          savePrinterConfig();
+          updateStickerPreviews();
+        });
+        el.addEventListener('change', () => {
+          savePrinterConfig();
+          updateStickerPreviews();
+        });
+      }
+    });
+
     // Update Live Sticker Previews
     function updateStickerPreviews() {
       const id = provNodeId.value.trim() || '101';
-      const fl = provLevelSelect.value.trim() || 'GF';
+      const rawFl = provLevelSelect.value.trim() || 'GF';
+      const fl = (rawFl.toUpperCase().startsWith('FL') || rawFl.toUpperCase().startsWith('FLOOR') || rawFl.startsWith('الدور'))
+        ? rawFl
+        : `FL: ${rawFl}`;
 
-      prevNodeId1.textContent = id;
-      prevNodeId2.textContent = id;
-      prevFloor1.textContent = fl;
-      prevFloor2.textContent = fl;
-      prevBarcodeNum1.textContent = id;
-      prevBarcodeNum2.textContent = id;
+      const pCfg = getPrinterConfig();
+      const previewDims = document.getElementById('previewLabelDimensions');
+      if (previewDims) {
+        previewDims.textContent = `👁️ معاينة بصرية للملصق الحراري (${pCfg.width_mm}x${pCfg.height_mm}mm / ${(pCfg.height_mm / 10).toFixed(1)}cm)`;
+      }
+
+      // Update Single Preview
+      const singleCard = document.getElementById('previewSingleSticker');
+      const prevSingleNodeId = document.getElementById('prevSingleNodeId');
+      const prevSingleFloor = document.getElementById('prevSingleFloor');
+      if (prevSingleNodeId) prevSingleNodeId.textContent = id;
+      if (prevSingleFloor) prevSingleFloor.textContent = fl;
+
+      if (singleCard) {
+        if (pCfg.height_mm > 16) {
+          singleCard.classList.add('tall');
+        } else {
+          singleCard.classList.remove('tall');
+        }
+      }
+
+      // Update Twin Previews
+      if (typeof prevNodeId1 !== 'undefined' && prevNodeId1) prevNodeId1.textContent = id;
+      if (typeof prevNodeId2 !== 'undefined' && prevNodeId2) prevNodeId2.textContent = id;
+      if (typeof prevFloor1 !== 'undefined' && prevFloor1) prevFloor1.textContent = fl;
+      if (typeof prevFloor2 !== 'undefined' && prevFloor2) prevFloor2.textContent = fl;
+
+      // Toggle display based on selected print mode
+      const mode = provPrintMode ? provPrintMode.value : 'single';
+      const twinRow = document.getElementById('previewTwinRow');
+      if (singleCard && twinRow) {
+        if (mode === 'twin') {
+          singleCard.style.display = 'none';
+          twinRow.style.display = 'flex';
+        } else {
+          singleCard.style.display = 'flex';
+          twinRow.style.display = 'none';
+        }
+      }
     }
 
     provNodeId.addEventListener('input', updateStickerPreviews);
     provLevelSelect.addEventListener('change', updateStickerPreviews);
+    if (provPrintMode) provPrintMode.addEventListener('change', updateStickerPreviews);
 
     // Printers Integration
     async function refreshPrinters() {
@@ -3385,11 +3590,17 @@
 
     btnPrinterFeed.addEventListener('click', async () => {
       const p = provPrinterSelect.value;
+      const pCfg = getPrinterConfig();
       try {
         await fetch('/api/printer/feed', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ printer_name: p })
+          body: JSON.stringify({
+            printer_name: p,
+            width_mm: pCfg.width_mm,
+            height_mm: pCfg.height_mm,
+            gap_mm: pCfg.gap_mm
+          })
         });
       } catch (e) {
         alert('خطأ أثناء التغذية: ' + e);
@@ -3398,13 +3609,22 @@
 
     btnPrinterTest.addEventListener('click', async () => {
       const p = provPrinterSelect.value;
+      const pCfg = getPrinterConfig();
       btnPrinterTest.disabled = true;
       btnPrinterTest.textContent = '⏳ جاري الطباعة...';
       try {
         const res = await fetch('/api/printer/test', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ printer_name: p })
+          body: JSON.stringify({
+            printer_name: p,
+            width_mm: pCfg.width_mm,
+            height_mm: pCfg.height_mm,
+            gap_mm: pCfg.gap_mm,
+            offset_mm: pCfg.offset_mm,
+            density: pCfg.density,
+            speed: pCfg.speed
+          })
         });
         const d = await res.json();
         alert(d.message || (d.ok ? 'تم إرسال الملصق التجريبي للطابعة بنجاح!' : 'فشل الطباعة'));
@@ -3528,9 +3748,12 @@
         if (data.ok && data.uid) {
           provUidHex.value = data.uid;
           updateUidDisplay();
-          provSerialStatusText.innerHTML = `<span style="color:var(--green)">✅ تم استلام الـ UID المخزن بالبوردة: ${data.uid}</span>`;
+          const isComplete = data.uid.length === 32;
+          provSerialStatusText.innerHTML = isComplete
+            ? `<span style="color:var(--green)">✅ تم استلام الـ UID الكامل (32 حرفاً): <code style="font-family:var(--font-mono); color:var(--cyan); font-weight:bold;">${data.uid}</code></span>`
+            : `<span style="color:var(--amber)">⚠️ تم استلام معرّف بطول ${data.uid.length} حرفاً: <code>${data.uid}</code> (يلزم 32 حرفاً)</span>`;
         } else {
-          provSerialStatusText.innerHTML = `<span style="color:var(--amber)">⚠️ لم يتم استخراج UID. الرد: ${data.raw || 'لا رد'}</span>`;
+          provSerialStatusText.innerHTML = `<span style="color:var(--amber)">⚠️ لم يتم استخراج UID كامل. الرد الخام: ${data.raw || 'لا رد'}</span>`;
         }
       } catch (err) {
         provSerialStatusText.innerHTML = `<span style="color:var(--rose)">❌ خطأ الاتصال بالمنفذ: ${err}</span>`;
@@ -3593,7 +3816,7 @@
       const nameAr = provNameAr.value.trim() || `نقطة ${nodeId} - ${levelId}`;
       const nameEn = provNameEn.value.trim() || `Node ${nodeId}`;
       const printerName = provPrinterSelect.value || defaultPrinterName;
-      const printMode = provPrintMode.value || 'twin';
+      const printMode = provPrintMode.value || 'single';
       const baud = parseInt(provBaudSelect.value, 10) || 115200;
 
       if (!nodeId) {
@@ -3646,6 +3869,7 @@
       provActionStatusMessage.innerHTML = `<span style="color:var(--cyan)">🖨️ [2/4] جاري إرسال الملصق للطابعة ${printerName}...</span>`;
 
       try {
+        const pCfg = getPrinterConfig();
         const pRes = await fetch('/api/printer/print', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3654,7 +3878,13 @@
             floor: levelId,
             printer_name: printerName,
             mode: printMode,
-            copies: 1
+            copies: 1,
+            width_mm: pCfg.width_mm,
+            height_mm: pCfg.height_mm,
+            gap_mm: pCfg.gap_mm,
+            offset_mm: pCfg.offset_mm,
+            density: pCfg.density,
+            speed: pCfg.speed
           })
         });
         const pData = await pRes.json();
@@ -3886,11 +4116,24 @@
     // Global helper for reprint
     window.reprintNodeLabel = async function(nodeId, floor) {
       const p = provPrinterSelect.value || defaultPrinterName;
+      const pCfg = getPrinterConfig();
       try {
         const res = await fetch('/api/printer/print', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ node_id: nodeId, floor: floor, printer_name: p, mode: 'twin' })
+          body: JSON.stringify({
+            node_id: nodeId,
+            floor: floor,
+            printer_name: p,
+            mode: provPrintMode?.value || 'single',
+            copies: 1,
+            width_mm: pCfg.width_mm,
+            height_mm: pCfg.height_mm,
+            gap_mm: pCfg.gap_mm,
+            offset_mm: pCfg.offset_mm,
+            density: pCfg.density,
+            speed: pCfg.speed
+          })
         });
         const d = await res.json();
         if (d.ok) {
@@ -3950,6 +4193,7 @@
     });
 
     // Generate initial UID & load printers & Supabase levels on boot
+    loadPrinterConfig();
     provUidHex.value = generateSecureUidHex();
     updateUidDisplay();
     updateStickerPreviews();

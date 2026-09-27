@@ -233,8 +233,8 @@
     <div class="field" style="flex: 1.1;">
       <label>نمط الملصق</label>
       <select id="labelMode">
-        <option value="twin" selected>ملصقين توأم (طباعة مدمجة واحدة)</option>
-        <option value="single">ملصق فردي كامل (24 مم)</option>
+        <option value="single" selected>ملصق فردي (ورقة واحدة)</option>
+        <option value="twin">ملصقين توأم (طباعة مدمجة)</option>
       </select>
     </div>
   </div>
@@ -653,7 +653,7 @@ async function generateSendAndSave() {
   // Print Label via Xprinter Server with Zero-Drift & Auto-Calibrated Pitch
   let printOk = false;
   try {
-    const mode = document.getElementById('labelMode')?.value || 'twin';
+    const mode = document.getElementById('labelMode')?.value || 'single';
     const height_mm = parseFloat(document.getElementById('labelHeight')?.value || 24);
     const gap_mm = parseFloat(document.getElementById('labelGap')?.value || 3);
     const offset_mm = parseFloat(document.getElementById('labelOffsetY')?.value || 2.5);

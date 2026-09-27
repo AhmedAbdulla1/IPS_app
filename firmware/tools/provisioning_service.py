@@ -62,6 +62,8 @@ def send_set_id(port, uid_hex, baud=115200, timeout=3.5):
     clean_uid = clean_hex_id(uid_hex)
     if not clean_uid:
         clean_uid = generate_node_uuid_hex()
+    elif len(clean_uid) != 32:
+        return False, f"الـ UID غير مكتمل ({len(clean_uid)}/32 رمز)! يجب أن يتكون من 32 رمز hex بالضبط (16 بايت).", ""
 
     try:
         ser = serial.Serial()
@@ -119,9 +121,10 @@ def send_set_id(port, uid_hex, baud=115200, timeout=3.5):
             pass
 
 
-def send_get_id(port, baud=115200, timeout=2.0):
+def send_get_id(port, baud=115200, timeout=2.5):
     """
     Sends GET_ID command to query the currently stored UID on the ESP32.
+    Waits properly for the complete 32-hex character stream or line termination.
     Returns: (success: bool, current_uid: str, raw_output: str)
     """
     if not serial:
@@ -142,26 +145,54 @@ def send_get_id(port, baud=115200, timeout=2.0):
     try:
         ser.reset_input_buffer()
         ser.reset_output_buffer()
+        time.sleep(0.05)
         ser.write(b"GET_ID\n")
         ser.flush()
 
         start_time = time.time()
+        uid_found = ""
         while (time.time() - start_time) < timeout:
             chunk = ser.read(ser.in_waiting or 1)
             if chunk:
                 text = chunk.decode("utf-8", errors="replace")
                 raw_chunks.append(text)
                 combined = "".join(raw_chunks)
-                if "Current Node ID:" in combined or "node_id" in combined:
+
+                # 1) Direct complete 32-hex character sequence
+                match_32 = re.search(r"([0-9a-fA-F]{32})", combined)
+                if match_32:
+                    uid_found = match_32.group(1).lower()
+                    break
+
+                # 2) Full line with newline after ID label
+                match_line = re.search(
+                    r"(?:Current Node ID|Node ID|node_id):\s*([0-9a-fA-F]+)\s*[\r\n]",
+                    combined,
+                    re.IGNORECASE
+                )
+                if match_line:
+                    uid_found = match_line.group(1).lower()
                     break
             else:
                 time.sleep(0.02)
 
         raw_output = "".join(raw_chunks).strip()
-        # Parse hex ID
-        match = re.search(r"Current Node ID:\s*([0-9a-fA-F]+)", raw_output)
-        if match:
-            uid_found = match.group(1).strip()
+
+        # Fallback check on full output buffer
+        if not uid_found:
+            match_32 = re.search(r"([0-9a-fA-F]{32})", raw_output)
+            if match_32:
+                uid_found = match_32.group(1).lower()
+            else:
+                match = re.search(
+                    r"(?:Current Node ID|Node ID|node_id):\s*([0-9a-fA-F]+)",
+                    raw_output,
+                    re.IGNORECASE
+                )
+                if match:
+                    uid_found = match.group(1).strip().lower()
+
+        if uid_found:
             return True, uid_found, raw_output
         return False, "", raw_output
     except Exception as e:
@@ -171,6 +202,7 @@ def send_get_id(port, baud=115200, timeout=2.0):
             ser.close()
         except Exception:
             pass
+
 
 
 def insert_node_to_supabase(payload, supabase_url, supabase_key):

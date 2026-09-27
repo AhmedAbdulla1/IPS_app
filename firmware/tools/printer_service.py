@@ -283,11 +283,14 @@ def _send_raw_to_printer(printer_name, data_bytes, doc_name="IPS Label Job"):
         winspool.ClosePrinter(hPrinter)
 
 
-def print_twin_label(node_id="101", floor="GF", printer_name=None, logo_path=None, copies=1, s1_shift_y=0, s2_shift_y=0, height_mm=24.0, gap_mm=3.0, offset_y=0, inter_gap_dots=8):
+def print_twin_label(node_id="101", floor="GF", printer_name=None, logo_path=None, copies=1, s1_shift_y=0, s2_shift_y=0, height_mm=24.0, width_mm=38.0, gap_mm=3.0, offset_y=0, inter_gap_dots=8, density=10, speed=3):
     """
-    Prints calibrated twin labels (Sticker 1 for device, Sticker 2 for box/documentation).
-    Increased top safe margin (+2.5mm base) to prevent any top cut-off,
-    and reduced inter-label gap (1.0mm) so the two stickers stay close together.
+    Prints clean borderless twin labels (Sticker 1 + Sticker 2):
+    - No border (BOX removed)
+    - No barcode (BARCODE removed)
+    - Centered TRANEX Logo
+    - Centered Node Number
+    - Centered Floor Number
     """
     if not printer_name:
         printer_name = get_default_printer()
@@ -295,17 +298,21 @@ def print_twin_label(node_id="101", floor="GF", printer_name=None, logo_path=Non
     node_id_str = str(node_id).strip()
     floor_str = str(floor).strip()
     h_mm = int(round(float(height_mm)))
-    g_mm = int(round(float(gap_mm)))
+    w_mm = int(round(float(width_mm)))
+    g_mm = float(gap_mm)
+    label_w_dots = int(w_mm * 8)
+    density_val = max(1, min(15, int(density)))
+    speed_val = max(1, min(6, int(speed)))
 
-    # Pre-render logo bitmap
-    logo_bytes, w_bytes, h_dots = get_logo_bitmap(logo_path, target_w=96, target_h=35, invert=True)
+    # Compact logo for twin halves: 80x20 dots (10 bytes wide)
+    logo_bytes, w_bytes, h_dots = get_logo_bitmap(logo_path, target_w=80, target_h=20, invert=True)
 
     stream = bytearray()
-
-    # Hardware Pitch Lock: OFFSET 0 mm and SET TEAR OFF eliminate mechanical gear backlash and cumulative creep
     header = (
-        f"SIZE 38 mm, {h_mm} mm\r\n"
-        f"GAP {g_mm} mm, 0 mm\r\n"
+        f"SIZE {w_mm} mm, {h_mm} mm\r\n"
+        f"GAP {g_mm:g} mm, 0 mm\r\n"
+        f"SPEED {speed_val}\r\n"
+        f"DENSITY {density_val}\r\n"
         "OFFSET 0 mm\r\n"
         "SET TEAR OFF\r\n"
         "SET PEEL OFF\r\n"
@@ -316,48 +323,49 @@ def print_twin_label(node_id="101", floor="GF", printer_name=None, logo_path=Non
     )
     stream.extend(header.encode("utf-8"))
 
-    # --- الملصق الأول: Sticker 1 (نزول إضافي للأمان بعيداً عن حافة القطع العلوية) ---
-    base_top = 20 + offset_y  # 2.5 mm base drop from top edge
+    # Prepare centered text
+    node_text = node_id_str
+    n_w = len(node_text) * 16
+    node_x = max(8, (label_w_dots - n_w) // 2)
+
+    if floor_str.upper().startswith("FL") or floor_str.upper().startswith("FLOOR") or floor_str.startswith("الدور"):
+        floor_disp = floor_str
+    else:
+        floor_disp = f"FL: {floor_str}"
+    f_w = len(floor_disp) * 12
+    floor_x = max(8, (label_w_dots - f_w) // 2)
+    logo_x = max(0, (label_w_dots - 80) // 2)
+
+    # --- الملصق الأول: Sticker 1 ---
+    base_top = 14 + offset_y
     s1_top = base_top + s1_shift_y
-    s1_bottom = s1_top + 58
-    s1_text_y = s1_top + 6
-    s1_bc_y = s1_top + 24
-    s1_logo_y = s1_top + 26
-
-    s1_cmds = (
-        f"BOX 8,{s1_top},272,{s1_bottom},2\r\n"
-        f'TEXT 18,{s1_text_y},"2",0,1,1,"ID:{node_id_str}  FL:{floor_str}"\r\n'
-        f'BARCODE 18,{s1_bc_y},"128",26,1,0,2,2,"{node_id_str}"\r\n'
-    )
-    stream.extend(s1_cmds.encode("utf-8"))
     if logo_bytes:
-        stream.extend(f"BITMAP 170,{s1_logo_y},{w_bytes},{h_dots},0,".encode("ascii") + logo_bytes + b"\r\n")
+        stream.extend(f"BITMAP {logo_x},{s1_top},{w_bytes},{h_dots},0,".encode("ascii") + logo_bytes + b"\r\n")
+    stream.extend(f'TEXT {node_x},{s1_top + 24},"3",0,1,1,"{node_text}"\r\n'.encode("utf-8"))
+    stream.extend(f'TEXT {floor_x},{s1_top + 52},"2",0,1,1,"{floor_disp}"\r\n'.encode("utf-8"))
 
-    # --- الملصق الثاني: Sticker 2 (مسافة قريبة جداً 1.0 مم فقط أسفل الملصق الأول) ---
-    s2_top = s1_bottom + inter_gap_dots + s2_shift_y
-    s2_bottom = s2_top + 58
-    s2_text_y = s2_top + 6
-    s2_bc_y = s2_top + 24
-    s2_logo_y = s2_top + 26
-
-    s2_cmds = (
-        f"BOX 8,{s2_top},272,{s2_bottom},2\r\n"
-        f'TEXT 18,{s2_text_y},"2",0,1,1,"ID:{node_id_str}  FL:{floor_str}"\r\n'
-        f'BARCODE 18,{s2_bc_y},"128",26,1,0,2,2,"{node_id_str}"\r\n'
-    )
-    stream.extend(s2_cmds.encode("utf-8"))
+    # --- الملصق الثاني: Sticker 2 ---
+    s2_top = s1_top + 80 + inter_gap_dots + s2_shift_y
     if logo_bytes:
-        stream.extend(f"BITMAP 170,{s2_logo_y},{w_bytes},{h_dots},0,".encode("ascii") + logo_bytes + b"\r\n")
+        stream.extend(f"BITMAP {logo_x},{s2_top},{w_bytes},{h_dots},0,".encode("ascii") + logo_bytes + b"\r\n")
+    stream.extend(f'TEXT {node_x},{s2_top + 24},"3",0,1,1,"{node_text}"\r\n'.encode("utf-8"))
+    stream.extend(f'TEXT {floor_x},{s2_top + 52},"2",0,1,1,"{floor_disp}"\r\n'.encode("utf-8"))
 
-    # أمر طباعة الدورة الواحدة (الورقتين معاً في أمر واحد ثم الوقوف الدقيق عند الحساس الضوئي للفاصل)
+    # أمر طباعة الورقة الواحدة
     stream.extend(f"PRINT {copies},1\r\n".encode("ascii"))
 
     return _send_raw_to_printer(printer_name, bytes(stream), doc_name=f"IPS Twin Node Label {node_id_str}")
 
 
-def print_single_label(node_id="101", floor="GF", printer_name=None, logo_path=None, copies=1, height_mm=24.0, gap_mm=3.0, offset_y=0):
+def print_single_label(node_id="101", floor="GF", printer_name=None, logo_path=None, copies=1, height_mm=12.0, width_mm=38.0, gap_mm=2.0, offset_y=0, density=10, speed=3):
     """
-    Prints a single full label (e.g. 38x24mm or 38x25mm) with zero offset and zero drift.
+    Prints a single clean label (adaptive to 12mm / 1.2cm or 24mm+):
+    - Border completely removed (clean borderless)
+    - Barcode removed
+    - Centered TRANEX Logo at the top
+    - Centered large bold Node Number in the middle
+    - Centered Floor Number below it
+    - Exactly 1 sheet printed per operation
     """
     if not printer_name:
         printer_name = get_default_printer()
@@ -365,15 +373,20 @@ def print_single_label(node_id="101", floor="GF", printer_name=None, logo_path=N
     node_id_str = str(node_id).strip()
     floor_str = str(floor).strip()
     h_mm = int(round(float(height_mm)))
-    g_mm = int(round(float(gap_mm)))
+    w_mm = int(round(float(width_mm)))
+    g_mm = float(gap_mm)
     total_dots = int(h_mm * 8)
+    label_w_dots = int(w_mm * 8)
 
-    logo_bytes, w_bytes, h_dots = get_logo_bitmap(logo_path, target_w=96, target_h=35, invert=True)
+    density_val = max(1, min(15, int(density)))
+    speed_val = max(1, min(6, int(speed)))
 
     stream = bytearray()
     header = (
-        f"SIZE 38 mm, {h_mm} mm\r\n"
-        f"GAP {g_mm} mm, 0 mm\r\n"
+        f"SIZE {w_mm} mm, {h_mm} mm\r\n"
+        f"GAP {g_mm:g} mm, 0 mm\r\n"
+        f"SPEED {speed_val}\r\n"
+        f"DENSITY {density_val}\r\n"
         "OFFSET 0 mm\r\n"
         "SET TEAR OFF\r\n"
         "SET PEEL OFF\r\n"
@@ -381,14 +394,91 @@ def print_single_label(node_id="101", floor="GF", printer_name=None, logo_path=N
         "DIRECTION 1,0\r\n"
         "REFERENCE 0,0\r\n"
         "CLS\r\n"
-        f"BOX 8,{8 + offset_y},296,{total_dots - 8 + offset_y},2\r\n"
-        f'TEXT 18,{16 + offset_y},"2",0,1,1,"ID:{node_id_str}  FL:{floor_str}"\r\n'
-        f'BARCODE 18,{48 + offset_y},"128",50,1,0,2,2,"{node_id_str}"\r\n'
     )
     stream.extend(header.encode("utf-8"))
-    if logo_bytes:
-        stream.extend(f"BITMAP 180,{120 + offset_y},{w_bytes},{h_dots},0,".encode("ascii") + logo_bytes + b"\r\n")
-    stream.extend(f'TEXT 18,{132 + offset_y},"1",0,1,1,"IPS TRANEX NODE"\r\n'.encode("utf-8"))
+
+    # Determine layout mode based on label height:
+    if h_mm <= 16:
+        # Compact mode for small label (12 mm / 1.2 cm = 96 dots total height)
+        # 1. TRANEX Logo (72 dots wide = 9 bytes, 20 dots high)
+        logo_w = 72
+        logo_h = 20
+        logo_bytes, w_bytes, h_dots = get_logo_bitmap(logo_path, target_w=logo_w, target_h=logo_h, invert=True)
+        if logo_bytes:
+            logo_x = max(0, (label_w_dots - logo_w) // 2)
+            logo_y = max(1, 4 + offset_y)
+            stream.extend(f"BITMAP {logo_x},{logo_y},{w_bytes},{h_dots},0,".encode("ascii") + logo_bytes + b"\r\n")
+
+        # 2. Centered Node Number (Font 4: 24 dots wide, 32 dots high - bold & prominent)
+        node_text = node_id_str
+        char_w = 24
+        text_w = len(node_text) * char_w
+        if text_w > (label_w_dots - 16):
+            char_w = 16
+            text_w = len(node_text) * char_w
+            node_font = "3"
+        else:
+            node_font = "4"
+        node_x = max(8, (label_w_dots - text_w) // 2)
+        node_y = 28 + offset_y
+        stream.extend(f'TEXT {node_x},{node_y},"{node_font}",0,1,1,"{node_text}"\r\n'.encode("utf-8"))
+
+        # 3. Centered Floor Number (Font 2: 12 dots wide, 20 dots high)
+        if floor_str:
+            if floor_str.upper().startswith("FL") or floor_str.upper().startswith("FLOOR") or floor_str.startswith("الدور"):
+                floor_disp = floor_str
+            else:
+                floor_disp = f"FL: {floor_str}"
+            f_char_w = 12
+            f_text_w = len(floor_disp) * f_char_w
+            floor_x = max(8, (label_w_dots - f_text_w) // 2)
+            floor_y = 64 + offset_y
+            stream.extend(f'TEXT {floor_x},{floor_y},"2",0,1,1,"{floor_disp}"\r\n'.encode("utf-8"))
+
+    else:
+        # Standard mode for larger labels (24 mm+ = 192 dots total height)
+        logo_w = 112
+        logo_h = 32
+        logo_bytes, w_bytes, h_dots = get_logo_bitmap(logo_path, target_w=logo_w, target_h=logo_h, invert=True)
+        if logo_bytes:
+            logo_x = max(0, (label_w_dots - logo_w) // 2)
+            logo_y = 14 + offset_y
+            stream.extend(f"BITMAP {logo_x},{logo_y},{w_bytes},{h_dots},0,".encode("ascii") + logo_bytes + b"\r\n")
+
+        node_text = node_id_str
+        if len(node_text) <= 8:
+            char_w = 32
+            text_w = len(node_text) * char_w
+            node_x = max(8, (label_w_dots - text_w) // 2)
+            node_y = 62 + offset_y
+            stream.extend(f'TEXT {node_x},{node_y},"3",0,2,2,"{node_text}"\r\n'.encode("utf-8"))
+        else:
+            char_w = 24
+            text_w = len(node_text) * char_w
+            node_x = max(8, (label_w_dots - text_w) // 2)
+            node_y = 68 + offset_y
+            stream.extend(f'TEXT {node_x},{node_y},"4",0,1,1,"{node_text}"\r\n'.encode("utf-8"))
+
+        if floor_str:
+            if floor_str.upper().startswith("FL") or floor_str.upper().startswith("FLOOR") or floor_str.startswith("الدور"):
+                floor_disp = floor_str
+            else:
+                floor_disp = f"FL: {floor_str}"
+
+            if len(floor_disp) <= 10:
+                f_char_w = 24
+                f_text_w = len(floor_disp) * f_char_w
+                floor_x = max(8, (label_w_dots - f_text_w) // 2)
+                floor_y = 124 + offset_y
+                stream.extend(f'TEXT {floor_x},{floor_y},"4",0,1,1,"{floor_disp}"\r\n'.encode("utf-8"))
+            else:
+                f_char_w = 16
+                f_text_w = len(floor_disp) * f_char_w
+                floor_x = max(8, (label_w_dots - f_text_w) // 2)
+                floor_y = 128 + offset_y
+                stream.extend(f'TEXT {floor_x},{floor_y},"3",0,1,1,"{floor_disp}"\r\n'.encode("utf-8"))
+
+    # Print exactly 1 single label
     stream.extend(f"PRINT {copies},1\r\n".encode("ascii"))
 
     return _send_raw_to_printer(printer_name, bytes(stream), doc_name=f"IPS Single Label {node_id_str}")
@@ -459,19 +549,20 @@ def calibrate_gap(printer_name=None):
     return _send_raw_to_printer(printer_name, cmd, doc_name="IPS Gap Calibration")
 
 
-def feed_label(printer_name=None, height_mm=24.0, gap_mm=3.0):
+def feed_label(printer_name=None, height_mm=12.0, gap_mm=2.0, width_mm=38.0):
     """
-    Feeds exactly one physical cycle to verify zero-drift gap alignment.
+    Feeds exactly one physical label to verify zero-drift gap alignment.
     """
     if not printer_name:
         printer_name = get_default_printer()
 
     h_mm = int(round(float(height_mm)))
-    g_mm = int(round(float(gap_mm)))
+    w_mm = int(round(float(width_mm)))
+    g_mm = float(gap_mm)
 
     cmd = (
-        f"SIZE 38 mm, {h_mm} mm\r\n"
-        f"GAP {g_mm} mm, 0 mm\r\n"
+        f"SIZE {w_mm} mm, {h_mm} mm\r\n"
+        f"GAP {g_mm:g} mm, 0 mm\r\n"
         "OFFSET 0 mm\r\n"
         "SET TEAR OFF\r\n"
         "FORMFEED\r\n"
