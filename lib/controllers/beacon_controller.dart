@@ -1,6 +1,8 @@
 import '../core/utils/app_logger.dart';
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' hide VerticalDirection;
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:get/get.dart';
 import 'package:parliament_ips/models/beacon_data.dart';
@@ -11,6 +13,7 @@ import 'package:parliament_ips/utils/constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'navigation_controller.dart';
+import 'package:parliament_ips/features/navigation/controllers/navigation_controller.dart' as modern_nav;
 import 'package:parliament_ips/features/navigation/domain/repositories/navigation_repository.dart';
 import 'package:parliament_ips/features/navigation/domain/entities/building_graph.dart';
 import 'package:parliament_ips/features/navigation/domain/entities/nav_node.dart';
@@ -26,7 +29,7 @@ class _WeightedMatch {
   _WeightedMatch(this.node, this.distance, this.centerX, this.centerY);
 }
 
-class BeaconController extends GetxController {
+class BeaconController extends GetxController with WidgetsBindingObserver {
   var poiNodes = <int, POINode>{};
   var poiList = <POINode>[];
   var locationList = <LocationInfo>[];
@@ -52,27 +55,24 @@ class BeaconController extends GetxController {
 
   /// وقت آخر حساب للموقع التقديري لتطبيق Throttling
   DateTime _lastPositionProcessTime = DateTime.now();
-  static const _positionThrottleMs = 300;
+  static const _positionThrottleMs = 450;
 
   var fetchingBeacons = true.obs;
   var haveCurrentLocation = false.obs;
   var beaconResult = ''.obs;
-  int beaconRssiCutoff = -75;
+
+  /// تم توسيع العتبة من -75 إلى -85 لضمان عدم فقدان التموضع بسبب التأرجح الطبيعي للبلوتوث
+  int beaconRssiCutoff = -85;
 
   // لتجنب تكرار طباعة اللوج لنفس النود في كل جزء من الثانية
   final Map<String, DateTime> _lastLogTimePerNode = {};
 
   // ── Hysteresis ضد تذبذب RSSI ──────────────────────────────────────────
-  // من غير قفل، أي اهتزاز بسيط في الإشارة (تداخل/انعكاس) بيخلي أقرب نقطة
-  // للـ weighted center تتقلب بين نقطتين كل شوية حتى لو المستخدم واقف
-  // مكانه (ده اللي كان بيحصل بالظبط بين node 207 و209 في اللوج). الحل:
-  // نفضل على النقطة "المقفولة" حاليًا، ومنسمحش بالتبديل لنقطة تانية إلا
-  // لو قريب قوي منها فعلاً (مسافة صغيرة) وبإشارة مش ضعيفة، أو لو الدور
-  // اتغير خالص (انتقال حقيقي عبر أسانسير/سلم مش تذبذب).
   int? _lockedNodeId;
   int? _lockedFloor;
-  static const double _switchDistanceMeters = 1.5;
-  static const int _switchRssiThreshold = -75;
+  static const double _switchDistanceMeters = 2.8;
+  static const int _switchRssiThreshold = -85;
+  static const int defaultScanTimerSeconds = 12;
 
   Timer? _timer;
   int _timerTime = 0;
@@ -88,14 +88,6 @@ class BeaconController extends GetxController {
   bool _isRanging = false;
 
   // ── Watchdog ضد موت السكان بصمت ──────────────────────────────────────
-  // أندرويد أحيانًا بيوقف تسليم نتائج الـ BLE scan من غير ما يبعت onDone
-  // أو onError (خصوصًا بعد سكان مستمر لفترة، أو قفل الشاشة/توفير الطاقة).
-  // في الحالة دي _isRanging بتفضل true للأبد و beaconInitPlatformState()
-  // بيرفض يعيد المحاولة (بسبب الـ guard بتاعه) رغم إن مفيش سكان فعلي شغال
-  // — وده بالظبط سبب "التطبيق بيفقد تحديد الموقع بعد مدة حتى لو في بيكون
-  // قريب". الحل: تايمر دوري بيتابع "آخر نشاط سكان حقيقي" (أي جهاز BLE
-  // اتلقط، مش بس بيكون متطابق)، ولو عدّى وقت طويل من غير نشاط، يجبر إعادة
-  // تشغيل السكان بالكامل بغض النظر عن قيمة _isRanging.
   DateTime _lastScanActivity = DateTime.now();
   Timer? _watchdogTimer;
   static const _watchdogInterval = Duration(seconds: 10);
@@ -105,21 +97,17 @@ class BeaconController extends GetxController {
       int.parse(b.rssi).compareTo(int.parse(a.rssi));
   final beaconDataPriorityQueue = List<BeaconData>.empty().obs;
 
-  // المتغيرات الجديدة لتتبع حالة التحميل من Repository
   late NavigationRepository _navigationRepository;
   BuildingGraph? _currentGraph;
-  // bool _graphLoaded = false;
-  // الـ Future بتاع تحميل بيانات الخريطة — beaconInitPlatformState() بينتظرها
-  // قبل ما يبدأ فعليًا، عشان مايبدأش يقارن بيكونات متلقطة مع poiList لسه
-  // فاضية (سباق/race condition كان بيسبب "Timer expired" غلط حتى مع وجود
-  // بيكون فعلي، لأن التايمر كان بيبدأ العد قبل ما البيانات توصل من Supabase).
-  late Future<void> _dataLoadFuture;
+  BuildingGraph? get currentGraph => _currentGraph;
 
   @override
   void onInit() {
     super.onInit();
-    // الآن نستخدم async loading من Repository
-    _dataLoadFuture = _loadNavigationData();
+    WidgetsBinding.instance.addObserver(this);
+
+    // 1. تفعيل فوري لبيانات الكاش المحلي وبدء مسح البلوتوث فوراً (0ms تأخير)
+    _initFastCacheAndScan();
 
     _watchdogTimer = Timer.periodic(
       _watchdogInterval,
@@ -127,15 +115,68 @@ class BeaconController extends GetxController {
     );
   }
 
+  /// تحميل فوري وسريع للكاش المحلي المتاح (ينتهي خلال ~10ms) وبدء مسح البلوتوث فوراً
+  Future<void> _initFastCacheAndScan() async {
+    _navigationRepository = Get.find<NavigationRepository>();
+
+    // 1. محاولة استرجاع الكاش المحلي المتاح فوراً دون أي اتصال بالإنترنت
+    try {
+      final cachedGraph = await _navigationRepository.loadCachedGraph();
+      if (cachedGraph != null) {
+        _currentGraph = cachedGraph;
+        _convertGraphToPoiNodes(cachedGraph);
+        _convertGraphToLocationList(cachedGraph);
+        AppLogger.debug(
+          '[BEACON] ⚡ تم تفعيل بيانات الكاش المحلي فوراً (${poiList.length} نود) — جاهز لتحديد الموقع فوراً',
+        );
+      }
+    } catch (e) {
+      AppLogger.debug('[BEACON] ⚠️ خطأ في قراءة الكاش الأولي: $e');
+    }
+
+    // 2. تشغيل مسح البلوتوث فوراً دون أي انتظار لشبكة سوبابيز!
+    beaconInitPlatformState();
+
+    // 3. جلب وتحديث أحدث بيانات من سوبابيز في الخلفية دون تعطيل واجهة المستخدم
+    unawaited(_loadNavigationData());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    AppLogger.debug('[BEACON] 📱 AppLifecycleState changed to: $state');
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _pauseScanForBackground();
+    } else if (state == AppLifecycleState.resumed) {
+      _resumeScanFromForeground();
+    }
+  }
+
+  void _pauseScanForBackground() {
+    AppLogger.debug('[BEACON] ⏸️ إيقاف مسح البلوتوث بأمان في الخلفية...');
+    _scanSubscription?.cancel();
+    _scanSubscription = null;
+    _scanRestartTimer?.cancel();
+    _scanRestartTimer = null;
+    _isRanging = false;
+    beaconDataPriorityQueue.clear();
+  }
+
+  void _resumeScanFromForeground() {
+    AppLogger.debug('[BEACON] ▶️ استئناف مسح البلوتوث بعد العودة للواجهة...');
+    _isRanging = false;
+    _lastScanActivity = DateTime.now();
+    beaconInitPlatformState();
+  }
+
   /// يفحص هل السكان لسه فعليًا شغال (مش بس _isRanging == true نظريًا).
-  /// لو مفيش أي نشاط سكان حقيقي (حتى لو من أجهزة BLE مش متطابقة) من
-  /// وقت أطول من _staleThreshold، يبقى السكان مات بصمت — نجبر إعادة تشغيله.
   void _checkScanHealth() {
-    if (!_isRanging) return; // مفيش سكان مفروض يكون شغال أصلاً دلوقتي
+    if (!_isRanging) return;
     final idleFor = DateTime.now().difference(_lastScanActivity);
     if (idleFor >= _staleThreshold) {
       AppLogger.debug(
-        '[BEACON] ⚠️ Watchdog: no scan activity for ${idleFor.inSeconds}s رغم إن _isRanging=true — السكان مات بصمت، جاري إعادة التشغيل بالقوة',
+        '[BEACON] ⚠️ Watchdog: no scan activity for ${idleFor.inSeconds}s — إعادة تشغيل السكان بالقوة',
       );
       _forceRestartScan();
     }
@@ -149,31 +190,45 @@ class BeaconController extends GetxController {
     beaconInitPlatformState();
   }
 
-  /// يحمّل البيانات من NavigationRepository (async)
+  /// يحمّل أحدث البيانات من NavigationRepository في الخلفية (Stale-While-Revalidate)
   Future<void> _loadNavigationData() async {
     try {
-      AppLogger.debug('[BEACON] Loading navigation data from repository...');
+      AppLogger.debug('[BEACON] 🌐 جارِ تحديث بيانات الخريطة من سوبابيز في الخلفية...');
       _navigationRepository = Get.find<NavigationRepository>();
 
-      // تحميل الـ graph من Repository
-      _currentGraph = await _navigationRepository.loadGraph();
+      // تحميل الـ graph من Repository (forceRefresh = true لجلب الأحدث من الشبكة)
+      final freshGraph = await _navigationRepository.loadGraph(forceRefresh: true);
 
-      if (_currentGraph == null) {
-        AppLogger.debug('[BEACON] ❌ Graph is null — Supabase returned empty data');
-        AppLogger.debug('[BEACON] Make sure tables are populated in Supabase');
-        return;
+      _currentGraph = freshGraph;
+
+      // تحويل البيانات الحقيقية وتحديث القوائم
+      _convertGraphToPoiNodes(freshGraph);
+      _convertGraphToLocationList(freshGraph);
+
+      AppLogger.debug(
+        '[BEACON] ✓ تم تحديث الخريطة بنجاح من سوبابيز. Nodes: ${poiList.length}, Locations: ${locationList.length}',
+      );
+
+      // تحديث شاشة الملاحة بالقائمة الجديدة والوجهات المحدثة
+      if (Get.isRegistered<modern_nav.NavigationScreenController>()) {
+        Get.find<modern_nav.NavigationScreenController>().onGraphUpdated(freshGraph);
       }
 
-      // تحويل البيانات الحقيقية
-      _convertGraphToPoiNodes(_currentGraph!);
-      _convertGraphToLocationList(_currentGraph!);
-
-      // _graphLoaded = true;
-      AppLogger.debug(
-        '[BEACON] ✓ Navigation data loaded successfully. Nodes: ${poiList.length}, Locations: ${locationList.length}',
-      );
+      // إذا كان قد تم تحديد الموقع بالفعل بالكاش، نحدث معلومات النود الحالية بالقيم الجديدة
+      if (haveCurrentLocation.value) {
+        final currentNodeId = currentLocation.value.nodeID;
+        final updatedPoi = poiNodes[currentNodeId];
+        if (updatedPoi != null) {
+          currentLocation.value = updatedPoi;
+          final navController = Get.find<NavigationController>();
+          navController.setCurrentLocation(updatedPoi);
+        }
+      } else if (beaconDataPriorityQueue.isNotEmpty) {
+        // لو لم نكن قد حددنا الموقع بعد ولكن لدينا بيكونات ملتقطة في الطابور، أعد التقييم فوراً
+        _processNearestBeacons();
+      }
     } catch (e) {
-      AppLogger.debug('[BEACON] ❌ Error loading data from Supabase: $e');
+      AppLogger.debug('[BEACON] ℹ️ تعذر تحديث بيانات سوبابيز (سيستمر العمل بالكاش المحلي): $e');
     }
   }
 
@@ -298,11 +353,8 @@ class BeaconController extends GetxController {
 
   @override
   void onClose() {
-    // ملحوظة: الكلاس ده GetxController مش StatefulWidget، فـ GetX بينادي
-    // onClose() تلقائيًا (مش dispose()) لما الـ controller يتشال. كان فيه
-    // دالة dispose() هنا قبل كده بس مبتتنفذش أبدًا فعليًا لإن مفيش حد
-    // بينادي عليها — التنضيف الحقيقي لازم يكون هنا.
     AppLogger.debug('[BEACON] Disposing BeaconController');
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _scanRestartTimer?.cancel();
     _watchdogTimer?.cancel();
@@ -326,16 +378,24 @@ class BeaconController extends GetxController {
         .toList();
   }
 
-  void startTimer(int timeSet) {
+  void startTimer([int? timeSet]) {
     const oneSec = Duration(seconds: 1);
-    _timerTime = timeSet;
+    _timerTime = timeSet ?? defaultScanTimerSeconds;
+    _timer?.cancel();
     _timer = Timer.periodic(oneSec, (Timer timer) {
       if (_timerTime < 1) {
         timer.cancel();
         _timer = null;
         fetchingBeacons.value = false;
-        haveCurrentLocation.value = false;
-        AppLogger.debug("[BEACON] Timer expired — no beacon found");
+        // وضع السماح (Grace Mode): أثناء التوجيه النشط لا نسحب الموقع فجأة لتجنب إرباك الشاشة
+        final isNavigating = (Get.isRegistered<modern_nav.NavigationScreenController>() &&
+                Get.find<modern_nav.NavigationScreenController>().isNavigating.value) ||
+            (Get.isRegistered<NavigationController>() &&
+                Get.find<NavigationController>().isNavigating);
+        if (!isNavigating) {
+          haveCurrentLocation.value = false;
+        }
+        AppLogger.debug("[BEACON] ⏳ انقضت مهلة البحث — لم يتم رصد إشارة بيكون مؤخراً");
       } else {
         _timerTime = _timerTime - 1;
       }
@@ -351,33 +411,13 @@ class BeaconController extends GetxController {
 
   Future<void> beaconInitPlatformState() async {
     if (_isRanging) return;
-    // نمنع أي نداء تاني يدخل هنا وهو لسه مستني تحميل البيانات (زي ما بيحصل
-    // من MainNavigationScreen.build() اللي بينادي الدالة دي كل ما الشاشة
-    // تتبني — عادي جدًا يحصل أكتر من مرة قبل ما التحميل يخلص).
     _isRanging = true;
-
-    // مهم: نستنى تحميل خريطة المبنى من Supabase قبل ما نبدأ فعليًا. من
-    // غير كده، لو بيكون اتلقط قبل ما poiList توصل، هيفشل في المطابقة —
-    // مش لعيب في البيكون، لكن لأن مفيش داتا نقارن بيها أصلاً، والتايمر
-    // كان بيعدي "ملقيناش بيكون" غلط بعد 5 ثواني حتى لو انت واقف جنب واحد
-    // حقيقي شغال.
-    await _dataLoadFuture;
-
-    if (poiList.isEmpty) {
-      AppLogger.debug(
-        '[BEACON] ⚠️ خريطة المبنى لسه فاضية بعد التحميل (فشل أو Supabase رجّع صفوف فاضية) — هعيد محاولة التحميل والسكان بعد 3 ثواني',
-      );
-      _isRanging = false;
-      _dataLoadFuture = _loadNavigationData();
-      _scheduleRestart(delaySeconds: 3);
-      return;
-    }
 
     AppLogger.debug(
       '[BEACON] Starting BLE scan for ESP32 iBeacon nodes via flutter_reactive_ble',
     );
 
-    startTimer(5);
+    startTimer(defaultScanTimerSeconds);
     _lastScanActivity = DateTime.now();
 
     _scanSubscription = _ble
@@ -605,13 +645,20 @@ class BeaconController extends GetxController {
     });
 
     beaconDataPriorityQueue.sort(rssiComparator);
-    var tempString = '';
-    for (var item in beaconDataPriorityQueue) {
-      tempString += item.name + " : " + item.rssi + '\n';
+    if (kDebugMode) {
+      var tempString = '';
+      for (var item in beaconDataPriorityQueue) {
+        tempString += item.name + " : " + item.rssi + '\n';
+      }
+      beaconResult.value = tempString;
     }
-    beaconResult.value = tempString;
 
-    // Throttling: عدم إعادة حساب الموقع المرجح المعقد أكثر من 3 مرات في الثانية
+    // تنظيف ذاكرة الـ RSSI لتجنب تسريب الرام
+    if (_filteredRssiByUuid.length > 50) {
+      _filteredRssiByUuid.clear();
+    }
+
+    // Throttling: عدم إعادة حساب الموقع المرجح المعقد أكثر من مرتين في الثانية
     final nowTime = DateTime.now();
     if (haveCurrentLocation.value &&
         nowTime.difference(_lastPositionProcessTime).inMilliseconds < _positionThrottleMs) {
@@ -620,8 +667,13 @@ class BeaconController extends GetxController {
     _lastPositionProcessTime = nowTime;
 
     // ========== Phase 1: استخدم Weighted Centroid بدل Strongest Signal فقط ==========
+    _processNearestBeacons();
+  }
+
+  void _processNearestBeacons() {
+    if (beaconDataPriorityQueue.isEmpty) return;
     final nearestBeacon = beaconDataPriorityQueue.first;
-    final nearestRssi = int.parse(nearestBeacon.rssi);
+    final nearestRssi = int.tryParse(nearestBeacon.rssi) ?? -99;
 
     if (nearestRssi > beaconRssiCutoff) {
       final weightedMatch = _calculateWeightedPosition(beaconDataPriorityQueue);
@@ -633,11 +685,9 @@ class BeaconController extends GetxController {
           nearestRssi,
         );
         setCurrentLocationFromNode(resolvedNode);
-        // print('🎯 موقعك الحالي المحدد على الخريطة: [${resolvedNode.name}] (Node ${resolvedNode.nodeID})');
       } else {
         // Fallback: استخدم أقوي بيكون إذا فشل الحساب المرجح
         setCurrentLocationFromUuid(nearestBeacon.uuid);
-        // print('🎯 موقعك الحالي المحدد على الخريطة: [${nearestBeacon.name}]');
       }
     }
   }
@@ -651,7 +701,7 @@ class BeaconController extends GetxController {
     haveCurrentLocation.value = true;
 
     cancelTimer();
-    startTimer(5);
+    startTimer(defaultScanTimerSeconds);
 
     // print(
     //     "[BEACON] ✓ Set Current location: ${currentLocation.value.name} (NodeID: ${currentLocation.value.nodeID})");
@@ -822,7 +872,7 @@ class BeaconController extends GetxController {
     }
 
     cancelTimer();
-    startTimer(5);
+    startTimer(defaultScanTimerSeconds);
   }
 
   /// تحديث الموقع من UUID (الطريقة القديمة — للـ fallback فقط)
@@ -843,6 +893,6 @@ class BeaconController extends GetxController {
     }
 
     cancelTimer();
-    startTimer(5);
+    startTimer(defaultScanTimerSeconds);
   }
 }

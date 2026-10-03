@@ -45,9 +45,17 @@ class CompassController extends GetxController {
     }
   }
 
+  DateTime _lastCompassUpdateTime = DateTime.now();
+
   void _onData(CompassEvent compassEvent) {
     final rawHeading = compassEvent.heading;
     if (rawHeading == null) return;
+
+    final now = DateTime.now();
+    if (now.difference(_lastCompassUpdateTime).inMilliseconds < 150) {
+      return;
+    }
+    _lastCompassUpdateTime = now;
 
     // تصفية وتنعيم قراءات البوصلة (Low-pass filter with modular wrap-around)
     if (heading.value == 0.0) {

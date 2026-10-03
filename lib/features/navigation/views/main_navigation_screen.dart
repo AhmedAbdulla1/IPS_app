@@ -16,17 +16,30 @@ import '../widgets/parliament_app_bar.dart';
 /// والـ body المناسبين حسب حالة التوجيه:
 /// - isNavigating == false → [IdleHomeScreen]
 /// - isNavigating == true  → [ActiveNavigationScreen]
-class MainNavigationScreen extends StatelessWidget {
+class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(NavigationScreenController());
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+}
 
-    // بدء مسح البيكونات الفعلي (BLE) بمجرد ما الشاشة الرئيسية تتبني —
-    // نفس اللي كانت SelectionPage القديمة بتعمله في build() بتاعها.
-    // الاستدعاء آمن يتكرر (BeaconController._isRanging بيمنع تكرار المسح).
-    Get.find<BeaconController>().beaconInitPlatformState();
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  late final NavigationScreenController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(NavigationScreenController());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Get.find<BeaconController>().beaconInitPlatformState();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return Obx(() {
       final themeController = Get.find<ThemeController>();

@@ -14,6 +14,10 @@ abstract class NavigationRepository {
   /// تعرض رسالة واضحة للمستخدم.
   Future<BuildingGraph> loadGraph({bool forceRefresh = false});
 
+  /// تحميل فوري للـ graph من الكاش المحلي فقط دون أي اتصال بالشبكة (صفر انتظار).
+  /// يرجع null فقط إذا لم يسبق تخزين أي كاش على الجهاز بعد.
+  Future<BuildingGraph?> loadCachedGraph();
+
   /// آخر نسخة متحمّلة من الـ graph — null لو لسه ماتحمّلش.
   /// مفيد للأماكن اللي محتاجة وصول متزامن (sync) للـ graph بعد ما يتحمّل
   /// مرة في بداية التطبيق (زي بدء التنقل).

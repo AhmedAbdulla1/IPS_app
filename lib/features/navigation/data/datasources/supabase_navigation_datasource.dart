@@ -147,15 +147,33 @@ class SupabaseNavigationDataSource {
       }
       return null;
     } catch (e) {
-      final prefs = await SharedPreferences.getInstance();
-      final cachedRaw = prefs.getString('${_cacheKeyPrefix}rpc_graph');
-      if (cachedRaw != null) {
-        usedCacheInLastFetch = true;
-        try {
-          return Map<String, dynamic>.from(jsonDecode(cachedRaw) as Map);
-        } catch (_) {}
-      }
-      return null;
+      return readCachedRpcGraph();
     }
+  }
+
+  /// قراءة فورية لكاش RPC بدون أي اتصال بالإنترنت (0ms network delay)
+  Future<Map<String, dynamic>?> readCachedRpcGraph() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedRaw = prefs.getString('${_cacheKeyPrefix}rpc_graph');
+    if (cachedRaw != null) {
+      usedCacheInLastFetch = true;
+      try {
+        return Map<String, dynamic>.from(jsonDecode(cachedRaw) as Map);
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  /// قراءة جدول معين من الكاش المحلي فقط بدون أي طلب شبكة
+  Future<List<T>?> readTableFromCacheOnly<T>({
+    required String table,
+    required T Function(Map<String, dynamic>) fromMap,
+  }) async {
+    final cached = await _readFromCache(table);
+    if (cached != null) {
+      usedCacheInLastFetch = true;
+      return cached.map(fromMap).toList();
+    }
+    return null;
   }
 }

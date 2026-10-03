@@ -236,13 +236,21 @@ class NavigationScreenController extends GetxController {
   /// (راجع _resolveNearestReachableDestination) من غير ما تحتاج تظهر في
   /// نتائج البحث أو المنيو.
   Future<void> _buildDestinationList() async {
-    final graph = await _safeLoadGraph();
-    if (graph == null) {
-      // فشل التحميل نهائيًا (مفيش نت ومفيش كاش) — سيب القائمة بالاختصارات
-      // الثابتة بس، الرسالة اتعرضت بالفعل من _safeLoadGraph.
-      return;
+    // 1. محاولة القراءة السريعة من الكاش أولاً لعرض الوجهات فوراً دون انتظار أي شبكة
+    final cached = _navigationRepository.cachedGraph ??
+        await _navigationRepository.loadCachedGraph();
+    if (cached != null) {
+      _applyGraphDestinations(cached);
     }
 
+    // 2. تحديث آمن من سوبابيز في الخلفية
+    final graph = await _safeLoadGraph();
+    if (graph != null) {
+      _applyGraphDestinations(graph);
+    }
+  }
+
+  void _applyGraphDestinations(BuildingGraph graph) {
     final realDestinations = graph.destinations.map((destination) {
       final aliasTexts = [
         ...destination.aliasesAr,
@@ -264,8 +272,6 @@ class NavigationScreenController extends GetxController {
       ...realDestinations,
     ]);
 
-    // لو المستخدم لسه ما كتبش حاجة (أو الدروب داون مقفول)، حدّث نتائج
-    // العرض بالقائمة الكاملة الجديدة.
     if (searchTextController.text.trim().isEmpty) {
       searchResults.assignAll(_allDestinations);
     } else {
@@ -273,6 +279,12 @@ class NavigationScreenController extends GetxController {
         ArabicSearchUtils.search(_allDestinations, searchTextController.text),
       );
     }
+  }
+
+  /// استدعاء عند وصول بيانات أحدث من سوبابيز لتحديث الواجهة فوراً
+  void onGraphUpdated(BuildingGraph freshGraph) {
+    _applyGraphDestinations(freshGraph);
+    _syncIdleState();
   }
 
   /// بيحدّث بيانات "الموقع الحالي" في الشاشة الابتدائية من BeaconController

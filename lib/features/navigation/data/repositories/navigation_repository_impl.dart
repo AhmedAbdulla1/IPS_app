@@ -6,6 +6,10 @@ import '../../domain/entities/nav_level.dart';
 import '../../domain/entities/destination.dart';
 import '../../domain/repositories/navigation_repository.dart';
 import '../datasources/supabase_navigation_datasource.dart';
+import '../models/node_model.dart';
+import '../models/level_model.dart';
+import '../models/edge_model.dart';
+import '../models/destination_model.dart';
 import '../models/vertical_connector_model.dart'
     show ConnectorStopModel, VerticalConnectorModel;
 
@@ -37,6 +41,82 @@ class NavigationRepositoryImpl implements NavigationRepository {
 
   @override
   Future<DateTime?> getLastSyncedAt() => _dataSource.getLastSyncedAt();
+
+  @override
+  Future<BuildingGraph?> loadCachedGraph() async {
+    if (_cachedGraph != null) {
+      return _cachedGraph;
+    }
+
+    // 1. محاولة قراءة كاش RPC أولاً (سريعة وشاملة)
+    try {
+      final rpcData = await _dataSource.readCachedRpcGraph();
+      if (rpcData != null) {
+        final graph = _buildGraphFromRpcData(rpcData);
+        _cachedGraph = graph;
+        return graph;
+      }
+    } catch (e) {
+      AppLogger.debug('[NavigationRepository] Cached RPC read error: $e');
+    }
+
+    // 2. محاولة قراءة كاش الجداول الفردية
+    try {
+      final nodeModels = await _dataSource.readTableFromCacheOnly(
+        table: 'nodes',
+        fromMap: NodeModel.fromMap,
+      );
+      final levelModels = await _dataSource.readTableFromCacheOnly(
+        table: 'levels',
+        fromMap: LevelModel.fromMap,
+      );
+      final edgeModels = await _dataSource.readTableFromCacheOnly(
+        table: 'edges',
+        fromMap: EdgeModel.fromMap,
+      );
+
+      if (nodeModels != null && levelModels != null && edgeModels != null) {
+        final connectorModels = await _dataSource.readTableFromCacheOnly(
+          table: 'vertical_connectors',
+          fromMap: VerticalConnectorModel.fromMap,
+        ) ?? [];
+        final connectorStopModels = await _dataSource.readTableFromCacheOnly(
+          table: 'connector_stops',
+          fromMap: ConnectorStopModel.fromMap,
+        ) ?? [];
+        final destinationModels = await _dataSource.readTableFromCacheOnly(
+          table: 'destinations',
+          fromMap: DestinationModel.fromMap,
+        ) ?? [];
+        final destinationNodeModels = await _dataSource.readTableFromCacheOnly(
+          table: 'destination_nodes',
+          fromMap: DestinationNodeModel.fromMap,
+        ) ?? [];
+        final destinationAliasModels = await _dataSource.readTableFromCacheOnly(
+          table: 'destination_aliases',
+          fromMap: DestinationAliasModel.fromMap,
+        ) ?? [];
+
+        final graph = _buildGraphFromModels(
+          levelModels: levelModels,
+          nodeModels: nodeModels,
+          edgeModels: edgeModels,
+          connectorModels: connectorModels,
+          connectorStopModels: connectorStopModels,
+          destinationModels: destinationModels,
+          destinationNodeModels: destinationNodeModels,
+          destinationAliasModels: destinationAliasModels,
+          isFromCache: true,
+        );
+        _cachedGraph = graph;
+        return graph;
+      }
+    } catch (e) {
+      AppLogger.debug('[NavigationRepository] Cached tables read error: $e');
+    }
+
+    return null;
+  }
 
   @override
   Future<BuildingGraph> loadGraph({bool forceRefresh = false}) async {
@@ -76,6 +156,34 @@ class NavigationRepositoryImpl implements NavigationRepository {
     final destinationModels = await destinationsFuture;
     final destinationNodeModels = await destinationNodesFuture;
     final destinationAliasModels = await destinationAliasesFuture;
+
+    final graph = _buildGraphFromModels(
+      levelModels: levelModels,
+      nodeModels: nodeModels,
+      edgeModels: edgeModels,
+      connectorModels: connectorModels,
+      connectorStopModels: connectorStopModels,
+      destinationModels: destinationModels,
+      destinationNodeModels: destinationNodeModels,
+      destinationAliasModels: destinationAliasModels,
+      isFromCache: _dataSource.usedCacheInLastFetch,
+    );
+
+    _cachedGraph = graph;
+    return graph;
+  }
+
+  BuildingGraph _buildGraphFromModels({
+    required List<LevelModel> levelModels,
+    required List<NodeModel> nodeModels,
+    required List<EdgeModel> edgeModels,
+    required List<VerticalConnectorModel> connectorModels,
+    required List<ConnectorStopModel> connectorStopModels,
+    required List<DestinationModel> destinationModels,
+    required List<DestinationNodeModel> destinationNodeModels,
+    required List<DestinationAliasModel> destinationAliasModels,
+    required bool isFromCache,
+  }) {
 
     // --- الأدوار والنقاط ---
     final levelsById = <String, NavLevel>{
@@ -210,10 +318,9 @@ class NavigationRepositoryImpl implements NavigationRepository {
       levelsById: levelsById,
       adjacency: adjacency,
       destinations: destinations,
-      isFromCache: _dataSource.usedCacheInLastFetch,
+      isFromCache: isFromCache,
     );
 
-    _cachedGraph = graph;
     return graph;
   }
 
