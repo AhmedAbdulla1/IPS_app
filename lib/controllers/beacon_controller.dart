@@ -97,6 +97,14 @@ class BeaconController extends GetxController with WidgetsBindingObserver {
       int.parse(b.rssi).compareTo(int.parse(a.rssi));
   final beaconDataPriorityQueue = List<BeaconData>.empty().obs;
 
+  /// مجموعة النودز الفيزيائية المعطلة أو المفصولة التي تم تحويلها تلقائياً إلى نودز افتراضية (Virtual Fallback)
+  final RxSet<int> virtualFallbackNodes = <int>{}.obs;
+
+  bool isVirtualFallback(int nodeId) => virtualFallbackNodes.contains(nodeId);
+
+  Timer? _beaconExpiryTimer;
+  static const _beaconStaleDuration = Duration(milliseconds: 3500);
+
   late NavigationRepository _navigationRepository;
   BuildingGraph? _currentGraph;
   BuildingGraph? get currentGraph => _currentGraph;
@@ -112,6 +120,12 @@ class BeaconController extends GetxController with WidgetsBindingObserver {
     _watchdogTimer = Timer.periodic(
       _watchdogInterval,
       (_) => _checkScanHealth(),
+    );
+
+    // فحص دوري كل 800ms لحذف البيكونات المنقطعة وكشف التقاطعات المعطلة
+    _beaconExpiryTimer = Timer.periodic(
+      const Duration(milliseconds: 800),
+      (_) => _checkBeaconExpirations(),
     );
   }
 
@@ -358,6 +372,7 @@ class BeaconController extends GetxController with WidgetsBindingObserver {
     _timer?.cancel();
     _scanRestartTimer?.cancel();
     _watchdogTimer?.cancel();
+    _beaconExpiryTimer?.cancel();
     _scanSubscription?.cancel();
     super.onClose();
   }
@@ -431,7 +446,6 @@ class BeaconController extends GetxController with WidgetsBindingObserver {
             final beaconData = _parseIBeacon(device);
             if (beaconData != null) {
               fetchingBeacons.value = false;
-              cancelTimer();
               addToListAndSort(beaconData);
             }
           },
@@ -597,6 +611,15 @@ class BeaconController extends GetxController with WidgetsBindingObserver {
 
     final matchedNode = poiList[beaconIndexInList];
     final now = DateTime.now();
+
+    // استعادة فورية للنود إذا كانت مسجلة كافتراضية بسبب انقطاع سابق (Self-Healing)
+    if (virtualFallbackNodes.contains(matchedNode.nodeID)) {
+      virtualFallbackNodes.remove(matchedNode.nodeID);
+      AppLogger.debug(
+        '[BEACON] 🔄 استعادة إشارة النود [${matchedNode.name}] (Node ID: ${matchedNode.nodeID}) — إلغاء وضع الفيرشوال المؤقت',
+      );
+    }
+
     final lastLog = _lastLogTimePerNode[matchedNode.nodeESP32ID];
 
     // طباعة نظيفة مرة كل ثانيتين لكل نود
@@ -625,6 +648,7 @@ class BeaconController extends GetxController with WidgetsBindingObserver {
     final smoothedRssiInt = smoothedRssi.round();
 
     beaconData.rssi = smoothedRssiInt.toString();
+    beaconData.dateTime = now;
     final txPowerVal = int.tryParse(beaconData.txPower) ?? -59;
     beaconData.distance = _calculateDistance(txPowerVal, smoothedRssiInt).toStringAsFixed(2);
 
@@ -632,16 +656,15 @@ class BeaconController extends GetxController with WidgetsBindingObserver {
       (beacon) => beacon.uuid.toLowerCase() == beaconData.uuid.toLowerCase(),
     );
 
-    if (beaconIndexInQueue == -1)
+    if (beaconIndexInQueue == -1) {
       beaconDataPriorityQueue.add(beaconData);
-    else {
+    } else {
       beaconDataPriorityQueue[beaconIndexInQueue] = beaconData;
     }
 
     beaconDataPriorityQueue.removeWhere((item) {
-      var diff = DateTime.now().difference(item.dateTime);
-      if (diff.inSeconds >= 8) return true;
-      return false;
+      var diff = now.difference(item.dateTime);
+      return diff >= _beaconStaleDuration;
     });
 
     beaconDataPriorityQueue.sort(rssiComparator);
@@ -659,6 +682,7 @@ class BeaconController extends GetxController with WidgetsBindingObserver {
     }
 
     // Throttling: عدم إعادة حساب الموقع المرجح المعقد أكثر من مرتين في الثانية
+    // إلا لو كان الموقع الحالي مفقوداً (نحسب فوراً لتحديد الموقع بسرعة)
     final nowTime = DateTime.now();
     if (haveCurrentLocation.value &&
         nowTime.difference(_lastPositionProcessTime).inMilliseconds < _positionThrottleMs) {
@@ -894,5 +918,135 @@ class BeaconController extends GetxController with WidgetsBindingObserver {
 
     cancelTimer();
     startTimer(defaultScanTimerSeconds);
+  }
+
+  /// فحص دوري كل 800ms:
+  /// 1. إزالة أي بيكون لم يتم استقبال نبضاته خلال 3.5 ثانية (فصل النود أو الخروج من التغطية)
+  /// 2. إذا فرغ طابور البيكونات بالكامل، التحول فوراً لوضع "أنت خارج نطاق التغطية"
+  /// 3. كشف التقاطعات المعطلة في الجوار لتحويلها تلقائياً إلى عقد افتراضية (Virtual Fallback)
+  void _checkBeaconExpirations() {
+    final now = DateTime.now();
+
+    // 1. تنظيف أي بيكون لم يتم استقبال نبضاته خلال آخر 3.5 ثوانٍ
+    beaconDataPriorityQueue.removeWhere((item) {
+      final diff = now.difference(item.dateTime);
+      return diff >= _beaconStaleDuration;
+    });
+
+    // 2. إذا فرغ الطابور تماماً (انقطاع كل البيكونات أو فصل النود الوحيدة التي كانت تعمل):
+    if (beaconDataPriorityQueue.isEmpty) {
+      _filteredRssiByUuid.clear();
+      currentCoordinates.value = null;
+
+      final isNavigating = (Get.isRegistered<modern_nav.NavigationScreenController>() &&
+              Get.find<modern_nav.NavigationScreenController>().isNavigating.value) ||
+          (Get.isRegistered<NavigationController>() &&
+              Get.find<NavigationController>().isNavigating);
+
+      if (!isNavigating) {
+        if (haveCurrentLocation.value) {
+          haveCurrentLocation.value = false;
+          _lockedNodeId = null;
+          _lockedFloor = null;
+          currentLocation.value = POINode(
+            level: 0,
+            name: '',
+            nearestLift: 0,
+            neighbourArray: [],
+            nodeESP32ID: '',
+            nodeID: 0,
+            nodeName: '',
+            poiType: POIType.poi,
+            section: '',
+            x: 0,
+            y: 0,
+          );
+          AppLogger.debug('[BEACON] 📡 انقطعت جميع إشارات البيكون — تحول فوري لوضع خارج التغطية');
+        }
+      }
+    } else {
+      // 3. فحص وكشف عقد التقاطعات المعطلة في الجوار لتحويلها إلى عقد افتراضية
+      _detectOfflineIntersectionBeacons();
+
+      // لو كان الموقع غير محدد ولكن أصبح لدينا بيكون في الطابور
+      if (!haveCurrentLocation.value) {
+        _processNearestBeacons();
+      }
+    }
+  }
+
+  /// كشف عقد التقاطعات أو الممرات المعطلة (التي لها UUID فيزيائي مسجل لكن لا تبث إشارة)
+  /// واعتمادها كعقد افتراضية (Virtual Fallback) لضمان عدم توقف الملاحة واستمرار التوجيه.
+  void _detectOfflineIntersectionBeacons() {
+    if (poiList.isEmpty) return;
+
+    final visibleUuids = beaconDataPriorityQueue
+        .map((b) => b.uuid.toLowerCase())
+        .toSet();
+
+    final currentFloor = currentLocation.value.level;
+
+    for (final node in poiList) {
+      if (node.level != currentFloor) continue;
+
+      // فحص النودز التي يفترض أن تبث إشارة بيكون فيزيائي
+      final hasPhysicalUuid = node.nodeESP32ID.isNotEmpty &&
+          !node.nodeESP32ID.startsWith('unknown-');
+
+      if (!hasPhysicalUuid) continue;
+
+      final isSeen = visibleUuids.contains(node.nodeESP32ID.toLowerCase());
+
+      if (isSeen) {
+        // إذا كانت تعمل، نتأكد من إزالتها من قائمة الفيرشوال (الشفاء الذاتي Self-Healing)
+        if (virtualFallbackNodes.contains(node.nodeID)) {
+          virtualFallbackNodes.remove(node.nodeID);
+          AppLogger.debug(
+            '[BEACON] 🔄 استعادة إشارة نود التقاطع [${node.name}] (ID: ${node.nodeID}) — إلغاء وضع الفيرشوال المؤقت',
+          );
+        }
+      } else {
+        // هل نحن أو مسارنا بالقرب من هذا التقاطع بحيث يفترض التقاط إشارته؟
+        bool shouldBeInRange = false;
+
+        // 1. القرب من الإحداثيات المستمرة المرجحة
+        if (currentCoordinates.value != null) {
+          final dist = math.sqrt(
+            math.pow(node.x - currentCoordinates.value!.x, 2) +
+                math.pow(node.y - currentCoordinates.value!.y, 2),
+          );
+          if (dist <= 14.0) {
+            shouldBeInRange = true;
+          }
+        }
+
+        // 2. أو القرب من أحد جيران النود المباشرين المرئيين حالياً
+        if (!shouldBeInRange) {
+          for (final neighbour in node.neighbourArray) {
+            final neighbourNode = poiNodes[neighbour.nodeID];
+            if (neighbourNode != null &&
+                visibleUuids.contains(neighbourNode.nodeESP32ID.toLowerCase())) {
+              shouldBeInRange = true;
+              break;
+            }
+          }
+        }
+
+        // 3. أو إذا كانت النود تقع مباشرة على مسار الملاحة النشط الحالي
+        if (!shouldBeInRange && Get.isRegistered<modern_nav.NavigationScreenController>()) {
+          final navCtrl = Get.find<modern_nav.NavigationScreenController>();
+          if (navCtrl.isNavigating.value && navCtrl.isNodeOnActivePath(node.nodeID)) {
+            shouldBeInRange = true;
+          }
+        }
+
+        if (shouldBeInRange && !virtualFallbackNodes.contains(node.nodeID)) {
+          virtualFallbackNodes.add(node.nodeID);
+          AppLogger.debug(
+            '[BEACON] 💡 تم اكتشاف نود تقاطع معطلة أو مفصولة [${node.name}] (ID: ${node.nodeID}) — تحويلها إلى نود افتراضية (Virtual Fallback) لضمان استمرار الملاحة بسلاسة',
+          );
+        }
+      }
+    }
   }
 }

@@ -9,6 +9,7 @@ import '../models/level_model.dart';
 import '../models/edge_model.dart';
 import '../models/vertical_connector_model.dart';
 import '../models/destination_model.dart';
+import '../../../../core/utils/app_logger.dart';
 
 /// طبقة الوصول الخام لسوبابيز — بترجع Models بس، من غير أي منطق بناء graph
 /// (ده شغل الـ repository).
@@ -137,17 +138,21 @@ class SupabaseNavigationDataSource {
   /// جلب الخريطة بالكامل عبر استدعاء دالة RPC واحدة فائقة السرعة
   Future<Map<String, dynamic>?> fetchBuildingGraphRpc() async {
     try {
-      final res = await _client.rpc('get_building_graph');
+      final res = await _client
+          .rpc('get_building_graph')
+          .timeout(const Duration(seconds: 5));
       if (res != null && res is Map) {
         final map = Map<String, dynamic>.from(res);
         final prefs = await SharedPreferences.getInstance();
         unawaited(prefs.setString('${_cacheKeyPrefix}rpc_graph', jsonEncode(map)));
         unawaited(prefs.setInt(_cacheTimestampKey, DateTime.now().millisecondsSinceEpoch));
+        usedCacheInLastFetch = false;
         return map;
       }
       return null;
     } catch (e) {
-      return readCachedRpcGraph();
+      AppLogger.debug('[SupabaseDataSource] RPC get_building_graph failed: $e');
+      return null;
     }
   }
 

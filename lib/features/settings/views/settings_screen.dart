@@ -6,6 +6,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/localization/locale_controller.dart';
 import '../../calibration/calibration_page.dart';
+import '../../navigation/controllers/app_tour_controller.dart';
 import '../widgets/settings_tile.dart';
 import '../widgets/visual_toggle_switch.dart';
 
@@ -86,6 +87,25 @@ class SettingsScreen extends StatelessWidget {
                   Get.to(() => CalibrationPage(
                     caliType: CaliType.setting,
                   ));
+                },
+              ),
+              const SizedBox(height: 14),
+
+              // زر الجولة التعريفية
+              SettingsTile(
+                icon: Icons.tour_outlined,
+                title: 'جولة في التطبيق'.tr,
+                subtitle: 'دليل تفاعلي لشرح عناصر الشاشة الرئيسية'.tr,
+                palette: palette,
+                trailing: Icon(
+                  Icons.chevron_left_rounded,
+                  color: palette.textSecondary,
+                ),
+                onTap: () {
+                  Navigator.of(context).maybePop();
+                  if (Get.isRegistered<AppTourController>()) {
+                    Get.find<AppTourController>().requestTourReplay();
+                  }
                 },
               ),
             ],

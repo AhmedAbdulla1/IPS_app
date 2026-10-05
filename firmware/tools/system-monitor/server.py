@@ -10,7 +10,7 @@ import sys
 import json
 import time
 from datetime import datetime
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 PORT = 8088
@@ -22,6 +22,13 @@ os.makedirs(DATA_DIR, exist_ok=True)
 class TranexServerHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=BASE_DIR, **kwargs)
+
+    def end_headers(self):
+        # Prevent browser 304 caching for development and path linker scripts
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
 
     def do_POST(self):
         parsed = urlparse(self.path)
@@ -123,7 +130,7 @@ class TranexServerHandler(SimpleHTTPRequestHandler):
 
 def run():
     server_address = ("", PORT)
-    httpd = HTTPServer(server_address, TranexServerHandler)
+    httpd = ThreadingHTTPServer(server_address, TranexServerHandler)
     print(f"[TRANEX SERVER] Running on http://localhost:{PORT}")
     print(f"[TRANEX SERVER] Local telemetry database active at: {DATA_DIR}")
     httpd.serve_forever()

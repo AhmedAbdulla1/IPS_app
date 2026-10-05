@@ -49,6 +49,14 @@ class AppTranslations extends Translations {
           'تم تحديد الموقع': 'Location determined',
           'جارِ تحديد الموقع...': 'Determining location...',
           'البهو الرئيسي': 'Main Lobby',
+          'تنبيه التغطية': 'Coverage Alert',
+          'أنت خارج نطاق التغطية': 'You are out of coverage',
+          'خارج التغطية': 'Out of coverage',
+          'يرجى التحرك لأقرب ممر لالتقاط الإشارة':
+              'Please move to the nearest corridor to acquire signal',
+          'تحديد الموقع': 'Locating',
+          'إرشاد': 'Guide',
+          'دليل الإرشاد': 'Tour Guide',
 
           // ---- الدور ----
           'الدور @n': 'Floor @n',
@@ -75,6 +83,8 @@ class AppTranslations extends Translations {
           'انزل للدور التالي': 'Go down to the next floor',
           'خُد المصعد أو السلم لأسفل': 'Take the elevator or stairs down',
           'لقد وصلت إلى وجهتك': "You've reached your destination",
+          'لقد وصلت إلى وجهتك بنجاح':
+              'You have reached your destination successfully',
           'يمكنك إلغاء الملاحة الآن': 'You can cancel navigation now',
           'جارِ تحديد المسار...': 'Calculating route...',
           'حافظ على تفعيل البلوتوث والموقع': 'Keep Bluetooth and location on',
@@ -117,6 +127,15 @@ class AppTranslations extends Translations {
               'Turn on Bluetooth to search for indoor guidance signals.',
           'تشغيل البلوتوث': 'Turn On Bluetooth',
 
+          'الموقع متوقف': 'Location is Off',
+          'الموقع (GPS) متوقف': 'Location (GPS) is Off',
+          'قم بتشغيل خدمة الموقع (GPS) للبحث عن إشارات التوجيه داخل المبنى.':
+              'Turn on Location (GPS) to search for indoor guidance signals.',
+          'تفعيل الموقع': 'Enable Location',
+          'تشغيل الموقع': 'Turn On Location',
+          'خدمة الموقع (GPS)': 'Location Service (GPS)',
+          'صلاحية الموقع': 'Location Permission',
+
           'هناك أذونات مطلوبة': 'Permissions Required',
           'للاستمرار في استخدام التوجيه داخل المبني، يرجى تفعيل الأذونات التالية.':
               'To continue using indoor guidance, please enable the following permissions.',
@@ -133,6 +152,16 @@ class AppTranslations extends Translations {
           'ابدأ التوجيه': 'Start Navigation',
 
           'يرجى تفعيل الأذونات أعلاه.': 'Please allow the permissions above.',
+
+          // ---- الجولة التعريفية (App Tour) ----
+          'جولة في التطبيق': 'App Tour',
+          'دليل تفاعلي لشرح عناصر الشاشة الرئيسية':
+              'Interactive guide to explore main screen features',
+          'تخطي': 'Skip',
+          'السابق': 'Previous',
+          'التالي': 'Next',
+          'فهمت ذلك': 'Got it',
+          'إنهاء': 'Finish',
         },
       };
 }

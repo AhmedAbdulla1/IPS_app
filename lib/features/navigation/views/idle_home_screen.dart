@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_palette.dart';
+import '../controllers/app_tour_controller.dart';
 import '../controllers/navigation_controller.dart';
 import '../widgets/current_location_panel.dart';
 import '../widgets/facility_icon_button.dart';
@@ -30,6 +31,10 @@ class IdleHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tourController = Get.isRegistered<AppTourController>()
+        ? Get.find<AppTourController>()
+        : null;
+
     return GestureDetector(
       // تاچ في أي مكان فاضي بيقفل الدروب داون
       behavior: HitTestBehavior.translucent,
@@ -43,38 +48,48 @@ class IdleHomeScreen extends StatelessWidget {
               const SizedBox(height: 8),
 
               // 1) شريط البحث/المنيو (دروب داون ذكي)
-              SearchDropdownField(controller: controller, palette: palette),
+              Container(
+                key: tourController?.searchBarKey,
+                child: SearchDropdownField(controller: controller, palette: palette),
+              ),
 
               const SizedBox(height: 20),
 
               // 2) صف أيقونات الاختصارات السريعة
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: controller.quickShortcuts
-                    .map(
-                      (facility) => Padding(
-                        padding: const EdgeInsetsGeometry.directional(
-                          end: 12.0,
+              Container(
+                key: tourController?.shortcutsRowKey,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: controller.quickShortcuts
+                      .map(
+                        (facility) => Padding(
+                          padding: const EdgeInsetsGeometry.directional(
+                            end: 12.0,
+                          ),
+                          child: FacilityIconButton(
+                            facility: facility,
+                            palette: palette,
+                            onTap: () => facility.id == 'restrooms'
+                                ? _showRestroomGenderPopup(context)
+                                : controller.onShortcutTap(facility),
+                          ),
                         ),
-                        child: FacilityIconButton(
-                          facility: facility,
-                          palette: palette,
-                          onTap: () => facility.id == 'restrooms'
-                              ? _showRestroomGenderPopup(context)
-                              : controller.onShortcutTap(facility),
-                        ),
-                      ),
-                    )
-                    .toList(),
+                      )
+                      .toList(),
+                ),
               ),
 
               const Spacer(),
 
               // 3) بانل الموقع الحالي
-              Obx(
-                () => CurrentLocationPanel(
-                  locationLabel: controller.currentLocationLabel.value,
-                  palette: palette,
+              Container(
+                key: tourController?.locationPanelKey,
+                child: Obx(
+                  () => CurrentLocationPanel(
+                    locationLabel: controller.currentLocationLabel.value,
+                    isOutOfCoverage: controller.isOutOfCoverage.value,
+                    palette: palette,
+                  ),
                 ),
               ),
 
@@ -87,11 +102,15 @@ class IdleHomeScreen extends StatelessWidget {
                   children: [
                     LocationStatusChip(
                       isDetermined: controller.isLocationDetermined.value,
+                      isOutOfCoverage: controller.isOutOfCoverage.value,
                       palette: palette,
                     ),
-                    FloorBadge(
-                      floor: controller.currentFloor.value,
-                      palette: palette,
+                    Container(
+                      key: tourController?.floorBadgeKey,
+                      child: FloorBadge(
+                        floor: controller.currentFloor.value,
+                        palette: palette,
+                      ),
                     ),
                   ],
                 ),
@@ -100,13 +119,16 @@ class IdleHomeScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // 5) زرار البدء
-              Obx(
-                () => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: NavigationStartButton(
-                    enabled: controller.canStart,
-                    onPressed: controller.onStartPressed,
-                    palette: palette,
+              Container(
+                key: tourController?.startButtonKey,
+                child: Obx(
+                  () => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: NavigationStartButton(
+                      enabled: controller.canStart,
+                      onPressed: controller.onStartPressed,
+                      palette: palette,
+                    ),
                   ),
                 ),
               ),

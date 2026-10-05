@@ -35,15 +35,9 @@ class LocaleController extends GetxController {
         Get.updateLocale(arabic);
       }
     } else {
-      // Fallback to device locale
-      final deviceLocale = Get.deviceLocale;
-      if (deviceLocale != null && deviceLocale.languageCode == 'en') {
-        locale.value = english;
-        Get.updateLocale(english);
-      } else {
-        locale.value = arabic;
-        Get.updateLocale(arabic);
-      }
+      // اللغة الافتراضية دائماً هي العربية حتى لو لغة الجهاز إنجليزية
+      locale.value = arabic;
+      Get.updateLocale(arabic);
     }
   }
 

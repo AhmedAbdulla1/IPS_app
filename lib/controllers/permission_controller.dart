@@ -7,10 +7,14 @@ import 'package:get/get.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:flutter/widgets.dart';
 import 'package:parliament_ips/utils/bluetooth_native.dart';
+import 'package:parliament_ips/utils/location_native.dart';
 
-class PermissionController extends GetxController {
+class PermissionController extends GetxController with WidgetsBindingObserver {
   var locationPermissionGranted = false.obs;
+  var locationServiceEnabled = false.obs;
+  var isBluetoothAdapterOn = false.obs;
   var bluetoothStatus = false.obs;
 
   /// Raw status straight from flutter_reactive_ble, so the UI can tell
@@ -35,30 +39,50 @@ class PermissionController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
 
     // flutter_reactive_ble only starts actually reporting BleStatus once
     // something subscribes to statusStream; `_ble.status` alone stays
     // stuck at BleStatus.unknown forever otherwise.
     _bleStatusSubscription = _ble.statusStream.listen((status) {
-      bluetoothStatus.value = status == BleStatus.ready;
       bleStatusRaw.value = status;
-      AppLogger.debug("[PERMISSION] Bluetooth Status (stream): $status");
+      if (status == BleStatus.ready) {
+        isBluetoothAdapterOn.value = true;
+        bluetoothStatus.value = true;
+        locationServiceEnabled.value = true;
+      } else if (status == BleStatus.locationServicesDisabled) {
+        // RxAndroidBle / flutter_reactive_ble reaches locationServicesDisabled
+        // ONLY if the Bluetooth adapter is already enabled!
+        isBluetoothAdapterOn.value = true;
+        bluetoothStatus.value = true;
+        locationServiceEnabled.value = false;
+      } else if (status == BleStatus.poweredOff) {
+        isBluetoothAdapterOn.value = false;
+        bluetoothStatus.value = false;
+      } else if (status == BleStatus.unauthorized) {
+        bluetoothStatus.value = false;
+      }
+      AppLogger.debug(
+          "[PERMISSION] Bluetooth Status (stream): $status, adapterOn: ${isBluetoothAdapterOn.value}");
       if (status == BleStatus.ready) {
         AppLogger.debug("[PERMISSION] ✓ Bluetooth ready");
       }
     });
-
-    // NOTE: checkPermissionStatus() is intentionally NOT called here.
-    // AppRouter._resolveStartScreen() calls it once, right when the widget
-    // tree is ready. Calling it a second time here (this early, before any
-    // Activity/widget is attached) races against that call and can cause
-    // Android to reject the second concurrent permission request.
   }
 
   @override
   void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
     _bleStatusSubscription?.cancel();
     super.onClose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // إعادة فحص سريعة وتلقائية بمجرد عودة المستخدم من شاشة الإعدادات
+      checkPermissionStatus();
+    }
   }
 
   Future<void> askPermission() => checkPermissionStatus();
@@ -100,28 +124,34 @@ class PermissionController extends GetxController {
                 (statuses[Permission.bluetoothConnect]?.isGranted ?? false);
       }
 
+      // فحص هل خدمة الموقع (GPS) مفعّلة في الهاتف
+      final serviceStatus = await Permission.location.serviceStatus;
+      locationServiceEnabled.value =
+          serviceStatus.isEnabled || serviceStatus == ServiceStatus.notApplicable;
+      AppLogger.debug(
+          "[PERMISSION] Location Service (GPS): ${locationServiceEnabled.value} ($serviceStatus)");
+
+      // فحص هل محول البلوتوث الفيزيائي يعمل في الهاتف اعتماداً على حالة Reactive BLE
+      final currentBle = _ble.status;
+      if (currentBle == BleStatus.ready ||
+          currentBle == BleStatus.locationServicesDisabled) {
+        isBluetoothAdapterOn.value = true;
+      } else if (currentBle == BleStatus.poweredOff) {
+        isBluetoothAdapterOn.value = false;
+      }
+
       if (!bluetoothPermissionsGranted) {
         bluetoothStatus.value = false;
       } else {
-        // `_ble.status` can still read BleStatus.unknown for a brief moment
-        // right after permissions are granted, which used to silently
-        // overwrite a correct value from the stream listener above. Wait
-        // for the first real (non-unknown) status here instead.
-        final status = await _ble.statusStream
-            .firstWhere((s) => s != BleStatus.unknown)
-            .timeout(
-              const Duration(seconds: 3),
-              onTimeout: () => _ble.status,
-            );
-        bleStatusRaw.value = status;
-        bluetoothStatus.value = status == BleStatus.ready;
+        bluetoothStatus.value = isBluetoothAdapterOn.value;
       }
 
       AppLogger.debug(
           "[PERMISSION] Location Permission: ${locationPermissionGranted.value}");
-      AppLogger.debug("[PERMISSION] Bluetooth Status: ${bluetoothStatus.value}");
-      if (bluetoothPermissionsGranted && bluetoothStatus.value) {
-        AppLogger.debug("[PERMISSION] ✓ All permissions and Bluetooth ready");
+      AppLogger.debug(
+          "[PERMISSION] Bluetooth Adapter: ${isBluetoothAdapterOn.value}, Bluetooth Status: ${bluetoothStatus.value}");
+      if (bluetoothPermissionsGranted && isBluetoothAdapterOn.value && locationServiceEnabled.value) {
+        AppLogger.debug("[PERMISSION] ✓ All permissions, GPS, and Bluetooth ready");
       }
     } finally {
       _permissionRequestInFlight = false;
@@ -133,21 +163,25 @@ class PermissionController extends GetxController {
   Future<bool> requestEnableBluetooth() async {
     if (Platform.isIOS) {
       await openAppSettings();
-      return bluetoothStatus.value;
+      return isBluetoothAdapterOn.value;
     }
 
     final userAllowed = await BluetoothNative.requestEnableBluetooth();
     if (userAllowed != true) return false;
 
-    final status = await _ble.statusStream
-        .firstWhere((s) => s != BleStatus.poweredOff && s != BleStatus.unknown)
-        .timeout(
-          const Duration(seconds: 5),
-          onTimeout: () => _ble.status,
-        );
-    bleStatusRaw.value = status;
-    bluetoothStatus.value = status == BleStatus.ready;
-    return bluetoothStatus.value;
+    isBluetoothAdapterOn.value = true;
+    bluetoothStatus.value = true;
+    await Future.delayed(const Duration(milliseconds: 300));
+    await checkPermissionStatus();
+    return isBluetoothAdapterOn.value;
+  }
+
+  /// يفتح صفحة إعدادات الموقع لتفعيل الـ GPS
+  Future<bool> requestEnableLocation() async {
+    await LocationNative.requestEnableLocation();
+    await Future.delayed(const Duration(milliseconds: 500));
+    await checkPermissionStatus();
+    return locationServiceEnabled.value;
   }
 }
 

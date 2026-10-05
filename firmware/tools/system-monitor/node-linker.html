@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRANEX — أداة الربط الرسومي لمسارات ونقاط الشبكة (Graph Linker)</title>
+    <!-- Engineering Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Linker Stylesheets -->
+    <link rel="stylesheet" href="css/node-linker.css">
+
+    <!-- Supabase Client JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- 1. Top Navigation Bar -->
+    <header class="linker-nav">
+        <div class="brand-section">
+            <img src="assets/tranex_logo.png" alt="TRANEX" onerror="this.style.display='none'">
+            <div class="brand-divider"></div>
+            <img src="assets/img.png" alt="مجلس النواب" title="مجلس النواب المصري" onerror="this.style.display='none'">
+            <div class="brand-titles">
+                <h1>
+                    <span>IPS GRAPH & PATH LINKER</span>
+                    <span class="badge">أداة الربط والمسارات</span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- Floor Switcher Tabs -->
+        <nav id="floorTabsContainer" class="floor-nav-group">
+            <!-- Dynamically populated via JS -->
+        </nav>
+
+        <div class="nav-controls">
+            <!-- Pending changes status / Batch Save Button -->
+            <button id="btnDiscardChanges" class="btn-icon-label btn-discard" style="display: none;" title="إلغاء كل التعديلات غير المحفوظة والرجوع لحالة السيرفر الأصلية">
+                <span>↺</span> إلغاء التغييرات
+            </button>
+
+            <button id="btnSaveBatchToDb" class="btn-primary-action btn-save-batch disabled" title="حفظ كافة المسارات والتعديلات دفعة واحدة في Supabase">
+                <span>💾</span>
+                <span id="btnSaveBatchText">حفظ التغييرات في السيرفر</span>
+                <span id="pendingChangesCount" class="pending-badge">0</span>
+            </button>
+
+            <div id="syncStatusBadge" class="sync-badge" title="حالة الاتصال مع Supabase">
+                <span id="syncDot" class="sync-dot"></span>
+                <span id="syncText">متزامن مع السيرفر</span>
+            </div>
+
+            <button id="btnUndo" class="btn-icon-label" title="تراجع عن آخر خطوة (Ctrl+Z)">
+                <span>↶</span> تراجع
+            </button>
+            <button id="btnRedo" class="btn-icon-label" title="إعادة الخطوة (Ctrl+Y)">
+                <span>↷</span> إعادة
+            </button>
+
+            <a href="index.html" class="btn-icon-label" style="text-decoration: none;" title="العودة لشاشة المراقبة المركزية">
+                <span>📊</span> شاشة المراقبة
+            </a>
+        </div>
+    </header>
+
+    <!-- 2. Mode & Action Toolbar -->
+    <section class="linker-toolbar">
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="select" title="وضع الفحص واختيار العناصر (مفتاح 1)">
+                <span>👆</span>
+                <span>تحديد ومعاينة</span>
+                <span class="key-hint">1</span>
+            </button>
+            <button class="mode-btn" data-mode="connect" title="وضع ربط نقطتين بمسار مباشر (مفتاح 2)">
+                <span>🔗</span>
+                <span>ربط نقطتين</span>
+                <span class="key-hint">2</span>
+            </button>
+            <button class="mode-btn" data-mode="split" title="وضع إدراج نقطة في منتصف مسار وتقسيمه (مفتاح 3)">
+                <span>✂️</span>
+                <span>إدراج في المسار</span>
+                <span class="key-hint">3</span>
+            </button>
+            <button class="mode-btn" data-mode="delete" title="وضع حذف المسارات بالماوس (مفتاح 4)">
+                <span>🗑️</span>
+                <span>حذف مسار</span>
+                <span class="key-hint">4</span>
+            </button>
+        </div>
+
+        <!-- Live Helper Instruction Banner -->
+        <div id="helperBanner" class="helper-banner">
+            <span class="helper-icon">ℹ️</span>
+            <span>اضغط على أي نقطة أو مسار بالماوس للاختيار والمعاينة</span>
+        </div>
+
+        <div class="tool-actions">
+            <button id="btnToggleLabels" class="btn-icon-label active" title="إظهار/إخفاء أسماء النقاط">
+                <span>🏷️</span> الأسماء
+            </button>
+            <button id="btnToggleLengths" class="btn-icon-label active" title="إظهار/إخفاء أطوال المسارات بالمتر">
+                <span>📏</span> الأطوال
+            </button>
+            <button id="btnRefreshDb" class="btn-icon-label" title="تحديث البيانات من Supabase">
+                <span>🔄</span> تحديث
+            </button>
+            <button id="btnExportJson" class="btn-icon-label" title="تصدير نسخة احتياطية من الخريطة">
+                <span>💾</span> تصدير
+            </button>
+        </div>
+    </section>
+
+    <!-- 3. Main Workspace Grid -->
+    <main class="workspace-grid">
+        <!-- Left Sidebar: Nodes Search & List -->
+        <aside class="nodes-sidebar">
+            <div class="sidebar-header">
+                <div class="search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="nodeSearchInput" placeholder="بحث باسم النقطة أو رقم الـ ID...">
+                </div>
+                <div class="sidebar-filters">
+                    <button id="filterAllNodes" class="filter-chip active">الكل</button>
+                    <button id="filterIsolatedNodes" class="filter-chip">النقاط المنعزلة فقط (0 مسارات)</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                    <span>قائمة النقاط:</span>
+                    <span id="nodesCountHeader" class="mono">--</span>
+                </div>
+            </div>
+
+            <div id="nodesScrollList" class="nodes-scroll-list">
+                <!-- Dynamically rendered via JS -->
+            </div>
+        </aside>
+
+        <!-- Center: Interactive SVG Canvas -->
+        <section id="canvasViewport" class="canvas-viewport">
+            <svg id="canvasSvg" class="canvas-svg" preserveAspectRatio="xMidYMid meet">
+                <!-- Managed dynamically via node-linker.js -->
+            </svg>
+
+            <!-- Empty State Warning Overlay (If DB is loading or unreachable) -->
+            <div id="canvasEmptyWarning" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1C1C1C; border: 1px solid #F36F21; padding: 28px; border-radius: 12px; text-align: center; z-index: 25; box-shadow: 0 10px 40px rgba(0,0,0,0.85); max-width: 420px;">
+                <div style="font-size: 2.2rem; margin-bottom: 10px;">⚠️</div>
+                <div style="font-size: 1.1rem; font-weight: 700; color: #FFFFFF; margin-bottom: 8px;">لم تظهر النقاط بعد؟</div>
+                <div style="font-size: 0.82rem; color: #9E9E9E; line-height: 1.6; margin-bottom: 18px;">
+                    قد يكون الاتصال بالإنترنت أو Supabase قيد الانتظار. يمكنك الضغط على الزر أدناه لتحميل النسخة الاحتياطية المحلية فوراً بكافة النقاط والمسارات:
+                </div>
+                <button onclick="NL.loadBackupAndRender()" class="btn-primary-action" style="margin: 0 auto; width: 100%; justify-content: center;">
+                    <span>⚡</span> تحميل البيانات المحلية فوراً (176 نقطة)
+                </button>
+            </div>
+
+            <!-- Floating Legend -->
+            <div class="canvas-legend">
+                <div class="legend-chip">
+                    <span class="legend-color-dot" style="background: #3DDC84;"></span>
+                    <span>نقطة ممر (Walk)</span>
+                </div>
+                <div class="legend-chip">
+                    <span class="legend-color-dot" style="background: #A855F7;"></span>
+                    <span>سلم / أسانسير (Vertical)</span>
+                </div>
+                <div class="legend-chip">
+                    <span class="legend-color-dot" style="background: #00A8FF;"></span>
+                    <span>غرفة / قاعة (POI)</span>
+                </div>
+                <div class="legend-chip">
+                    <span class="legend-color-dot" style="background: #F36F21;"></span>
+                    <span>محدد حالياً</span>
+                </div>
+            </div>
+
+            <!-- Floating View Controls -->
+            <div class="canvas-overlay-controls">
+                <button id="btnZoomIn" class="canvas-tool-btn" title="تكبير (+)">+</button>
+                <button id="btnZoomOut" class="canvas-tool-btn" title="تصغير (−)">−</button>
+                <button id="btnFitView" class="canvas-tool-btn" title="ملاءمة حدود الدور (Fit)">⊡</button>
+                <button id="btnResetView" class="canvas-tool-btn" title="إعادة ضبط الرؤية">⟲</button>
+            </div>
+        </section>
+
+        <!-- Right Sidebar: Inspector & Properties -->
+        <aside class="inspector-sidebar">
+            <div id="inspectorCard" class="inspector-card">
+                <!-- Dynamically updated based on selected node/edge -->
+                <div class="inspector-empty">
+                    <span class="empty-icon">🖱️</span>
+                    <span>اضغط على أي نقطة أو مسار بالماوس لعرض وتعديل الخصائص</span>
+                </div>
+            </div>
+
+            <!-- Quick Tips Panel -->
+            <div class="inspector-card" style="background: rgba(255,255,255,0.02);">
+                <div class="panel-section-title">
+                    <span>💡</span>
+                    <span>إرشادات الاستخدام السريع</span>
+                </div>
+                <ul style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.6; padding-right: 18px;">
+                    <li><strong style="color: var(--text-main);">الربط المباشر:</strong> في وضع الربط، اضغط على النقطة الأولى ثم النقطة الثانية.</li>
+                    <li><strong style="color: var(--text-main);">إدراج نقطة في المنتصف:</strong> اضغط على النقطة ثم اضغط على المسار، فسيقوم النظام بحذف المسار القديم وإنشاء مسارين جديدين يمران بها.</li>
+                    <li><strong style="color: var(--text-main);">حذف مسار:</strong> حدد المسار واضغط زر <code style="color: #F36F21;">Delete</code> أو اختر وضع الحذف.</li>
+                    <li><strong style="color: var(--text-main);">تحريك وتكبير الخريطة:</strong> اسحب بزر الماوس للتحريك (Pan)، واستخدم عجلة الماوس للتكبير (Zoom).</li>
+                    <li><strong style="color: var(--text-main);">التراجع:</strong> اضغط <code style="color: #F36F21;">Ctrl+Z</code> في أي وقت للتراجع عن أي تعديل.</li>
+                </ul>
+            </div>
+        </aside>
+    </main>
+
+    <!-- 4. Floating Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts in Modular Order (with cache-busting) -->
+    <script src="js/config.js?v=20261004_v2"></script>
+    <script src="js/nodes-cache.js?v=20261004_v2"></script>
+    <script src="js/nodes-repo.js?v=20261004_v2"></script>
+    <script src="js/node-linker.js?v=20261004_v2"></script>
+</body>
+</html>

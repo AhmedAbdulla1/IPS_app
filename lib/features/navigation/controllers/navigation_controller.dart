@@ -1,3 +1,4 @@
+import 'dart:async';
 import '../../../core/utils/app_logger.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -83,6 +84,8 @@ class NavigationScreenController extends GetxController {
   // ------- بيانات الموقع الحالي — متزامنة فعليًا مع BeaconController -------
   final RxBool isLocationDetermined = false.obs;
   final RxString currentLocationLabel = ''.obs;
+  final RxBool isOutOfCoverage = false.obs;
+  Timer? _outOfCoverageTimer;
 
   // ------- الدور الحالي — متزامن فعليًا مع BeaconController -------
   final RxInt currentFloor = 0.obs;
@@ -97,6 +100,7 @@ class NavigationScreenController extends GetxController {
   final RxInt currentRouteStep = 0.obs;
   final RxString remainingDistanceLabel = ''.obs;
   final RxInt targetFloor = 0.obs;
+  final RxInt destinationFloor = 0.obs;
   final RxBool isOnCorrectPath = true.obs;
 
   // ------- حالة الاتصال بخريطة المبنى (Supabase) -------
@@ -144,6 +148,10 @@ class NavigationScreenController extends GetxController {
       if (isNavigating.value) _advanceOrReplan();
     });
     ever(beaconController.haveCurrentLocation, (_) => _syncIdleState());
+    ever(beaconController.fetchingBeacons, (_) => _syncIdleState());
+    ever(beaconController.virtualFallbackNodes, (_) {
+      if (isNavigating.value) _refreshActiveNavState();
+    });
 
     // تزامن مستمر مع الإحداثيات المترية للوصول للأبواب الافتراضية
     ever(beaconController.currentCoordinates, (_) {
@@ -166,6 +174,7 @@ class NavigationScreenController extends GetxController {
 
   @override
   void onClose() {
+    _outOfCoverageTimer?.cancel();
     searchTextController.dispose();
     searchFocusNode.dispose();
     super.onClose();
@@ -182,9 +191,6 @@ class NavigationScreenController extends GetxController {
       final graph =
           await _navigationRepository.loadGraph(forceRefresh: forceRefresh);
       isUsingCachedGraph.value = graph.isFromCache;
-      if (graph.isFromCache) {
-        _showOfflineCacheNotice();
-      }
       return graph;
     } catch (e) {
       isUsingCachedGraph.value = false;
@@ -208,19 +214,6 @@ class NavigationScreenController extends GetxController {
       backgroundColor: const Color(0xFFB3261E),
       colorText: Colors.white,
       isDismissible: true,
-    );
-  }
-
-  void _showOfflineCacheNotice() {
-    final isArabic = _isArabic;
-    Get.snackbar(
-      isArabic ? 'وضع عدم الاتصال' : 'Offline mode',
-      isArabic
-          ? 'لا يوجد اتصال بالإنترنت حاليًا — بتشوف آخر نسخة محفوظة من خريطة المبنى.'
-          : 'No internet connection right now — showing the last saved copy of the building map.',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 4),
-      icon: const Icon(Icons.cloud_off_rounded, color: Colors.white),
     );
   }
 
@@ -295,6 +288,10 @@ class NavigationScreenController extends GetxController {
     final isArabic = _isArabic;
 
     if (beaconController.haveCurrentLocation.value && loc.name.isNotEmpty) {
+      _outOfCoverageTimer?.cancel();
+      _outOfCoverageTimer = null;
+      isOutOfCoverage.value = false;
+
       final destinationsLabel = _destinationsLabelForNode(loc.nodeID, isArabic);
       if (destinationsLabel != null) {
         currentLocationLabel.value = destinationsLabel;
@@ -306,8 +303,18 @@ class NavigationScreenController extends GetxController {
         currentLocationLabel.value = hasEnglish ? loc.nameEn! : loc.name;
       }
     } else {
-      currentLocationLabel.value =
-          isArabic ? 'جارِ تحديد موقعك...' : 'Locating your position...';
+      _outOfCoverageTimer?.cancel();
+      _outOfCoverageTimer = null;
+
+      if (beaconController.fetchingBeacons.value) {
+        isOutOfCoverage.value = false;
+        currentLocationLabel.value =
+            isArabic ? 'جارِ تحديد موقعك...' : 'Locating your position...';
+      } else {
+        isOutOfCoverage.value = true;
+        currentLocationLabel.value =
+            isArabic ? 'أنت خارج نطاق التغطية' : 'Out of coverage';
+      }
     }
     currentFloor.value = loc.level;
   }
@@ -368,10 +375,35 @@ class NavigationScreenController extends GetxController {
     return 'left';
   }
 
+  /// تحديث الدور الخاص بالوجهة النهائية المحددة
+  void _updateDestinationFloor() {
+    final graph = _navigationRepository.cachedGraph;
+    if (_currentPath.isNotEmpty) {
+      final destNodeId = _currentPath.last.nodeId;
+      final destNode = graph?.nodeById(destNodeId);
+      final destLevel = (graph != null && destNode != null)
+          ? graph.levelsById[destNode.levelId]
+          : null;
+      destinationFloor.value = destLevel?.order ??
+          (destNode != null ? int.tryParse(destNode.levelId) ?? 0 : 0);
+      return;
+    }
+
+    final dest = selectedDestination.value;
+    if (dest?.nodeID != null && graph != null) {
+      final destNode = graph.nodeById(dest!.nodeID!);
+      final destLevel =
+          destNode != null ? graph.levelsById[destNode.levelId] : null;
+      destinationFloor.value = destLevel?.order ??
+          (destNode != null ? int.tryParse(destNode.levelId) ?? 0 : 0);
+    }
+  }
+
   /// بيحدّث سهم الاتجاه/التعليمات/شريط التقدّم من _currentPath الحقيقي
   /// (ناتج FindPathUseCase) وزاوية البوصلة.
   void _refreshActiveNavState() {
     final isArabic = _isArabic;
+    _updateDestinationFloor();
 
     if (_currentPath.isEmpty || _currentStepIndex >= _currentPath.length) {
       currentDirection.value = 'arrived';
@@ -379,10 +411,10 @@ class NavigationScreenController extends GetxController {
           isArabic ? 'لقد وصلت إلى وجهتك' : 'You have reached your destination';
       directionSubInstruction.value =
           isArabic ? 'يمكنك إلغاء الملاحة الآن' : 'You can end navigation now';
-      totalRouteSteps.value = _currentPath.isEmpty ? 0 : _currentPath.length - 1;
-      currentRouteStep.value = totalRouteSteps.value;
+      totalRouteSteps.value = _currentPath.isEmpty ? 2 : math.max(2, _currentPath.length);
+      currentRouteStep.value = totalRouteSteps.value - 1;
       remainingDistanceLabel.value = isArabic ? 'وصلت' : 'Arrived';
-      targetFloor.value = beaconController.currentLocation.value.level;
+      targetFloor.value = destinationFloor.value;
       isOnCorrectPath.value = true;
       return;
     }
@@ -443,30 +475,40 @@ class NavigationScreenController extends GetxController {
           directionInstruction.value = isArabic ? 'انعطف يسار' : 'Turn left';
           break;
       }
-      directionSubInstruction.value =
-          isArabic ? 'استمر في هذا الاتجاه' : 'Continue in this direction';
+      if (beaconController.isVirtualFallback(step.nodeId)) {
+        directionSubInstruction.value = isArabic
+            ? 'نقطة تقاطع تقديرية (استمر في هذا الاتجاه)'
+            : 'Estimated intersection (continue this way)';
+      } else {
+        directionSubInstruction.value =
+            isArabic ? 'استمر في هذا الاتجاه' : 'Continue in this direction';
+      }
     }
 
     isOnCorrectPath.value = true; // إعادة الحساب التلقائي بتخلي المسار الحالي صح دايمًا
 
-    totalRouteSteps.value = _currentPath.length - 1;
+    totalRouteSteps.value = math.max(2, _currentPath.length);
     currentRouteStep.value =
-        (_currentStepIndex - 1).clamp(0, totalRouteSteps.value);
+        (_currentStepIndex - 1).clamp(0, totalRouteSteps.value - 1);
 
     double remainingMeters = _currentPath
         .sublist(_currentStepIndex)
         .fold<double>(0, (sum, s) => sum + s.legDistanceMeters);
 
-    // إذا كان المستخدم في الخطوة الأخيرة، نحسب المسافة الحقيقية بدقة من الإحداثيات المستمرة
-    if (_currentStepIndex == _currentPath.length - 1 && beaconController.currentCoordinates.value != null) {
+    // حساب المسافة الحقيقية بدقة من الإحداثيات المستمرة للأمتار المتبقية
+    if (beaconController.currentCoordinates.value != null && graph != null) {
       final userCoords = beaconController.currentCoordinates.value!;
-      final destNode = _navigationRepository.cachedGraph?.nodeById(_currentPath.last.nodeId);
-      if (destNode != null && destNode.x != null && destNode.y != null) {
-        final dx = userCoords.x - destNode.x!;
-        final dy = userCoords.y - destNode.y!;
-        final realDist = math.sqrt(dx * dx + dy * dy);
-        if (realDist < remainingMeters + 2.0) {
-          remainingMeters = realDist;
+      final stepNode = graph.nodeById(step.nodeId);
+      if (stepNode != null && stepNode.x != null && stepNode.y != null) {
+        final dx = userCoords.x - stepNode.x!;
+        final dy = userCoords.y - stepNode.y!;
+        final distToCurrentStep = math.sqrt(dx * dx + dy * dy);
+        final restOfPathDist = _currentPath
+            .sublist((_currentStepIndex + 1).clamp(0, _currentPath.length))
+            .fold<double>(0, (sum, s) => sum + s.legDistanceMeters);
+        final dynamicRemaining = distToCurrentStep + restOfPathDist;
+        if (dynamicRemaining < remainingMeters + 3.0) {
+          remainingMeters = dynamicRemaining;
         }
       }
     }
@@ -505,8 +547,8 @@ class NavigationScreenController extends GetxController {
         final dy = userCoords.y - destNode.y!;
         final dist = math.sqrt(dx * dx + dy * dy);
 
-        // إذا اقترب المستخدم لمسافة 1.8 متر أو أقل من الباب
-        if (dist <= 1.8) {
+        // إذا اقترب المستخدم لمسافة 2.4 متر أو أقل من الباب النهائي
+        if (dist <= 2.4) {
           AppLogger.debug('[Navigation] 🎯 تم الوصول إلى باب الوجهة بالمسافة المترية (${dist.toStringAsFixed(2)}m)');
           _currentStepIndex = _currentPath.length; // يؤدي إلى تفعيل شاشة الوصول
           _refreshActiveNavState();
@@ -515,24 +557,39 @@ class NavigationScreenController extends GetxController {
       }
     }
 
-    // 2. فحص النود الحالي في المسار لو كان نود افتراضي (بدون بيكون)
-    final currentStep = _currentPath[_currentStepIndex];
-    final stepNode = graph.nodeById(currentStep.nodeId);
-    if (stepNode != null && stepNode.esp32Uuid == null && stepNode.x != null && stepNode.y != null) {
-      final stepFloor = graph.levelsById[stepNode.levelId]?.order ?? 0;
-      if (stepFloor == currentFloor) {
-        final dx = userCoords.x - stepNode.x!;
-        final dy = userCoords.y - stepNode.y!;
-        final dist = math.sqrt(dx * dx + dy * dy);
+    // 2. فحص النود الحالي والنودز اللاحقة في المسار لو كانت افتراضية أو نود تقاطع معطل تحول لفيرشوال
+    for (int i = _currentStepIndex; i < _currentPath.length - 1; i++) {
+      final stepNode = graph.nodeById(_currentPath[i].nodeId);
+      if (stepNode != null && stepNode.x != null && stepNode.y != null) {
+        final stepFloor = graph.levelsById[stepNode.levelId]?.order ?? 0;
+        if (stepFloor == currentFloor) {
+          final dx = userCoords.x - stepNode.x!;
+          final dy = userCoords.y - stepNode.y!;
+          final dist = math.sqrt(dx * dx + dy * dy);
 
-        if (dist <= 1.8) {
-          AppLogger.debug('[Navigation] 🚶 تجاوز نود افتراضي على المسار (${dist.toStringAsFixed(2)}m)');
-          _currentStepIndex = (_currentStepIndex + 1).clamp(0, _currentPath.length);
-          _refreshActiveNavState();
-          return;
+          final isVirtual = stepNode.esp32Uuid == null ||
+              stepNode.esp32Uuid!.isEmpty ||
+              beaconController.isVirtualFallback(stepNode.id);
+
+          final threshold = isVirtual ? 2.8 : 2.4;
+
+          if (dist <= threshold) {
+            AppLogger.debug(
+              '[Navigation] 🚶 تجاوز نود ${isVirtual ? "افتراضي/بديل" : ""} على المسار (index $i, ID: ${stepNode.id}, distance ${dist.toStringAsFixed(2)}m)',
+            );
+            _currentStepIndex = (i + 1).clamp(0, _currentPath.length);
+            _refreshActiveNavState();
+            return;
+          }
         }
       }
     }
+  }
+
+  /// يفحص هل النود محددة ضمن المسار النشط الحالي
+  bool isNodeOnActivePath(int nodeId) {
+    if (!isNavigating.value || _currentPath.isEmpty) return false;
+    return _currentPath.any((step) => step.nodeId == nodeId);
   }
 
   /// بيتنفذ كل ما موقع البيكون يتغيّر أثناء التوجيه:
@@ -574,6 +631,19 @@ class NavigationScreenController extends GetxController {
     }
 
     // ⚠️ الحالة 3: قراءة لنود خارج المسار بالكامل:
+    // إذا كان المستخدم قريباً جداً من الوجهة النهائية، لا تقم بإعادة التوجيه بسبب إشارة عابرة
+    final graph = _navigationRepository.cachedGraph;
+    final destNode = graph?.nodeById(_currentPath.last.nodeId);
+    final userCoords = beaconController.currentCoordinates.value;
+    if (destNode != null && destNode.x != null && destNode.y != null && userCoords != null) {
+      final dx = userCoords.x - destNode.x!;
+      final dy = userCoords.y - destNode.y!;
+      if (math.sqrt(dx * dx + dy * dy) <= 3.5) {
+        AppLogger.debug('[Navigation] 🛡️ حماية الوجهة: المستخدم قريب جداً من الهدف، تجاهل الانحراف اللحظي');
+        return;
+      }
+    }
+
     // نستخدم عداد تثبت (Debounce) لضمان عدم إعادة الحساب بسبب تشويش لحظي
     _consecutiveOffPathReadings++;
     if (_consecutiveOffPathReadings < 3) {
@@ -584,15 +654,15 @@ class NavigationScreenController extends GetxController {
     // تأكد الانحراف بعد 3 قراءات متتالية: إعادة حساب المسار من النقطة الحالية
     _consecutiveOffPathReadings = 0;
     final destinationNodeId = _currentPath.last.nodeId;
-    final graph =
-        _navigationRepository.cachedGraph ?? await _safeLoadGraph();
-    if (graph == null) {
+    final activeGraph =
+        graph ?? await _safeLoadGraph();
+    if (activeGraph == null) {
       _refreshActiveNavState();
       return;
     }
 
     try {
-      _currentPath = _findPath(graph, currentNodeId, destinationNodeId);
+      _currentPath = _findPath(activeGraph, currentNodeId, destinationNodeId);
       _currentStepIndex = _currentPath.length > 1 ? 1 : 0;
       AppLogger.debug('[Navigation] 🔄 Dynamic replan: تم إعادة التوجيه بنجاح من node $currentNodeId');
     } on PathNotFoundException {
@@ -729,6 +799,7 @@ class NavigationScreenController extends GetxController {
 
   void clearSelection() {
     selectedDestination.value = null;
+    destinationFloor.value = 0;
     searchTextController.clear();
     searchResults.assignAll(allDestinations);
   }

@@ -7,46 +7,56 @@ import 'package:parliament_ips/features/onboarding/onboarding_page.dart';
 import 'package:parliament_ips/features/permission/widgets/permission_checklist_card.dart';
 import 'package:parliament_ips/features/permission/widgets/permission_status_card.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// أنواع حالات صفحة الأذونات — كل حالة بترسم واجهة مختلفة بنفس الصفحة.
 enum _PermissionUiState {
-  locationOnly, // الموقع مرفوض بس، البلوتوث تمام
-  bluetoothOffOnly, // البلوتوث مقفول بس (adapter)، الموقع تمام
-  both, // الاتنين ناقصين (أو صلاحية البلوتوث نفسها مرفوضة)
-  allSet, // كل حاجة متفعّلة
+  locationPermissionOnly, // صلاحية الموقع مرفوضة بس، البلوتوث والـ GPS تمام
+  locationServiceOffOnly,  // خدمة الموقع (GPS) متوقفة بس، الصلاحيات والبلوتوث تمام
+  bluetoothOffOnly,        // البلوتوث مقفول بس (adapter)، الموقع تمام
+  checklist,               // أكتر من حاجة ناقصة
+  allSet,                  // كل حاجة متفعّلة
 }
 
-/// صفحة الأذونات — صفحة واحدة بترسم نفسها بشكل مختلف حسب حالة الأذونات
-/// الحالية (4 حالات: الموقع بس / البلوتوث بس / الاتنين / كل حاجة تمام).
+/// صفحة الأذونات — صفحة واحدة بترسم نفسها بشكل مختلف حسب حالة الأذونات الحالية.
 class PermissionPage extends StatelessWidget {
   final permissionController = Get.find<PermissionController>();
 
   PermissionPage({super.key});
 
   _PermissionUiState _resolveState() {
-    final locationOk = permissionController.locationPermissionGranted.value;
-    final bluetoothOk = permissionController.bluetoothStatus.value;
+    final locationPermOk = permissionController.locationPermissionGranted.value;
+    final locationServiceOk = permissionController.locationServiceEnabled.value;
+    final bluetoothOk = permissionController.isBluetoothAdapterOn.value;
 
-    if (locationOk && bluetoothOk) return _PermissionUiState.allSet;
+    if (locationPermOk && locationServiceOk && bluetoothOk) {
+      return _PermissionUiState.allSet;
+    }
 
-    if (!locationOk && bluetoothOk) return _PermissionUiState.locationOnly;
+    // لو ناقص فقط تشغيل الـ GPS (صلاحية الموقع ممنوحة والبلوتوث شغال)
+    if (locationPermOk && !locationServiceOk && bluetoothOk) {
+      return _PermissionUiState.locationServiceOffOnly;
+    }
 
-    if (locationOk &&
-        !bluetoothOk &&
-        permissionController.bleStatusRaw.value == BleStatus.poweredOff) {
+    // لو ناقص فقط تشغيل البلوتوث (صلاحية الموقع وخدمة الـ GPS تمام)
+    if (locationPermOk && locationServiceOk && !bluetoothOk) {
       return _PermissionUiState.bluetoothOffOnly;
     }
 
-    return _PermissionUiState.both;
+    // لو ناقص فقط إذن صلاحية الموقع (البلوتوث شغال وخدمة الـ GPS تمام)
+    if (!locationPermOk && locationServiceOk && bluetoothOk) {
+      return _PermissionUiState.locationPermissionOnly;
+    }
+
+    return _PermissionUiState.checklist;
   }
 
   Future<void> _handleStartNavigation() async {
     await permissionController.checkPermissionStatus();
     if (permissionController.locationPermissionGranted.value == true &&
+        permissionController.locationServiceEnabled.value == true &&
         permissionController.bluetoothStatus.value == true) {
       final prefs = await SharedPreferences.getInstance();
       final onboardingDone = prefs.getBool('initial') == true;
@@ -108,7 +118,7 @@ class PermissionPage extends StatelessWidget {
     AppPalette palette,
   ) {
     switch (state) {
-      case _PermissionUiState.locationOnly:
+      case _PermissionUiState.locationPermissionOnly:
         return PermissionStatusCard(
           palette: palette,
           illustrationIcon: Icons.location_on_rounded,
@@ -118,6 +128,21 @@ class PermissionPage extends StatelessWidget {
               'يبدو أنك لم تسمح للتطبيق بالوصول المطلوب. لتتمكن من استخدام التوجيه داخل المبنى، يرجى تفعيل الصلاحية من إعدادات التطبيق.',
           primaryButtonLabel: 'فتح الإعدادات',
           onPrimaryPressed: () => openAppSettings(),
+          secondaryButtonLabel: 'حاول مرة أخرى',
+          onSecondaryPressed: () => permissionController.checkPermissionStatus(),
+        );
+
+      case _PermissionUiState.locationServiceOffOnly:
+        return PermissionStatusCard(
+          palette: palette,
+          illustrationIcon: Icons.location_on_rounded,
+          toggleLabel: 'OFF',
+          badgeIcon: Icons.location_off_rounded,
+          title: 'الموقع متوقف',
+          description:
+              'قم بتشغيل خدمة الموقع (GPS) للبحث عن إشارات التوجيه داخل المبنى.',
+          primaryButtonLabel: 'تفعيل الموقع',
+          onPrimaryPressed: () => permissionController.requestEnableLocation(),
           secondaryButtonLabel: 'حاول مرة أخرى',
           onSecondaryPressed: () => permissionController.checkPermissionStatus(),
         );
@@ -136,11 +161,10 @@ class PermissionPage extends StatelessWidget {
           onSecondaryPressed: () => permissionController.checkPermissionStatus(),
         );
 
-      case _PermissionUiState.both:
-        final locationOk = permissionController.locationPermissionGranted.value;
-        final bluetoothOk = permissionController.bluetoothStatus.value;
-        final bluetoothAdapterOff =
-            permissionController.bleStatusRaw.value == BleStatus.poweredOff;
+      case _PermissionUiState.checklist:
+        final locationPermOk = permissionController.locationPermissionGranted.value;
+        final locationServiceOk = permissionController.locationServiceEnabled.value;
+        final bluetoothOk = permissionController.isBluetoothAdapterOn.value;
 
         return PermissionChecklistCard(
           palette: palette,
@@ -149,26 +173,35 @@ class PermissionPage extends StatelessWidget {
               'للاستمرار في استخدام التوجيه داخل المبني، يرجى تفعيل الأذونات التالية.',
           items: [
             PermissionChecklistItem(
-              icon: Icons.bluetooth_rounded,
-              title: 'البلوتوث',
-              statusLabel: bluetoothOk ? 'مفعّل' : 'متوقف',
-              isGranted: bluetoothOk,
-              actionLabel: bluetoothAdapterOff ? 'تشغيل' : 'الإعدادات',
-              onAction: () {
-                if (bluetoothAdapterOff) {
-                  permissionController.requestEnableBluetooth();
-                } else {
+              icon: Icons.gps_fixed_rounded,
+              title: 'خدمة الموقع (GPS)',
+              statusLabel: locationServiceOk ? 'مفعّل' : 'متوقف',
+              isGranted: locationServiceOk,
+              actionLabel: 'تشغيل',
+              onAction: () => permissionController.requestEnableLocation(),
+            ),
+            PermissionChecklistItem(
+              icon: Icons.location_on_rounded,
+              title: 'صلاحية الموقع',
+              statusLabel: locationPermOk ? 'مفعّل' : 'غير مفعّلة',
+              isGranted: locationPermOk,
+              actionLabel: 'تشغيل',
+              onAction: () async {
+                final status = await Permission.location.request();
+                if (status.isPermanentlyDenied) {
                   openAppSettings();
+                } else {
+                  await permissionController.checkPermissionStatus();
                 }
               },
             ),
             PermissionChecklistItem(
-              icon: Icons.location_on_rounded,
-              title: 'الموقع',
-              statusLabel: locationOk ? 'مفعّل' : 'غير مفعّلة',
-              isGranted: locationOk,
-              actionLabel: 'الإعدادات',
-              onAction: () => openAppSettings(),
+              icon: Icons.bluetooth_rounded,
+              title: 'البلوتوث',
+              statusLabel: bluetoothOk ? 'مفعّل' : 'متوقف',
+              isGranted: bluetoothOk,
+              actionLabel: 'تشغيل',
+              onAction: () => permissionController.requestEnableBluetooth(),
             ),
           ],
           onRetry: () => permissionController.checkPermissionStatus(),

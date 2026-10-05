@@ -43,6 +43,7 @@ class _AppRouterState extends State<AppRouter> {
     await permController.checkPermissionStatus();
 
     final permissionsOk = permController.locationPermissionGranted.value &&
+        permController.locationServiceEnabled.value &&
         permController.bluetoothStatus.value;
 
     // لو الصلاحيات ناقصة → PermissionPage دائمًا أول ما نشوفه

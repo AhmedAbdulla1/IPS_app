@@ -23,6 +23,10 @@ class RouteProgressPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isArrived = remainingDistanceLabel == 'وصلت' ||
+        remainingDistanceLabel == 'Arrived' ||
+        (totalSteps > 0 && currentStep >= totalSteps - 1 && remainingDistanceLabel.startsWith('0'));
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -36,7 +40,12 @@ class RouteProgressPanel extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                (isOnCorrectPath ? 'أنت على الطريق الصحيح' : 'حاول ترجع للمسار').tr,
+                (isArrived
+                        ? 'لقد وصلت إلى وجهتك بنجاح'
+                        : (isOnCorrectPath
+                            ? 'أنت على الطريق الصحيح'
+                            : 'حاول ترجع للمسار'))
+                    .tr,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -45,15 +54,24 @@ class RouteProgressPanel extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Icon(
-                isOnCorrectPath ? Icons.check_circle_rounded : Icons.error_rounded,
-                color: isOnCorrectPath ? palette.statusGreen : palette.gold,
+                (isOnCorrectPath || isArrived)
+                    ? Icons.check_circle_rounded
+                    : Icons.error_rounded,
+                color: (isOnCorrectPath || isArrived)
+                    ? palette.statusGreen
+                    : palette.gold,
                 size: 18,
               ),
             ],
           ),
           const SizedBox(height: 16),
 
-          _ProgressStepper(total: totalSteps, current: currentStep, palette: palette),
+          _ProgressStepper(
+            total: totalSteps,
+            current: currentStep,
+            isArrived: isArrived,
+            palette: palette,
+          ),
 
           const SizedBox(height: 14),
 
@@ -82,19 +100,28 @@ class RouteProgressPanel extends StatelessWidget {
 class _ProgressStepper extends StatelessWidget {
   final int total;
   final int current;
+  final bool isArrived;
   final AppPalette palette;
 
-  const _ProgressStepper({required this.total, required this.current, required this.palette});
+  const _ProgressStepper({
+    required this.total,
+    required this.current,
+    this.isArrived = false,
+    required this.palette,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final dots = List.generate(total, (i) => i);
+    final effectiveTotal = total < 2 ? 2 : total;
+    final effectiveCurrent =
+        isArrived ? (effectiveTotal - 1) : current.clamp(0, effectiveTotal - 1);
+    final dots = List.generate(effectiveTotal, (i) => i);
     return SizedBox(
       height: 24,
       child: Row(
         children: dots.expand((i) {
-          final isCurrent = i == current;
-          final isPast = i < current;
+          final isCurrent = i == effectiveCurrent;
+          final isPast = isArrived || i < effectiveCurrent;
           final dot = Container(
             width: isCurrent ? 16 : 10,
             height: isCurrent ? 16 : 10,
@@ -111,7 +138,7 @@ class _ProgressStepper extends StatelessWidget {
               Expanded(
                 child: Container(
                   height: 2,
-                  color: isPast ? palette.gold : palette.dotInactive,
+                  color: (isArrived || i < effectiveCurrent) ? palette.gold : palette.dotInactive,
                 ),
               ),
           ];
