@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>تحميل تطبيق مسار | Masar IPS - أحدث إصدار APK</title>
+  
+  <!-- SEO & Social Sharing (Open Graph / WhatsApp / Telegram) -->
+  <meta name="description" content="حمّل أحدث إصدار من تطبيق مسار للملاحة والتوجيه الداخلي الذكي (APK مباشر للأندرويد).">
+  <meta property="og:title" content="تحميل تطبيق مسار | Masar IPS">
+  <meta property="og:description" content="نظام الملاحة والتوجيه الداخلي الذكي - اضغط هنا لتحميل ملف الـ APK وتثبيته مباشرة.">
+  <meta property="og:image" content="./icon.png">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#0b0f19">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="./icon.png">
+  <link rel="apple-touch-icon" href="./icon.png">
+
+  <!-- Google Fonts: Cairo & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #080c15;
+      --bg-card: rgba(17, 24, 39, 0.78);
+      --bg-card-border: rgba(255, 255, 255, 0.08);
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-glow: rgba(37, 99, 235, 0.45);
+      --accent: #06b6d4;
+      --accent-green: #10b981;
+      --accent-green-hover: #059669;
+      --accent-green-glow: rgba(16, 185, 129, 0.45);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background glow effects */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .glow-orb-1 {
+      position: absolute;
+      top: -15%;
+      right: 10%;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, rgba(37, 99, 235, 0) 70%);
+      filter: blur(50px);
+      border-radius: 50%;
+    }
+
+    .glow-orb-2 {
+      position: absolute;
+      bottom: -10%;
+      left: 5%;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(6, 182, 212, 0) 70%);
+      filter: blur(60px);
+      border-radius: 50%;
+    }
+
+    /* Main Container */
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 460px;
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 28px;
+      padding: 2.25rem 1.75rem;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7),
+                  0 0 0 1px rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Logo Header */
+    .logo-wrapper {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .logo-halo {
+      position: absolute;
+      inset: -8px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 28px;
+      filter: blur(14px);
+      opacity: 0.55;
+      animation: pulseGlow 3s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0% { opacity: 0.4; transform: scale(0.98); }
+      100% { opacity: 0.7; transform: scale(1.04); }
+    }
+
+    .app-icon {
+      position: relative;
+      width: 104px;
+      height: 104px;
+      border-radius: 24px;
+      object-fit: cover;
+      background: #111827;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+      display: block;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* App Title & Subtitle */
+    .app-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+    }
+
+    .app-title .tag-masar {
+      background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .app-subtitle {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+
+    /* Badges Row */
+    .badges-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      width: 100%;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .badge.active-status {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green);
+    }
+
+    /* ========================================================
+     * DOWNLOAD CONTROLS & STATES
+     * ======================================================== */
+    .download-section {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    /* 1. Initial State: Primary Download Button */
+    .btn-download {
+      position: relative;
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #0284c7 100%);
+      color: #ffffff;
+      padding: 1.1rem 1.5rem;
+      border-radius: 20px;
+      font-family: inherit;
+      font-size: 1.15rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 30px var(--primary-glow),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 35px var(--primary-glow);
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #0369a1 100%);
+    }
+
+    .btn-download:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    .btn-download svg {
+      width: 24px;
+      height: 24px;
+      stroke-width: 2.5;
+      animation: bounceDown 2s infinite ease-in-out;
+    }
+
+    @keyframes bounceDown {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+
+    /* 2. Downloading State: Progress Card */
+    .progress-card {
+      display: none;
+      width: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      border-radius: 20px;
+      padding: 1.25rem 1.25rem;
+      text-align: right;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .progress-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .progress-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(59, 130, 246, 0.2);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .progress-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .progress-percentage {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #60a5fa;
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 0.65rem;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #06b6d4, #10b981);
+      border-radius: 9999px;
+      transition: width 0.15s ease-out;
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+      position: relative;
+    }
+
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .progress-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .progress-mb {
+      font-family: 'Outfit', 'Cairo', sans-serif;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    /* 3. Completed State: Install Card & Button */
+    .completed-card {
+      display: none;
+      width: 100%;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .btn-install {
+      position: relative;
+      width: 100%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      padding: 1.15rem 1.5rem;
+      border-radius: 20px;
+      font-family: inherit;
+      font-size: 1.2rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 10px 30px var(--accent-green-glow),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      margin-bottom: 0.85rem;
+      animation: pulseGreen 2.5s infinite alternate;
+    }
+
+    @keyframes pulseGreen {
+      0% { transform: scale(1); box-shadow: 0 10px 25px var(--accent-green-glow); }
+      100% { transform: scale(1.02); box-shadow: 0 14px 35px rgba(16, 185, 129, 0.65); }
+    }
+
+    .btn-install:hover {
+      transform: translateY(-2px) scale(1.02);
+      background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    }
+
+    .btn-install:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    .btn-install svg {
+      width: 26px;
+      height: 26px;
+      stroke-width: 2.5;
+    }
+
+    /* Post-Download Helper Notice */
+    .install-notice-box {
+      width: 100%;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1.5px solid rgba(16, 185, 129, 0.35);
+      border-radius: 18px;
+      padding: 1rem 1.15rem;
+      text-align: right;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    .install-notice-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #34d399;
+      margin-bottom: 0.4rem;
+    }
+
+    .install-notice-text {
+      font-size: 0.86rem;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+
+    .install-notice-text strong {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    .re-download-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.82rem;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: 0.5rem;
+      display: inline-block;
+      transition: color 0.2s;
+    }
+
+    .re-download-btn:hover {
+      color: #ffffff;
+    }
+
+    /* Sub note */
+    .download-subtext {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+
+    /* Quick Action Buttons (Share / QR) */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 0.7rem 0.85rem;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Install Instructions Card */
+    .guide-card {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 1.15rem;
+      text-align: right;
+    }
+
+    .guide-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .guide-title svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+
+    .steps-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid rgba(37, 99, 235, 0.4);
+      color: #93c5fd;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      margin-top: 1px;
+    }
+
+    .step-item strong {
+      color: #f1f5f9;
+      font-weight: 600;
+    }
+
+    /* QR Code Modal / Box */
+    .qr-box {
+      display: none;
+      margin-bottom: 1.25rem;
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 18px;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .qr-box.show {
+      display: flex;
+    }
+
+    .qr-img-wrapper {
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 14px;
+      margin-bottom: 0.65rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .qr-img-wrapper img {
+      display: block;
+      width: 150px;
+      height: 150px;
+    }
+
+    .qr-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      padding: 0.75rem 1.4rem;
+      border-radius: 9999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 1.5rem;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      text-align: center;
+      z-index: 1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Tablet & Larger Screens */
+    @media (min-width: 640px) {
+      body {
+        padding: 2.5rem 1.5rem;
+      }
+      .container {
+        padding: 2.75rem 2.25rem;
+        max-width: 480px;
+      }
+      .app-title {
+        font-size: 2rem;
+      }
+      .app-icon {
+        width: 112px;
+        height: 112px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glow Background -->
+  <div class="ambient-bg">
+    <div class="glow-orb-1"></div>
+    <div class="glow-orb-2"></div>
+  </div>
+
+  <!-- Main App Card -->
+  <main class="container">
+    
+    <!-- App Icon with glow -->
+    <div class="logo-wrapper">
+      <div class="logo-halo"></div>
+      <img src="./icon.png" alt="أيقونة تطبيق مسار" class="app-icon" id="appIcon" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Masar&background=2563eb&color=fff&size=200&bold=true';">
+    </div>
+
+    <!-- App Info -->
+    <h1 class="app-title">
+      <span class="tag-masar">تطبيق مسار</span>
+    </h1>
+    <p class="app-subtitle" id="appSubtitle">نظام الملاحة والتوجيه الداخلي الذكي</p>
+
+    <!-- Meta Badges -->
+    <div class="badges-row">
+      <div class="badge active-status">
+        <span class="badge-dot"></span>
+        <span id="badgeVersion">الإصدار v1.0.0+3</span>
+      </div>
+      <div class="badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        <span id="badgeSize">~75 MB</span>
+      </div>
+      <div class="badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+        <span>Android 8.0+</span>
+      </div>
+    </div>
+
+    <!-- DOWNLOAD SECTION (DYNAMIC STATES) -->
+    <div class="download-section">
+      
+      <!-- STATE 1: Start Download Button -->
+      <button type="button" id="btnDownload" class="btn-download">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>تحميل التطبيق الآن (75 MB)</span>
+      </button>
+
+      <!-- STATE 2: Live Download Progress Bar -->
+      <div id="progressCard" class="progress-card">
+        <div class="progress-header">
+          <div class="progress-title-wrap">
+            <div class="progress-spinner"></div>
+            <span class="progress-title">جاري تحميل التطبيق...</span>
+          </div>
+          <span id="progressPercentage" class="progress-percentage">0%</span>
+        </div>
+
+        <div class="progress-bar-track">
+          <div id="progressBarFill" class="progress-bar-fill"></div>
+        </div>
+
+        <div class="progress-footer">
+          <span id="progressStatus">يرجى الانتظار، جاري تنزيل الـ APK...</span>
+          <span id="progressMb" class="progress-mb">0 / 75 MB</span>
+        </div>
+      </div>
+
+      <!-- STATE 3: Download Complete & Install Action -->
+      <div id="completedCard" class="completed-card">
+        
+        <!-- Big Install Button -->
+        <button type="button" id="btnInstall" class="btn-install">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+            <polyline points="9 10 12 13 15 10"></polyline>
+          </svg>
+          <span>تثبيت التطبيق الآن 📱</span>
+        </button>
+
+        <!-- Direct Installation Notice -->
+        <div class="install-notice-box">
+          <div class="install-notice-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span>اكتمل التنزيل بنجاح!</span>
+          </div>
+          <p class="install-notice-text">
+            اضغط على <strong>زر التثبيت بالأعلى</strong> أو اضغط على إشعار <strong>(Masar_v1.0.0+3.apk)</strong> الظاهر أسفل/أعلى الشاشة لفتح ملف التثبيت مباشرة.
+          </p>
+          <button type="button" id="btnReDownload" class="re-download-btn">
+            🔄 لم يبدأ التثبيت؟ اضغط هنا لإعادة التنزيل
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Sub note -->
+    <div class="download-subtext">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #10b981;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <span>ملف أصلي ومفحوص وآمن 100% للتثبيت المباشر</span>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="actions-grid">
+      <button class="btn-secondary" id="btnShare" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+        <span>مشاركة الرابط</span>
+      </button>
+
+      <button class="btn-secondary" id="btnQrToggle" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span id="qrBtnText">رمز الـ QR</span>
+      </button>
+    </div>
+
+    <!-- QR Code Box (Hidden by default, toggleable) -->
+    <div class="qr-box" id="qrBox">
+      <div class="qr-img-wrapper">
+        <img id="qrImage" src="" alt="QR Code للتحميل">
+      </div>
+      <p class="qr-desc">امسح الرمز بكاميرا الجوال للتحميل السريع</p>
+    </div>
+
+    <!-- Quick Installation Guide -->
+    <div class="guide-card">
+      <div class="guide-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>دليل تثبيت التطبيق على أجهزة أندرويد:</span>
+      </div>
+      <ul class="steps-list">
+        <li class="step-item">
+          <span class="step-num">1</span>
+          <span>اضغط على <strong>تحميل التطبيق</strong> وتابع شريط التحميل حتى يصل إلى 100%.</span>
+        </li>
+        <li class="step-item">
+          <span class="step-num">2</span>
+          <span>اضغط على زر <strong>تثبيت التطبيق الآن</strong> أو افتح الإشعار واضغط <strong>"فتح" (Open)</strong>.</span>
+        </li>
+        <li class="step-item">
+          <span class="step-num">3</span>
+          <span>إذا ظهر لك تنبيه أمان، اضغط <strong>"الإعدادات" (Settings)</strong> ثم فعّل خيار <strong>"السماح بالتثبيت من هذا المصدر"</strong> واضغط تثبيت.</span>
+        </li>
+      </ul>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>جميع الحقوق محفوظة &copy; <span id="currentYear">2026</span> مسار | Masar IPS</p>
+  </footer>
+
+  <!-- Toast Notification Popup -->
+  <div class="toast" id="toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span id="toastMessage">تم نسخ الرابط بنجاح!</span>
+  </div>
+
+  <script>
+    /* ========================================================
+     * إعدادات الصفحة والتطبيق (APP CONFIGURATION)
+     * ======================================================== */
+    const APP_CONFIG = {
+      appName: "مسار | Masar IPS",
+      subtitle: "نظام الملاحة والتوجيه الداخلي الذكي",
+      version: "v1.0.0+3",
+      fileSize: "75 ميجابايت",
+      fileName: "Masar_v1.0.0+3.apk",
+      defaultApkUrl: "./Masar_v1.0.0+3.apk"
+    };
+
+    // قراءة أي بارامترات ممررة في الرابط
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeApkUrl = urlParams.get('apk') || urlParams.get('url') || APP_CONFIG.defaultApkUrl;
+    const activeVersion = urlParams.get('v') || APP_CONFIG.version;
+    const activeSize = urlParams.get('size') || APP_CONFIG.fileSize;
+
+    // عناصر الصفحة
+    const btnDownload = document.getElementById('btnDownload');
+    const progressCard = document.getElementById('progressCard');
+    const progressBarFill = document.getElementById('progressBarFill');
+    const progressPercentage = document.getElementById('progressPercentage');
+    const progressMb = document.getElementById('progressMb');
+    const progressStatus = document.getElementById('progressStatus');
+    const completedCard = document.getElementById('completedCard');
+    const btnInstall = document.getElementById('btnInstall');
+    const btnReDownload = document.getElementById('btnReDownload');
+
+    const badgeVersion = document.getElementById('badgeVersion');
+    const badgeSize = document.getElementById('badgeSize');
+    const btnShare = document.getElementById('btnShare');
+    const btnQrToggle = document.getElementById('btnQrToggle');
+    const qrBtnText = document.getElementById('qrBtnText');
+    const qrBox = document.getElementById('qrBox');
+    const qrImage = document.getElementById('qrImage');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+
+    // تطبيق الإعدادات
+    badgeVersion.textContent = `الإصدار ${activeVersion}`;
+    badgeSize.textContent = activeSize;
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    // تجهيز رمز الـ QR
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(window.location.href)}`;
+    qrImage.src = qrApiUrl;
+
+    // حالة التحميل والملف المنزّل
+    let downloadedBlobUrl = null;
+    let isDownloading = false;
+
+    // إظهار إشعار Toast
+    function showToast(text, duration = 3500) {
+      toastMessage.textContent = text;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
+    }
+
+    // تحديث شريط التقدم
+    function updateProgress(percent, loadedMb, totalMb) {
+      progressBarFill.style.width = `${percent}%`;
+      progressPercentage.textContent = `${percent}%`;
+      if (loadedMb && totalMb) {
+        progressMb.textContent = `${loadedMb} / ${totalMb} MB`;
+      } else {
+        progressMb.textContent = `${percent}%`;
+      }
+    }
+
+    // تحفيز حفظ / فتح الملف مباشرة للمستخدم
+    function triggerFileSave(fileUrl) {
+      const a = document.createElement('a');
+      a.href = fileUrl;
+      a.download = APP_CONFIG.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // التبديل إلى حالة اكتمال التنزيل
+    function setCompletedState(fileUrl) {
+      downloadedBlobUrl = fileUrl;
+      isDownloading = false;
+      progressCard.style.display = 'none';
+      completedCard.style.display = 'block';
+      showToast('🎉 اكتمل التحميل! اضغط على تثبيت التطبيق الآن');
+    }
+
+    // بدء التحميل الحقيقي باستخدام Streams لمتابعة النسبة بدقة
+    async function startDownload() {
+      if (isDownloading) return;
+      isDownloading = true;
+
+      // إخفاء زر البداية وإظهار شريط التحميل
+      btnDownload.style.display = 'none';
+      progressCard.style.display = 'block';
+      completedCard.style.display = 'none';
+      updateProgress(0, '0.0', '75.0');
+      progressStatus.textContent = 'جاري الاتصال والبدء بالتحميل...';
+
+      try {
+        const response = await fetch(activeApkUrl);
+        if (!response.ok) throw new Error('فشل جلب الملف من الخادم');
+
+        const contentLengthHeader = response.headers.get('Content-Length');
+        const totalBytes = contentLengthHeader ? parseInt(contentLengthHeader, 10) : (75 * 1024 * 1024);
+        const totalMb = (totalBytes / (1024 * 1024)).toFixed(1);
+
+        const reader = response.body.getReader();
+        let receivedBytes = 0;
+        const chunks = [];
+
+        progressStatus.textContent = 'جاري تنزيل ملف الـ APK...';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          chunks.push(value);
+          receivedBytes += value.length;
+
+          const percent = Math.min(99, Math.round((receivedBytes / totalBytes) * 100));
+          const loadedMb = (receivedBytes / (1024 * 1024)).toFixed(1);
+          updateProgress(percent, loadedMb, totalMb);
+        }
+
+        // 100% اكتمال
+        updateProgress(100, totalMb, totalMb);
+        progressStatus.textContent = 'اكتمل التحميل، جاري تجهيز الملف للتثبيت...';
+
+        const blob = new Blob(chunks, { type: 'application/vnd.android.package-archive' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        // تشغيل نافذة الحفظ/الفتح فوراً في جهاز المستخدم
+        triggerFileSave(blobUrl);
+
+        setTimeout(() => {
+          setCompletedState(blobUrl);
+        }, 500);
+
+      } catch (err) {
+        console.warn('Streams fetch failed, switching to native fallback:', err);
+        // Fallback في حال كانت هناك قيود CORS أو أجهزة قديمة
+        fallbackDownloadWithSimulatedProgress();
+      }
+    }
+
+    // بديل سلس يحافظ على التجربة التفاعلية في حال تعذر fetch
+    function fallbackDownloadWithSimulatedProgress() {
+      // إطلاق التحميل الفعلي عبر المتصفح مباشرة
+      triggerFileSave(activeApkUrl);
+
+      let currentPercent = 10;
+      updateProgress(currentPercent, '7.5', '75.0');
+      progressStatus.textContent = 'جاري التنزيل في خلفية الهاتف...';
+
+      const interval = setInterval(() => {
+        currentPercent += Math.floor(Math.random() * 8) + 4;
+        if (currentPercent >= 100) {
+          clearInterval(interval);
+          updateProgress(100, '75.0', '75.0');
+          setTimeout(() => {
+            setCompletedState(activeApkUrl);
+          }, 600);
+        } else {
+          const loadedMb = ((currentPercent / 100) * 75).toFixed(1);
+          updateProgress(currentPercent, loadedMb, '75.0');
+        }
+      }, 350);
+    }
+
+    // زر التحميل الرئيسي
+    btnDownload.addEventListener('click', startDownload);
+
+    // زر التثبيت
+    btnInstall.addEventListener('click', () => {
+      showToast('📱 جاري فتح ملف التثبيت...');
+      if (downloadedBlobUrl) {
+        triggerFileSave(downloadedBlobUrl);
+      } else {
+        triggerFileSave(activeApkUrl);
+      }
+    });
+
+    // زر إعادة التحميل
+    btnReDownload.addEventListener('click', () => {
+      completedCard.style.display = 'none';
+      startDownload();
+    });
+
+    // مشاركة الرابط
+    btnShare.addEventListener('click', async () => {
+      const shareData = {
+        title: APP_CONFIG.appName,
+        text: `حمّل الآن أحدث إصدار من تطبيق ${APP_CONFIG.appName} (${activeVersion}):`,
+        url: window.location.href
+      };
+
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+        } catch (err) {
+          if (err.name !== 'AbortError') copyUrlToClipboard();
+        }
+      } else {
+        copyUrlToClipboard();
+      }
+    });
+
+    function copyUrlToClipboard() {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(window.location.href)
+          .then(() => showToast(' تم نسخ الرابط بنجاح!'))
+          .catch(() => fallbackCopy());
+      } else {
+        fallbackCopy();
+      }
+    }
+
+    function fallbackCopy() {
+      const input = document.createElement('input');
+      input.value = window.location.href;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      showToast(' تم نسخ الرابط!');
+    }
+
+    // تبديل إظهار / إخفاء رمز QR
+    btnQrToggle.addEventListener('click', () => {
+      const isVisible = qrBox.classList.toggle('show');
+      qrBtnText.textContent = isVisible ? 'إخفاء الـ QR' : 'رمز الـ QR';
+      if (isVisible) {
+        qrBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  </script>
+</body>
+</html>

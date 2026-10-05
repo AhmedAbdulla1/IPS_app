@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقرير النقاط المتكرر فيها معرّفات ESP32</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+  
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  body {
+    font-family: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+    background-color: #ffffff;
+    color: #0f172a;
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+    text-align: right;
+    line-height: 1.35;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+    color: #ffffff;
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .header-info h1 {
+    margin: 0 0 2px 0;
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  .header-info p {
+    margin: 0;
+    font-size: 11px;
+    color: #cbd5e1;
+  }
+
+  .status-badge {
+    background: rgba(239, 68, 68, 0.25);
+    border: 1px solid #ef4444;
+    color: #fee2e2;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .stats-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .stat-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 12px;
+  }
+
+  .stat-card .label {
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 1px;
+  }
+
+  .stat-card .value {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e293b;
+  }
+
+  .stat-card.danger .value {
+    color: #dc2626;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5px;
+  }
+
+  th {
+    background: #f1f5f9;
+    color: #334155;
+    font-weight: 700;
+    padding: 6px 8px;
+    border: 1px solid #cbd5e1;
+    text-align: right;
+  }
+
+  .group-header td {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-top: 1.5px solid #64748b;
+    padding: 5px 8px;
+  }
+
+  .group-header-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .group-title {
+    font-weight: 800;
+    color: #1e3a8a;
+    font-size: 11px;
+  }
+
+  .uuid-badge {
+    font-family: 'Consolas', 'Courier New', monospace;
+    direction: ltr;
+    background: #e2e8f0;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .count-badge {
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+
+  .cross-badge {
+    background: #ffedd5;
+    color: #c2410c;
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+
+  .same-badge {
+    background: #f0fdf4;
+    color: #166534;
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+
+  .data-row td {
+    padding: 4.5px 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+  }
+
+  .node-id {
+    font-weight: 800;
+    color: #0f172a;
+    font-family: 'Consolas', monospace;
+  }
+
+  .level-pill {
+    display: inline-block;
+    padding: 1px 6px;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 10px;
+  }
+
+  .name-ar {
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .name-en {
+    color: #64748b;
+    direction: ltr;
+    text-align: right;
+  }
+
+  .coord {
+    direction: ltr;
+    font-family: 'Consolas', monospace;
+    color: #475569;
+    font-size: 10px;
+  }
+
+  .note-cross {
+    display: inline-block;
+    background: #fff1f2;
+    color: #be123c;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 9.5px;
+    border: 1px solid #fecdd3;
+  }
+
+  .note-same {
+    display: inline-block;
+    background: #f8fafc;
+    color: #64748b;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 9.5px;
+  }
+
+  .footer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9.5px;
+    color: #94a3b8;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 6px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-info">
+      <h1>تقرير فحص تكرار معرّفات الـ ESP32 iBeacon</h1>
+      <p>مشروع نظام الملاحة وتحديد المواقع الداخلي (IPS) — جدول العقد (Nodes Table)</p>
+    </div>
+    <div class="status-badge">⚠️ 8 حالات تعارض</div>
+  </div>
+
+  <div class="stats-container">
+    <div class="stat-card danger">
+      <div class="label">معرّفات UUID المكررة</div>
+      <div class="value">8 معرّفات</div>
+    </div>
+    <div class="stat-card danger">
+      <div class="label">إجمالي النقاط المتأثرة</div>
+      <div class="value">16 نقطة</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">الأدوار المتأثرة</div>
+      <div class="value">L2, L3, L5, L6, L7</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">تعارض بين أدوار مختلفة</div>
+      <div class="value" style="color: #ea580c;">مجموعة واحدة (L6 / L7)</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 75px;">رقم النقطة</th>
+        <th style="width: 60px;">الدور</th>
+        <th style="width: 25%;">الاسم بالعربي</th>
+        <th style="width: 25%;">الاسم بالإنجليزي</th>
+        <th style="width: 80px;">الإحداثيات</th>
+        <th>طبيعة التعارض</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr class="group-header">
+            <td colspan="7">
+                <div class="group-header-content">
+                    <span class="group-title">المجموعة 1</span>
+                    <span class="uuid-badge">0dd9409f-ea4c-5916-885e-30eed2db3cef</span>
+                    <span class="count-badge">2 نقاط متطابقة</span>
+                    <span class="same-badge">نفس الدور (L6)</span>
+                </div>
+            </td>
+        </tr>
+        
+            <tr class="data-row">
+                <td class="node-id">#625</td>
+                <td><span class="level-pill">L6</span></td>
+                <td class="name-ar">لجنة الطاقة والبيئة</td>
+                <td class="name-en">لجنة الطاقة والبيئة</td>
+                <td class="coord">(43, 52)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+            <tr class="data-row">
+                <td class="node-id">#633</td>
+                <td><span class="level-pill">L6</span></td>
+                <td class="name-ar">لجنة الإعلام</td>
+                <td class="name-en">لجنة الأعلام</td>
+                <td class="coord">(51, 39)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+        <tr class="group-header">
+            <td colspan="7">
+                <div class="group-header-content">
+                    <span class="group-title">المجموعة 2</span>
+                    <span class="uuid-badge">0de49f96-cdd6-a216-cb24-a3d18e9a5312</span>
+                    <span class="count-badge">2 نقاط متطابقة</span>
+                    <span class="same-badge">نفس الدور (L2)</span>
+                </div>
+            </td>
+        </tr>
+        
+            <tr class="data-row">
+                <td class="node-id">#238</td>
+                <td><span class="level-pill">L2</span></td>
+                <td class="name-ar">تقاطع</td>
+                <td class="name-en">Intersection</td>
+                <td class="coord">(77, 48)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+            <tr class="data-row">
+                <td class="node-id">#241</td>
+                <td><span class="level-pill">L2</span></td>
+                <td class="name-ar">ممر</td>
+                <td class="name-en">Corridor</td>
+                <td class="coord">(89, 42)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+        <tr class="group-header">
+            <td colspan="7">
+                <div class="group-header-content">
+                    <span class="group-title">المجموعة 3</span>
+                    <span class="uuid-badge">203de236-339c-2229-2213-db6b21ca36ac</span>
+                    <span class="count-badge">2 نقاط متطابقة</span>
+                    <span class="same-badge">نفس الدور (L2)</span>
+                </div>
+            </td>
+        </tr>
+        
+            <tr class="data-row">
+                <td class="node-id">#216</td>
+                <td><span class="level-pill">L2</span></td>
+                <td class="name-ar">تقاطع</td>
+                <td class="name-en">Intersection</td>
+                <td class="coord">(81, 102)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+            <tr class="data-row">
+                <td class="node-id">#220</td>
+                <td><span class="level-pill">L2</span></td>
+                <td class="name-ar">ممر</td>
+                <td class="name-en">Corridor</td>
+                <td class="coord">(67, 89)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+        <tr class="group-header">
+            <td colspan="7">
+                <div class="group-header-content">
+                    <span class="group-title">المجموعة 4</span>
+                    <span class="uuid-badge">234755a5-23bc-306a-db39-d5a8ba0fadde</span>
+                    <span class="count-badge">2 نقاط متطابقة</span>
+                    <span class="same-badge">نفس الدور (L3)</span>
+                </div>
+            </td>
+        </tr>
+        
+            <tr class="data-row">
+                <td class="node-id">#347</td>
+                <td><span class="level-pill">L3</span></td>
+                <td class="name-ar">لجنة الشئون الصحية</td>
+                <td class="name-en">Health Affairs Committee</td>
+                <td class="coord">(139, 39)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+            <tr class="data-row">
+                <td class="node-id">#359</td>
+                <td><span class="level-pill">L3</span></td>
+                <td class="name-ar">تقاطع</td>
+                <td class="name-en">Intersection</td>
+                <td class="coord">(122, 58)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+        <tr class="group-header">
+            <td colspan="7">
+                <div class="group-header-content">
+                    <span class="group-title">المجموعة 5</span>
+                    <span class="uuid-badge">57a674ca-619a-b49f-eac7-2d7021623195</span>
+                    <span class="count-badge">2 نقاط متطابقة</span>
+                    <span class="same-badge">نفس الدور (L7)</span>
+                </div>
+            </td>
+        </tr>
+        
+            <tr class="data-row">
+                <td class="node-id">#758</td>
+                <td><span class="level-pill">L7</span></td>
+                <td class="name-ar">أسانسير</td>
+                <td class="name-en">Elevator</td>
+                <td class="coord">(137, 49)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+            <tr class="data-row">
+                <td class="node-id">#759</td>
+                <td><span class="level-pill">L7</span></td>
+                <td class="name-ar">تقاطع</td>
+                <td class="name-en">Intersection</td>
+                <td class="coord">(122, 58)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+        <tr class="group-header">
+            <td colspan="7">
+                <div class="group-header-content">
+                    <span class="group-title">المجموعة 6</span>
+                    <span class="uuid-badge">adbe242e-6a2e-637e-db8d-e5f52cc223f2</span>
+                    <span class="count-badge">2 نقاط متطابقة</span>
+                    <span class="same-badge">نفس الدور (L5)</span>
+                </div>
+            </td>
+        </tr>
+        
+            <tr class="data-row">
+                <td class="node-id">#513</td>
+                <td><span class="level-pill">L5</span></td>
+                <td class="name-ar">أسانسير</td>
+                <td class="name-en">Elevator</td>
+                <td class="coord">(95, 122)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+            <tr class="data-row">
+                <td class="node-id">#515</td>
+                <td><span class="level-pill">L5</span></td>
+                <td class="name-ar">تقاطع</td>
+                <td class="name-en">Intersection</td>
+                <td class="coord">(95, 104)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+        <tr class="group-header">
+            <td colspan="7">
+                <div class="group-header-content">
+                    <span class="group-title">المجموعة 7</span>
+                    <span class="uuid-badge">ae82024e-dea9-78e3-9107-e43b49f65314</span>
+                    <span class="count-badge">2 نقاط متطابقة</span>
+                    <span class="cross-badge">⚠️ تعارض بين أدوار مختلفة (L6, L7)</span>
+                </div>
+            </td>
+        </tr>
+        
+            <tr class="data-row">
+                <td class="node-id">#659</td>
+                <td><span class="level-pill">L6</span></td>
+                <td class="name-ar">تقاطع</td>
+                <td class="name-en">Intersection</td>
+                <td class="coord">(122, 58)</td>
+                <td><span class="note-cross">تعارض مع دور L7</span></td>
+            </tr>
+            
+            <tr class="data-row">
+                <td class="node-id">#744</td>
+                <td><span class="level-pill">L7</span></td>
+                <td class="name-ar">تقاطع</td>
+                <td class="name-en">Intersection</td>
+                <td class="coord">(113, 48)</td>
+                <td><span class="note-cross">تعارض مع دور L6</span></td>
+            </tr>
+            
+        <tr class="group-header">
+            <td colspan="7">
+                <div class="group-header-content">
+                    <span class="group-title">المجموعة 8</span>
+                    <span class="uuid-badge">dc350f7b-c4bf-3f16-f2dd-727faa512451</span>
+                    <span class="count-badge">2 نقاط متطابقة</span>
+                    <span class="same-badge">نفس الدور (L3)</span>
+                </div>
+            </td>
+        </tr>
+        
+            <tr class="data-row">
+                <td class="node-id">#322</td>
+                <td><span class="level-pill">L3</span></td>
+                <td class="name-ar">تقاطع</td>
+                <td class="name-en">Intersection</td>
+                <td class="coord">(63, 71)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+            <tr class="data-row">
+                <td class="node-id">#323</td>
+                <td><span class="level-pill">L3</span></td>
+                <td class="name-ar">قاعة استماع 9</td>
+                <td class="name-en">Hearing Hall (9)</td>
+                <td class="coord">(55, 64)</td>
+                <td><span class="note-same">تعارض موضعي بنفس الدور</span></td>
+            </tr>
+            
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <div>نظام تحديد المواقع الداخلي (IPS) — استخراج من Supabase Database</div>
+    <div>تاريخ الفحص: 2026-10-01</div>
+  </div>
+
+</body>
+</html>
