@@ -129,10 +129,14 @@ class AppTranslations extends Translations {
 
           'الموقع متوقف': 'Location is Off',
           'الموقع (GPS) متوقف': 'Location (GPS) is Off',
+          'يرجى سحب شريط الإشعارات من أعلى الشاشة وتفعيل الموقع (GPS) للمتابعة.':
+              'Please swipe down the notification bar from the top and enable Location (GPS) to continue.',
           'قم بتشغيل خدمة الموقع (GPS) للبحث عن إشارات التوجيه داخل المبنى.':
               'Turn on Location (GPS) to search for indoor guidance signals.',
           'تفعيل الموقع': 'Enable Location',
           'تشغيل الموقع': 'Turn On Location',
+          'تم التشغيل': 'Turned On',
+          'تحقق': 'Verify',
           'خدمة الموقع (GPS)': 'Location Service (GPS)',
           'صلاحية الموقع': 'Location Permission',
 

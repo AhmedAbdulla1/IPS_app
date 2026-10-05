@@ -140,9 +140,9 @@ class PermissionPage extends StatelessWidget {
           badgeIcon: Icons.location_off_rounded,
           title: 'الموقع متوقف',
           description:
-              'قم بتشغيل خدمة الموقع (GPS) للبحث عن إشارات التوجيه داخل المبنى.',
-          primaryButtonLabel: 'تفعيل الموقع',
-          onPrimaryPressed: () => permissionController.requestEnableLocation(),
+              'يرجى سحب شريط الإشعارات من أعلى الشاشة وتفعيل الموقع (GPS) للمتابعة.',
+          primaryButtonLabel: 'تم التشغيل',
+          onPrimaryPressed: () => permissionController.checkPermissionStatus(),
           secondaryButtonLabel: 'حاول مرة أخرى',
           onSecondaryPressed: () => permissionController.checkPermissionStatus(),
         );
@@ -177,8 +177,8 @@ class PermissionPage extends StatelessWidget {
               title: 'خدمة الموقع (GPS)',
               statusLabel: locationServiceOk ? 'مفعّل' : 'متوقف',
               isGranted: locationServiceOk,
-              actionLabel: 'تشغيل',
-              onAction: () => permissionController.requestEnableLocation(),
+              actionLabel: 'تحقق',
+              onAction: () => permissionController.checkPermissionStatus(),
             ),
             PermissionChecklistItem(
               icon: Icons.location_on_rounded,
