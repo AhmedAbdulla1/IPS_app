@@ -21,10 +21,28 @@ enum _PermissionUiState {
 }
 
 /// صفحة الأذونات — صفحة واحدة بترسم نفسها بشكل مختلف حسب حالة الأذونات الحالية.
-class PermissionPage extends StatelessWidget {
-  final permissionController = Get.find<PermissionController>();
+class PermissionPage extends StatefulWidget {
+  const PermissionPage({super.key});
 
-  PermissionPage({super.key});
+  @override
+  State<PermissionPage> createState() => _PermissionPageState();
+}
+
+class _PermissionPageState extends State<PermissionPage> {
+  final permissionController = Get.find<PermissionController>();
+  bool _hadInitialDeficiency = false;
+  bool _isNavigating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final locationPermOk = permissionController.locationPermissionGranted.value;
+    final locationServiceOk = permissionController.locationServiceEnabled.value;
+    final bluetoothOk = permissionController.isBluetoothAdapterOn.value;
+
+    // تحديد هل كانت هناك أذونات ناقصة فعلياً عند دخول الصفحة
+    _hadInitialDeficiency = !locationPermOk || !locationServiceOk || !bluetoothOk;
+  }
 
   _PermissionUiState _resolveState() {
     final locationPermOk = permissionController.locationPermissionGranted.value;
@@ -91,6 +109,14 @@ class PermissionPage extends StatelessWidget {
     return Obx(() {
       final palette = AppPalette.of(themeController.isDarkMode.value);
       final state = _resolveState();
+
+      // لو دخل المستخدم وكل حاجة سليمة (أو اكتملت فوراً في أول أجزاء الثانية)، ننتقل تلقائياً
+      if (state == _PermissionUiState.allSet && !_hadInitialDeficiency && !_isNavigating) {
+        _isNavigating = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _handleStartNavigation();
+        });
+      }
 
       return Directionality(
         textDirection:
