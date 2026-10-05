@@ -93,7 +93,7 @@ class SettingsScreen extends StatelessWidget {
 
               // زر الجولة التعريفية
               SettingsTile(
-                icon: Icons.tour_outlined,
+                icon: Icons.explore_outlined,
                 title: 'جولة في التطبيق'.tr,
                 subtitle: 'دليل تفاعلي لشرح عناصر الشاشة الرئيسية'.tr,
                 palette: palette,

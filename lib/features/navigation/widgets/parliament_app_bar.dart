@@ -89,7 +89,7 @@ class ParliamentAppBar extends StatelessWidget implements PreferredSizeWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.help_outline_rounded,
+                                    Icons.explore_outlined,
                                     color: palette.brownDark,
                                     size: 18,
                                   ),

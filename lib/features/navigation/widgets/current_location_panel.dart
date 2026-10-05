@@ -20,29 +20,85 @@ class CurrentLocationPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isOutOfCoverage
-                ? [palette.brownDark, palette.goldDark.withValues(alpha: 0.7)]
-                : [palette.brownDark, palette.goldDark],
-          ).createShader(bounds),
-          child: Icon(
-            isOutOfCoverage
-                ? Icons.wrong_location_rounded
-                : Icons.person_pin_circle_rounded,
-            size: 130,
-            color: Colors.white,
-            shadows: [
-              Shadow(
-                color: palette.shadow,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+        if (isOutOfCoverage)
+          SizedBox(
+            width: 140,
+            height: 140,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                ShaderMask(
+                  shaderCallback: (bounds) => LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      palette.brownDark,
+                      palette.goldDark.withValues(alpha: 0.7),
+                    ],
+                  ).createShader(bounds),
+                  child: Icon(
+                    Icons.location_on_rounded,
+                    size: 130,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: palette.shadow,
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  right: 18,
+                  bottom: 18,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: palette.brownDark,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: palette.gold,
+                        width: 2.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: palette.shadow,
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 20,
+                      color: palette.goldLight,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ShaderMask(
+            shaderCallback: (bounds) => LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [palette.brownDark, palette.goldDark],
+            ).createShader(bounds),
+            child: Icon(
+              Icons.person_pin_circle_rounded,
+              size: 130,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  color: palette.shadow,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
           ),
-        ),
         const SizedBox(height: 20),
         Container(
           width: double.infinity,
@@ -103,7 +159,7 @@ class CurrentLocationPanel extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.directions_walk_rounded,
+                        Icons.explore_outlined,
                         size: 20,
                         color: palette.goldLight,
                       ),

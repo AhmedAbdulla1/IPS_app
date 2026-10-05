@@ -132,7 +132,20 @@ class PermissionController extends GetxController with WidgetsBindingObserver {
           "[PERMISSION] Location Service (GPS): ${locationServiceEnabled.value} ($serviceStatus)");
 
       // فحص هل محول البلوتوث الفيزيائي يعمل في الهاتف اعتماداً على حالة Reactive BLE
-      final currentBle = _ble.status;
+      var currentBle = _ble.status;
+      if (currentBle == BleStatus.unknown) {
+        // في أول تشغيل للتطبيق، تستغرق الخدمة 100-300ms للارتباط بالنظام
+        // ننتظر أول نبضة حالة غير مجهولة بدلاً من التسرع واعتباره مغلقاً
+        try {
+          currentBle = await _ble.statusStream
+              .firstWhere((s) => s != BleStatus.unknown)
+              .timeout(const Duration(milliseconds: 400));
+        } catch (_) {
+          currentBle = _ble.status;
+        }
+      }
+
+      bleStatusRaw.value = currentBle;
       if (currentBle == BleStatus.ready ||
           currentBle == BleStatus.locationServicesDisabled) {
         isBluetoothAdapterOn.value = true;

@@ -137,7 +137,7 @@ class PermissionPage extends StatelessWidget {
           palette: palette,
           illustrationIcon: Icons.location_on_rounded,
           toggleLabel: 'OFF',
-          badgeIcon: Icons.location_off_rounded,
+          badgeIcon: Icons.close_rounded,
           title: 'الموقع متوقف',
           description:
               'يرجى سحب شريط الإشعارات من أعلى الشاشة وتفعيل الموقع (GPS) للمتابعة.',
@@ -171,7 +171,7 @@ class PermissionPage extends StatelessWidget {
               'للاستمرار في استخدام التوجيه داخل المبني، يرجى تفعيل الأذونات التالية.',
           items: [
             PermissionChecklistItem(
-              icon: Icons.gps_fixed_rounded,
+              icon: Icons.location_on_rounded,
               title: 'خدمة الموقع (GPS)',
               statusLabel: locationServiceOk ? 'مفعّل' : 'متوقف',
               isGranted: locationServiceOk,
