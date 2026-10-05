@@ -141,10 +141,8 @@ class PermissionPage extends StatelessWidget {
           title: 'الموقع متوقف',
           description:
               'يرجى سحب شريط الإشعارات من أعلى الشاشة وتفعيل الموقع (GPS) للمتابعة.',
-          primaryButtonLabel: 'تم التشغيل',
+          primaryButtonLabel: 'حاول مرة أخرى',
           onPrimaryPressed: () => permissionController.checkPermissionStatus(),
-          secondaryButtonLabel: 'حاول مرة أخرى',
-          onSecondaryPressed: () => permissionController.checkPermissionStatus(),
         );
 
       case _PermissionUiState.bluetoothOffOnly:
@@ -177,8 +175,6 @@ class PermissionPage extends StatelessWidget {
               title: 'خدمة الموقع (GPS)',
               statusLabel: locationServiceOk ? 'مفعّل' : 'متوقف',
               isGranted: locationServiceOk,
-              actionLabel: 'تحقق',
-              onAction: () => permissionController.checkPermissionStatus(),
             ),
             PermissionChecklistItem(
               icon: Icons.location_on_rounded,

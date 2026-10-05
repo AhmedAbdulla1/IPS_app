@@ -8,16 +8,16 @@ class PermissionChecklistItem {
   final String title;
   final String statusLabel;
   final bool isGranted;
-  final String actionLabel;
-  final VoidCallback onAction;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   const PermissionChecklistItem({
     required this.icon,
     required this.title,
     required this.statusLabel,
     required this.isGranted,
-    required this.actionLabel,
-    required this.onAction,
+    this.actionLabel,
+    this.onAction,
   });
 }
 
@@ -166,24 +166,25 @@ class _ChecklistRow extends StatelessWidget {
               ],
             ),
           ),
-          if (!item.isGranted)
-            ElevatedButton(
-              onPressed: item.onAction,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: palette.brownDark,
-                foregroundColor: palette.textOnDark,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+          if (!item.isGranted) ...[
+            if (item.actionLabel != null && item.onAction != null)
+              ElevatedButton(
+                onPressed: item.onAction,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: palette.brownDark,
+                  foregroundColor: palette.textOnDark,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
                 ),
-                elevation: 0,
+                child: Text(
+                  item.actionLabel!.tr,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
               ),
-              child: Text(
-                item.actionLabel.tr,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-              ),
-            )
-          else
+          ] else
             Icon(Icons.check_circle_rounded, color: palette.statusGreen, size: 22),
         ],
       ),
